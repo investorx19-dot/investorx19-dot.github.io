@@ -114,7 +114,7 @@
     }
 
     // Função de geração de jogo (completa e corrigida)
-    function gerarJogo() {
+    async function gerarJogo() {
       console.log("PASSO 1: Função iniciada");
 
       const linhasAtivas = getLinhas();
@@ -125,7 +125,14 @@
         console.log("PASSO 3: Saiu cedo - nenhuma linha");
         return;
       }
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+await setDoc(doc(window.db, "config", "global"), {
+  linhasAtivas,
+  dezenasAnteriores: anterior,
+  dezenasAtrasadas: atrasadas,
+  updatedAt: Date.now()
+});
       const anterior = getAnterior();
       const atrasadas = getAtrasadas();
       const excluidas = new Set([...anterior, ...atrasadas]);
@@ -277,6 +284,7 @@
   </script>
 </body>
 </html>
+
 
 
 
