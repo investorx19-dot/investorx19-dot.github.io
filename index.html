@@ -20,12 +20,12 @@
     <input id="nome" placeholder="Nome" /><br><br>
     <input id="email" placeholder="E-mail" /><br><br>
     <input id="senha" type="password" placeholder="Senha" /><br><br>
-    <button onclick="cadastrar()">Cadastrar</button>
-    <button onclick="login()">Entrar</button>
+    <button id="btnCadastrar">Cadastrar</button>
+    <button id="btnEntrar">Entrar</button>
   </div>
 
   <div id="app" style="display:none;">
-    <button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+    <button id="btnGerarUser">GERAR JOGO</button>
     <h2>Cartão Virtual</h2>
     <div id="cartao"></div>
     <p><strong>Acertos no último sorteio:</strong> <span id="acertos">0</span></p>
@@ -40,103 +40,151 @@
   </div>
 
   <script src="gerador.js"></script>
-  <script>
-    let usuarioAtual = null;
 
-    function cadastrar() {
-      const nome  = document.getElementById('nome').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc, setDoc, getDoc,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+      authDomain: "painel-megasena.firebaseapp.com",
+      projectId: "painel-megasena",
+      storageBucket: "painel-megasena.firebasestorage.app",
+      messagingSenderId: "924943702876",
+      appId: "1:924943702876:web:77929086c5addb13b37f99"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const configRef = doc(db, "config", "global");
+
+    let usuarioAtualEmail = sessionStorage.getItem("user_email") || null;
+    let configAtual = { linhasAtivas: [], dezenasAnteriores: [], dezenasAtrasadas: [] };
+
+    function mostrarApp() {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("app").style.display = "block";
+      renderCartao([]);
+    }
+
+    function mostrarLogin() {
+      document.getElementById("login").style.display = "block";
+      document.getElementById("app").style.display = "none";
+    }
+
+    // Lê config do admin em tempo real (funciona em qualquer dispositivo)
+    onSnapshot(configRef, (snap) => {
+      if (!snap.exists()) return;
+      const d = snap.data();
+      configAtual = {
+        linhasAtivas: d.linhasAtivas || [],
+        dezenasAnteriores: d.dezenasAnteriores || [],
+        dezenasAtrasadas: d.dezenasAtrasadas || []
+      };
+    });
+
+    async function cadastrar() {
+      const nome  = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
       if (!nome || !email || !senha) return alert("Preencha todos os campos");
 
-      let users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (users.some(u => u.email === email)) return alert("E-mail já cadastrado");
+      const userRef = doc(db, "users", email);
+      const existe = await getDoc(userRef);
+      if (existe.exists()) return alert("E-mail já cadastrado");
 
-      users.push({nome, email, senha, accessGranted: false});
-      localStorage.setItem('users', JSON.stringify(users));
+      await setDoc(userRef, {
+        nome, email, senha,
+        accessGranted: false,
+        createdAt: Date.now()
+      });
+
       alert("Cadastrado com sucesso! Aguarde liberação do administrador.");
     }
 
-    function login() {
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const user = users.find(u => u.email === email && u.senha === senha);
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      if (!email || !senha) return alert("Preencha e-mail e senha");
 
-      if (!user) return alert("Credenciais inválidas");
-      if (!user.accessGranted) return alert("Seu acesso ainda não foi liberado pelo administrador");
+      const userRef = doc(db, "users", email);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) return alert("Credenciais inválidas");
 
-      usuarioAtual = user;
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      renderCartao([]);
+      const u = snap.data();
+      if (u.senha !== senha) return alert("Credenciais inválidas");
+      if (!u.accessGranted) return alert("Seu acesso ainda não foi liberado pelo administrador");
+
+      usuarioAtualEmail = email;
+      sessionStorage.setItem("user_email", email);
+      mostrarApp();
     }
 
     function gerarJogoUsuario() {
       try {
-        const linhasAtivas = JSON.parse(localStorage.getItem('linhasAtivas') || '[]');
-        const anteriores = JSON.parse(localStorage.getItem('dezenasAnteriores') || '[]');
-        const atrasadas  = JSON.parse(localStorage.getItem('dezenasAtrasadas') || '[]');
+        const linhasAtivas = configAtual.linhasAtivas || [];
+        const anteriores   = configAtual.dezenasAnteriores || [];
+        const atrasadas    = configAtual.dezenasAtrasadas || [];
 
-        if (linhasAtivas.length === 0) {
+        if (!linhasAtivas.length) {
           alert("O administrador ainda não configurou as linhas ativas.");
           return;
         }
 
         const excluidas = new Set([...anteriores, ...atrasadas]);
-
         const jogo = gerarJogoValido(linhasAtivas, excluidas);
 
         renderCartao(jogo);
 
         const acertos = jogo.filter(n => anteriores.includes(n)).length;
-        document.getElementById('acertos').textContent = acertos;
-
+        document.getElementById("acertos").textContent = acertos;
       } catch (err) {
         alert("Erro ao gerar jogo: " + err.message);
       }
     }
 
     function renderCartao(jogo) {
-      const cartao = document.getElementById('cartao');
-      cartao.innerHTML = '';
+      const cartao = document.getElementById("cartao");
+      cartao.innerHTML = "";
 
       for (let l = 1; l <= 6; l++) {
-        const div = document.createElement('div');
-        div.className = 'linha';
+        const div = document.createElement("div");
+        div.className = "linha";
         div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
 
         LINE_RANGES[l].forEach(n => {
-          const span = document.createElement('span');
-          span.className = 'numero';
-          span.textContent = String(n).padStart(2, '0');
-          if (jogo.includes(n)) span.classList.add('selecionado');
+          const span = document.createElement("span");
+          span.className = "numero";
+          span.textContent = String(n).padStart(2, "0");
+          if (jogo.includes(n)) span.classList.add("selecionado");
           div.appendChild(span);
         });
 
         cartao.appendChild(div);
       }
     }
+
+    document.getElementById("btnCadastrar").addEventListener("click", () => {
+      cadastrar().catch(e => alert("Erro ao cadastrar: " + e.message));
+    });
+    document.getElementById("btnEntrar").addEventListener("click", () => {
+      login().catch(e => alert("Erro ao entrar: " + e.message));
+    });
+    document.getElementById("btnGerarUser").addEventListener("click", gerarJogoUsuario);
+
+    // Se já tinha login nesta aba, tenta mostrar (mas ainda depende de acesso)
+    if (usuarioAtualEmail) {
+      // não “auto-logamos” sem checar o Firestore, então mantém login normal
+      // (se quiser auto-login, dá pra implementar depois)
+    } else {
+      mostrarLogin();
+    }
   </script>
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-    authDomain: "painel-megasena.firebaseapp.com",
-    projectId: "painel-megasena",
-    storageBucket: "painel-megasena.firebasestorage.app",
-    messagingSenderId: "924943702876",
-    appId: "1:924943702876:web:77929086c5addb13b37f99"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
 </body>
 </html>
-
