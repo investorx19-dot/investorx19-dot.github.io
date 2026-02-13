@@ -15,43 +15,6 @@
   </style>
 </head>
 <body>
-  </div>
-<script>
-  <script>
- <script>
-  // Se já liberou nesta aba/navegador, não pede de novo
-  if (sessionStorage.getItem("admin_ok") !== "1") {
-    const senha = (prompt("Digite a senha do administrador:") || "").trim();
-
-    if (senha !== "Eu63b@56") {
-      alert("Acesso negado!");
-      window.location.href = "index.html";
-    } else {
-      sessionStorage.setItem("admin_ok", "1");
-    }
-  }
-</script>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-    authDomain: "painel-megasena.firebaseapp.com",
-    projectId: "painel-megasena",
-    storageBucket: "painel-megasena.firebasestorage.app",
-    messagingSenderId: "924943702876",
-    appId: "1:924943702876:web:77929086c5addb13b37f99"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
-</body>
-</html>
 
   <h1>Painel de Controle - Administrador</h1>
 
@@ -81,7 +44,7 @@
   <input type="number" class="atrasada" min="1" max="60" placeholder="05">
 
   <br><br>
-  <button onclick="gerarJogo()">GERAR JOGO</button>
+  <button id="btnGerar">GERAR JOGO</button>
 
   <h2>Jogos Gerados</h2>
   <table id="tabelaJogos">
@@ -95,198 +58,206 @@
     <tbody></tbody>
   </table>
 
+  <!-- 1) Proteção simples do Admin (não é segura para produção, mas funciona) -->
+  <script>
+    if (sessionStorage.getItem("admin_ok") !== "1") {
+      const senha = (prompt("Digite a senha do administrador:") || "").trim();
+      if (senha !== "Eu63b@56") {
+        alert("Acesso negado!");
+        window.location.href = "index.html";
+      } else {
+        sessionStorage.setItem("admin_ok", "1");
+      }
+    }
+  </script>
+
+  <!-- 2) Seu gerador (mantém suas constantes/funções globais) -->
   <script src="gerador.js"></script>
 
-  <script>
-    // Funções auxiliares
+  <!-- 3) Admin + Firebase/Firestore (módulo) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc, setDoc, getDoc,
+      collection, getDocs,
+      updateDoc,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+      authDomain: "painel-megasena.firebaseapp.com",
+      projectId: "painel-megasena",
+      storageBucket: "painel-megasena.firebasestorage.app",
+      messagingSenderId: "924943702876",
+      appId: "1:924943702876:web:77929086c5addb13b37f99"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ---------- Helpers DOM ----------
     function getLinhas() {
-      return [...document.querySelectorAll('.linha:checked')].map(el => +el.value);
+      return [...document.querySelectorAll(".linha:checked")].map(el => +el.value);
     }
-
     function getAnterior() {
-      return [...document.querySelectorAll('.anterior')].map(el => +el.value)
+      return [...document.querySelectorAll(".anterior")]
+        .map(el => +el.value)
         .filter(n => n >= 1 && n <= 60);
     }
-
     function getAtrasadas() {
-      return [...document.querySelectorAll('.atrasada')].map(el => +el.value)
+      return [...document.querySelectorAll(".atrasada")]
+        .map(el => +el.value)
         .filter(n => n >= 1 && n <= 60);
     }
 
-    // Função de geração de jogo (completa e corrigida)
-    async function gerarJogo() {
-      console.log("PASSO 1: Função iniciada");
-
-      const linhasAtivas = getLinhas();
-      console.log("PASSO 2: Linhas selecionadas:", linhasAtivas);
-
-      if (linhasAtivas.length === 0) {
-        alert("Selecione pelo menos uma linha!");
-        console.log("PASSO 3: Saiu cedo - nenhuma linha");
-        return;
-      }
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-await setDoc(doc(window.db, "config", "global"), {
-  linhasAtivas,
-  dezenasAnteriores: anterior,
-  dezenasAtrasadas: atrasadas,
-  updatedAt: Date.now()
-});
-      const anterior = getAnterior();
-      const atrasadas = getAtrasadas();
-      const excluidas = new Set([...anterior, ...atrasadas]);
-      console.log("PASSO 4: Excluídas:", Array.from(excluidas));
-
-      // Mapa de números disponíveis por linha
-      const disponiveisPorLinha = {};
-      linhasAtivas.forEach(l => {
-        disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
-      });
-
-      // Verifica se todas as linhas têm pelo menos 1 número disponível
-      for (const l of linhasAtivas) {
-        if (disponiveisPorLinha[l].length === 0) {
-          alert(`A Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}) não tem números disponíveis (todos excluídos).`);
-          return;
-        }
-      }
-
-      // 1. Distribuição mínima: exatamente 1 dezena por linha marcada
-      const jogo = [];
-      const usados = new Set();
-
-      linhasAtivas.forEach(l => {
-        const nums = disponiveisPorLinha[l];
-        const idx = Math.floor(Math.random() * nums.length);
-        const n = nums[idx];
-        jogo.push(n);
-        usados.add(n);
-        disponiveisPorLinha[l].splice(idx, 1); // remove para não repetir
-      });
-
-      console.log("PASSO 5: 1 dezena por linha distribuída →", jogo);
-
-      // 2. Quantos números ainda faltam (normalmente 6 - número de linhas)
-      let faltam = 6 - jogo.length;
-
-      if (faltam > 0) {
-        // Coleta todos os números restantes disponíveis
-        let restantes = [];
-        linhasAtivas.forEach(l => {
-          restantes.push(...disponiveisPorLinha[l]);
-        });
-        restantes = [...new Set(restantes.filter(n => !usados.has(n)))];
-
-        if (restantes.length < faltam) {
-          alert(`Não há números suficientes para completar 6 dezenas.`);
-          return;
-        }
-
-        // Categorização nos restantes
-        let f = restantes.filter(n => FIBONACCI.includes(n));
-        let p = restantes.filter(n => PRIMOS.includes(n));
-        let m = restantes.filter(n => MULT3.includes(n));
-        let r = restantes.filter(n => 
-          !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n)
-        );
-
-        // Quantidades ajustadas ao que falta
-        let qFib = Math.random() < 0.6 ? 0 : 1;
-        let qPri = Math.floor(Math.random() * 3);
-        let qMul = 1 + Math.floor(Math.random() * 3);
-        let qRan = 1 + Math.floor(Math.random() * 3);
-
-        let total = qFib + qPri + qMul + qRan;
-        if (total > faltam) {
-          qMul = Math.max(1, qMul - (total - faltam));
-          total = qFib + qPri + qMul + qRan;
-        }
-        if (total < faltam) {
-          qMul += (faltam - total);
-        }
-
-        const pegar = arr => arr.length ? arr.splice(Math.floor(Math.random() * arr.length), 1)[0] : null;
-
-        // Adiciona conforme regras (para de adicionar quando chega a 6)
-        for (let i = 0; i < qFib && jogo.length < 6; i++) { let n = pegar(f); if (n) jogo.push(n); }
-        for (let i = 0; i < qPri && jogo.length < 6; i++) { let n = pegar(p); if (n) jogo.push(n); }
-        for (let i = 0; i < qMul && jogo.length < 6; i++) { let n = pegar(m); if (n) jogo.push(n); }
-        for (let i = 0; i < qRan && jogo.length < 6; i++) { let n = pegar(r); if (n) jogo.push(n); }
-
-        // Completa com qualquer restante se ainda faltar
-        restantes = restantes.filter(n => !jogo.includes(n));
-        while (jogo.length < 6 && restantes.length > 0) {
-          let idx = Math.floor(Math.random() * restantes.length);
-          jogo.push(restantes.splice(idx, 1)[0]);
-        }
-      }
-
-      jogo.sort((a, b) => a - b);
-      const jogoFormatado = jogo.map(n => String(n).padStart(2, '0'));
-
-      const acertos = jogo.filter(n => anterior.includes(n)).length;
-
-      // Salvar
-      let jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
-      jogos.push({numeros: jogo, acertos, data: new Date().toLocaleString()});
-      localStorage.setItem('jogos', JSON.stringify(jogos));
-
-      localStorage.setItem('linhasAtivas', JSON.stringify(linhasAtivas));
-      localStorage.setItem('dezenasAnteriores', JSON.stringify(anterior));
-      localStorage.setItem('dezenasAtrasadas', JSON.stringify(atrasadas));
-
-      renderJogos();
-
-      alert(`Jogo gerado: ${jogoFormatado.join(' - ')} | Acertos: ${acertos}`);
-    }
-
-    function renderJogos() {
-      const tbody = document.querySelector('#tabelaJogos tbody');
-      tbody.innerHTML = '';
-      const jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
+    function renderJogosLocal() {
+      const tbody = document.querySelector("#tabelaJogos tbody");
+      tbody.innerHTML = "";
+      const jogos = JSON.parse(localStorage.getItem("jogos") || "[]");
       jogos.forEach(j => {
         tbody.innerHTML += `<tr>
-          <td>${j.numeros.map(n => String(n).padStart(2, '0')).join(', ')}</td>
+          <td>${j.numeros.map(n => String(n).padStart(2, "0")).join(", ")}</td>
           <td><strong>${j.acertos}</strong></td>
           <td>${j.data}</td>
         </tr>`;
       });
     }
 
-    function renderUsuarios() {
-      const tbody = document.querySelector('#tabelaUsuarios tbody');
-      tbody.innerHTML = '';
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      users.forEach((u, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${u.nome || '(sem nome)'}</td>
-            <td>${u.email}</td>
-            <td>${u.accessGranted ? '✅ Liberado' : '⛔ Bloqueado'}</td>
-            <td><button onclick="toggleAccess(${i})">${u.accessGranted ? 'Bloquear' : 'Liberar'}</button></td>
-          </tr>`;
+    // ---------- Firestore: CONFIG ----------
+    // config/global -> { linhasAtivas, dezenasAnteriores, dezenasAtrasadas, updatedAt }
+    const configRef = doc(db, "config", "global");
+
+    async function salvarConfigNoFirestore(linhasAtivas, anterior, atrasadas) {
+      await setDoc(configRef, {
+        linhasAtivas,
+        dezenasAnteriores: anterior,
+        dezenasAtrasadas: atrasadas,
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
+
+    async function carregarConfigParaTela() {
+      const snap = await getDoc(configRef);
+      if (!snap.exists()) return;
+      const data = snap.data();
+
+      // marca checkboxes
+      const linhas = new Set(data.linhasAtivas || []);
+      document.querySelectorAll(".linha").forEach(cb => {
+        cb.checked = linhas.has(+cb.value);
+      });
+
+      // preenche inputs (se houver)
+      const ant = (data.dezenasAnteriores || []);
+      const atr = (data.dezenasAtrasadas || []);
+      document.querySelectorAll(".anterior").forEach((inp, i) => inp.value = ant[i] ?? "");
+      document.querySelectorAll(".atrasada").forEach((inp, i) => inp.value = atr[i] ?? "");
+    }
+
+    // ---------- Firestore: USERS ----------
+    // users/{email} -> { nome, email, senha, accessGranted, createdAt }
+    const usersCol = collection(db, "users");
+
+    async function renderUsuarios() {
+      const tbody = document.querySelector("#tabelaUsuarios tbody");
+      tbody.innerHTML = "";
+
+      const snap = await getDocs(usersCol);
+      const rows = [];
+      snap.forEach(docSnap => rows.push({ id: docSnap.id, ...docSnap.data() }));
+
+      // ordena por e-mail
+      rows.sort((a,b) => String(a.email||a.id).localeCompare(String(b.email||b.id)));
+
+      rows.forEach(u => {
+        const email = u.email || u.id;
+        const nome  = u.nome || "(sem nome)";
+        const ok    = !!u.accessGranted;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${nome}</td>
+          <td>${email}</td>
+          <td>${ok ? "✅ Liberado" : "⛔ Bloqueado"}</td>
+          <td><button data-email="${email}">${ok ? "Bloquear" : "Liberar"}</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // liga botões
+      tbody.querySelectorAll("button[data-email]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const email = btn.getAttribute("data-email");
+          const userRef = doc(db, "users", email);
+          const snapUser = await getDoc(userRef);
+          if (!snapUser.exists()) return alert("Usuário não encontrado no Firestore.");
+
+          const atual = !!snapUser.data().accessGranted;
+          await updateDoc(userRef, { accessGranted: !atual });
+
+          // renderiza de novo (ou deixe o onSnapshot atualizar)
+          await renderUsuarios();
+        });
       });
     }
 
-    function toggleAccess(i) {
-      let users = JSON.parse(localStorage.getItem('users') || '[]');
-      users[i].accessGranted = !users[i].accessGranted;
-      localStorage.setItem('users', JSON.stringify(users));
-      renderUsuarios();
+    // ---------- GERAÇÃO DO JOGO ----------
+    async function gerarJogoAdmin() {
+      const linhasAtivas = getLinhas();
+      if (linhasAtivas.length === 0) {
+        alert("Selecione pelo menos uma linha!");
+        return;
+      }
+
+      const anterior = getAnterior();
+      const atrasadas = getAtrasadas();
+
+      // 1) Salva config no Firestore (isso é o que faz funcionar em qualquer dispositivo)
+      await salvarConfigNoFirestore(linhasAtivas, anterior, atrasadas);
+
+      // 2) Continua seu fluxo normal (gerar jogo local no admin, se quiser)
+      const excluidas = new Set([...anterior, ...atrasadas]);
+      const jogo = gerarJogoValido(linhasAtivas, excluidas);
+
+      jogo.sort((a, b) => a - b);
+      const jogoFormatado = jogo.map(n => String(n).padStart(2, "0"));
+      const acertos = jogo.filter(n => anterior.includes(n)).length;
+
+      // mantém histórico local do admin (opcional)
+      const jogos = JSON.parse(localStorage.getItem("jogos") || "[]");
+      jogos.push({ numeros: jogo, acertos, data: new Date().toLocaleString() });
+      localStorage.setItem("jogos", JSON.stringify(jogos));
+      renderJogosLocal();
+
+      alert(`Jogo gerado: ${jogoFormatado.join(" - ")} | Acertos: ${acertos}`);
     }
 
-    // Inicializar ao carregar a página
-    document.addEventListener('DOMContentLoaded', () => {
-      renderJogos();
-      renderUsuarios();
+    // ---------- INIT ----------
+    document.getElementById("btnGerar").addEventListener("click", () => {
+      gerarJogoAdmin().catch(err => alert("Erro no admin: " + err.message));
     });
+
+    // Carrega config inicial na tela (para o admin ver o último estado)
+    await carregarConfigParaTela();
+
+    // Lista usuários e atualiza em tempo real
+    await renderUsuarios();
+    onSnapshot(usersCol, async () => {
+      await renderUsuarios();
+    });
+
+    // Opcional: também ouvir mudanças na config
+    onSnapshot(configRef, async () => {
+      // se quiser que o admin veja atualizações externas, descomente:
+      // await carregarConfigParaTela();
+    });
+
+    // histórico local do admin (se existir)
+    renderJogosLocal();
   </script>
+
 </body>
 </html>
-
-
-
-
-
-
