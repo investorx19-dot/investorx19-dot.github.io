@@ -3,60 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <title>Gerador de Jogos - Usuário</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <style>
     body {font-family: Arial, sans-serif; margin: 20px;}
     .linha {margin: 15px 0; padding: 10px; background: #fff; border: 1px solid #ccc;}
     .numero {display: inline-block; width: 38px; height: 38px; line-height: 38px; text-align: center; margin: 2px; font-weight: bold; border-radius: 6px;}
     .selecionado {background: yellow; color: black;}
     button {padding: 12px 20px; font-size: 16px; margin: 5px; cursor: pointer;}
-    #login, #app {max-width: 600px; margin: 0 auto;}
-    input{width: 100%; max-width: 420px; padding: 10px; margin: 6px 0; font-size: 16px;}
+    #login, #app {max-width: 650px; margin: 0 auto;}
+    input {width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box;}
+    .row {display:flex; gap:10px; flex-wrap:wrap;}
+    .muted {opacity:.75; font-size: 13px;}
+    .card {background:#fff; border:1px solid #ddd; border-radius:10px; padding:14px; margin:12px 0;}
+    .topbar {display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;}
   </style>
 </head>
+
 <body>
   <h1>Gerador de Jogos - Mega-Sena</h1>
 
-  <div id="login">
+  <div id="login" class="card">
     <h2>Cadastro / Login</h2>
-    <input id="nome" placeholder="Nome" /><br>
-    <input id="email" placeholder="E-mail" /><br>
-    <input id="senha" type="password" placeholder="Senha" /><br>
-    <button onclick="cadastrar()">Cadastrar</button>
-    <button onclick="login()">Entrar</button>
+
+    <label>Nome</label>
+    <input id="nome" placeholder="Nome completo" autocomplete="name" />
+
+    <br><br>
+
+    <label>E-mail</label>
+    <input id="email" placeholder="email@dominio.com" autocomplete="email" />
+
+    <br><br>
+
+    <label>Senha</label>
+    <input id="senha" type="password" placeholder="Senha" autocomplete="current-password" />
+
+    <div class="row" style="margin-top:12px;">
+      <button id="btnCadastrar" type="button">Cadastrar</button>
+      <button id="btnEntrar" type="button">Entrar</button>
+    </div>
+
+    <p class="muted">
+      Obs.: validação simples (senha salva no Firestore). Para produção, o ideal é usar Firebase Auth.
+    </p>
   </div>
 
-  <div id="app" style="display:none;">
-    <button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+  <div id="app" class="card" style="display:none;">
+    <div class="topbar">
+      <div>
+        <strong id="bemvindo"></strong><br>
+        <span class="muted" id="emailLogado"></span>
+      </div>
+      <div>
+        <button type="button" id="btnSair">Sair</button>
+      </div>
+    </div>
+
+    <button type="button" onclick="gerarJogoUsuario()">GERAR JOGO</button>
+
     <h2>Cartão Virtual</h2>
     <div id="cartao"></div>
+
     <p><strong>Acertos no último sorteio:</strong> <span id="acertos">0</span></p>
 
     <h3>Assinatura para liberar o gerador</h3>
-    <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX', '_blank')">
+    <button type="button" onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX', '_blank')">
       Assinatura Mensal - R$ 29,90
     </button>
-    <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx', '_blank')">
+    <button type="button" onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx', '_blank')">
       Assinatura Anual - R$ 238,80
     </button>
 
-    <br><br>
-    <button onclick="sair()">Sair</button>
+    <p class="muted" style="margin-top:10px;">
+      Se aparecer “admin ainda não configurou”, peça para o admin clicar em “GERAR JOGO” no painel (isso salva a config no Firestore).
+    </p>
   </div>
 
+  <!-- Seu gerador.js (mantém LINE_RANGES, FIBONACCI, PRIMOS, MULT3 e gerarJogoValido) -->
   <script src="gerador.js"></script>
 
-  <!-- Firebase + Firestore + App (tudo em module) -->
+  <!-- Firebase + Firestore -->
   <script type="module">
+    // =========================
+    // 1) Firebase init (do seu projeto)
+    // =========================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
-      getFirestore,
-      doc,
-      setDoc,
-      getDoc
+      getFirestore, doc, getDoc, setDoc
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    // ====== CONFIG DO SEU FIREBASE (painel-megasena) ======
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -69,135 +105,198 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // deixa acessível no window para usar fora do module
+    // deixa disponível para o resto do código
     window.db = db;
-    window.fsd = { doc, setDoc, getDoc };
+    window._fs = { doc, getDoc, setDoc };
 
-    // ========= HELPERS =========
-    function emailToDocId(email) {
-      return email.trim().toLowerCase().replace(/\./g, "_").replace(/@/g, "__at__");
+    // =========================
+    // 2) Helpers / sessão
+    // =========================
+    function userIdFromEmail(email) {
+      return String(email || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\./g, "_")
+        .replace(/@/g, "__at__");
+    }
+    window.userIdFromEmail = userIdFromEmail;
+
+    const LS_SESSION_KEY = "session_user"; // só guarda sessão, não guarda usuários
+
+    function saveSession(user) {
+      localStorage.setItem(LS_SESSION_KEY, JSON.stringify({
+        email: user.email,
+        nome: user.nome || "",
+        accessGranted: !!user.accessGranted
+      }));
+    }
+    function clearSession() {
+      localStorage.removeItem(LS_SESSION_KEY);
+    }
+    function getSession() {
+      try { return JSON.parse(localStorage.getItem(LS_SESSION_KEY) || "null"); }
+      catch { return null; }
     }
 
-    window.emailToDocId = emailToDocId;
+    // =========================
+    // 3) UI
+    // =========================
+    const loginBox = document.getElementById("login");
+    const appBox   = document.getElementById("app");
 
-    // Carrega config do admin
-    window.carregarConfig = async function carregarConfig() {
-      const snap = await getDoc(doc(db, "config", "global"));
-      if (!snap.exists()) return null;
-      return snap.data();
-    };
-
-    // ========= AUTOSTART =========
-    // tenta manter login na mesma máquina (não é obrigatório)
-    const saved = sessionStorage.getItem("usuarioEmail");
-    if (saved) {
-      document.getElementById("email").value = saved;
+    function showApp(user) {
+      loginBox.style.display = "none";
+      appBox.style.display = "block";
+      document.getElementById("bemvindo").textContent = `Olá, ${user.nome || "usuário"}!`;
+      document.getElementById("emailLogado").textContent = user.email || "";
+      renderCartao([]); // limpa cartão
+      document.getElementById("acertos").textContent = "0";
     }
-  </script>
 
-  <!-- Código do usuário (normal) -->
-  <script>
-    let usuarioAtual = null;
+    function showLogin() {
+      appBox.style.display = "none";
+      loginBox.style.display = "block";
+      document.getElementById("senha").value = "";
+    }
 
+    // =========================
+    // 4) Cadastro (SEM duplicar)
+    // =========================
     async function cadastrar() {
-      const nome  = document.getElementById('nome').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
+      const nome  = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const senha = document.getElementById("senha").value;
 
       if (!nome || !email || !senha) return alert("Preencha todos os campos");
 
-      try {
-        const id = window.emailToDocId(email);
-        const ref = window.fsd.doc(window.db, "users", id);
+      const uid = userIdFromEmail(email);
+      const ref = doc(db, "users", uid);
 
-        const snap = await window.fsd.getDoc(ref);
-        if (snap.exists()) return alert("E-mail já cadastrado");
-
-        await window.fsd.setDoc(ref, {
-          nome,
-          email,
-          senha,               // ⚠️ simples (para seu protótipo). Depois podemos melhorar com Auth.
-          accessGranted: false,
-          createdAt: Date.now()
-        });
-
-        alert("Cadastrado com sucesso! Aguarde liberação do administrador.");
-      } catch (e) {
-        console.error(e);
-        alert("Erro ao cadastrar: " + (e.message || e));
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        return alert("E-mail já cadastrado. Faça login.");
       }
-    }
 
+      await setDoc(ref, {
+        nome,
+        email,
+        senha,
+        accessGranted: false,
+        createdAt: Date.now()
+      });
+
+      alert("Cadastrado com sucesso! Aguarde liberação do administrador.");
+    }
+    window.cadastrar = cadastrar;
+
+    // =========================
+    // 5) Login (validação simples)
+    // =========================
     async function login() {
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
-      if (!email || !senha) return alert("Preencha e-mail e senha");
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const senha = document.getElementById("senha").value;
 
-      try {
-        const id = window.emailToDocId(email);
-        const ref = window.fsd.doc(window.db, "users", id);
+      if (!email || !senha) return alert("Digite e-mail e senha");
 
-        const snap = await window.fsd.getDoc(ref);
-        if (!snap.exists()) return alert("Usuário não encontrado. Faça o cadastro.");
+      const uid = userIdFromEmail(email);
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
 
-        const user = snap.data();
+      if (!snap.exists()) return alert("Credenciais inválidas");
 
-        if (user.senha !== senha) return alert("Credenciais inválidas");
-        if (!user.accessGranted) return alert("Seu acesso ainda não foi liberado pelo administrador");
+      const user = snap.data();
+      if (user.senha !== senha) return alert("Credenciais inválidas");
 
-        usuarioAtual = user;
-        sessionStorage.setItem("usuarioEmail", email);
+      if (!user.accessGranted) return alert("Seu acesso ainda não foi liberado pelo administrador");
 
-        document.getElementById('login').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
+      saveSession(user);
+      showApp(user);
+    }
+    window.login = login;
 
-        renderCartao([]);
-      } catch (e) {
-        console.error(e);
-        alert("Erro ao entrar: " + (e.message || e));
+    // =========================
+    // 6) Carregar sessão automática (se já logou antes)
+    // =========================
+    async function restoreSessionIfValid() {
+      const s = getSession();
+      if (!s?.email) return;
+
+      const uid = userIdFromEmail(s.email);
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return clearSession();
+
+      const user = snap.data();
+
+      // se admin bloqueou depois, derruba sessão
+      if (!user.accessGranted) {
+        clearSession();
+        return;
       }
+
+      saveSession(user);
+      showApp(user);
     }
 
-    function sair() {
-      usuarioAtual = null;
-      document.getElementById('login').style.display = 'block';
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('acertos').textContent = "0";
-      document.getElementById('cartao').innerHTML = "";
+    // =========================
+    // 7) Botões
+    // =========================
+    document.getElementById("btnCadastrar").addEventListener("click", () => cadastrar().catch(e => alert("Erro: " + e.message)));
+    document.getElementById("btnEntrar").addEventListener("click", () => login().catch(e => alert("Erro: " + e.message)));
+    document.getElementById("btnSair").addEventListener("click", () => { clearSession(); showLogin(); });
+
+    // inicia
+    restoreSessionIfValid().catch(() => {});
+  </script>
+
+  <!-- Lógica do app (gera jogo usando config do Firestore) -->
+  <script>
+    // =========================
+    // Lê config do admin no Firestore e gera jogo
+    // =========================
+    async function carregarConfigDoAdmin() {
+      if (!window.db || !window._fs) throw new Error("Firestore não inicializado.");
+
+      const { doc, getDoc } = window._fs;
+      const snap = await getDoc(doc(window.db, "config", "global"));
+
+      if (!snap.exists()) {
+        return { linhasAtivas: [], dezenasAnteriores: [], dezenasAtrasadas: [] };
+      }
+
+      const data = snap.data() || {};
+      return {
+        linhasAtivas: Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [],
+        dezenasAnteriores: Array.isArray(data.dezenasAnteriores) ? data.dezenasAnteriores : [],
+        dezenasAtrasadas: Array.isArray(data.dezenasAtrasadas) ? data.dezenasAtrasadas : []
+      };
     }
 
     async function gerarJogoUsuario() {
       try {
-        if (!usuarioAtual) return alert("Faça login primeiro.");
+        // exige sessão liberada (só por segurança extra)
+        const session = JSON.parse(localStorage.getItem("session_user") || "null");
+        if (!session?.email) return alert("Faça login novamente.");
 
-        const config = await window.carregarConfig();
-        if (!config) {
-          alert("O administrador ainda não configurou o sistema (config/global).");
+        const cfg = await carregarConfigDoAdmin();
+
+        if (!cfg.linhasAtivas || cfg.linhasAtivas.length === 0) {
+          alert("O administrador ainda não configurou as linhas ativas (ou não salvou no Firestore).");
           return;
         }
 
-        const linhasAtivas = config.linhasAtivas || [];
-        const anteriores = config.dezenasAnteriores || [];
-        const atrasadas  = config.dezenasAtrasadas || [];
+        const excluidas = new Set([...(cfg.dezenasAnteriores || []), ...(cfg.dezenasAtrasadas || [])]);
 
-        if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0) {
-          alert("O administrador ainda não configurou as linhas ativas.");
-          return;
-        }
-
-        const excluidas = new Set([...(anteriores || []), ...(atrasadas || [])]);
-
-        // função vem do gerador.js
-        const jogo = gerarJogoValido(linhasAtivas, excluidas);
+        // usa sua função do gerador.js
+        const jogo = gerarJogoValido(cfg.linhasAtivas, excluidas);
 
         renderCartao(jogo);
 
-        const acertos = jogo.filter(n => (anteriores || []).includes(n)).length;
+        const acertos = jogo.filter(n => (cfg.dezenasAnteriores || []).includes(n)).length;
         document.getElementById('acertos').textContent = acertos;
 
       } catch (err) {
-        console.error(err);
-        alert("Erro ao gerar jogo: " + (err.message || err));
+        alert("Erro ao gerar jogo: " + (err?.message || err));
       }
     }
 
