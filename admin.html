@@ -6,60 +6,29 @@
   <title>Painel Admin - Gerador de Jogos</title>
   <style>
     body {font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7;}
+    h1 {margin: 0 0 10px 0;}
     h2 {margin-top: 25px; color: #333;}
     input, button {margin: 5px; padding: 8px;}
-    button {background: #0066cc; color: white; border: none; cursor: pointer;}
-    table {width: 100%; border-collapse: collapse; margin-top: 15px;}
+    button {background: #0066cc; color: white; border: none; cursor: pointer; border-radius: 6px;}
+    button:hover {opacity: .9;}
+    button.sec {background:#444;}
+    button.warn {background:#b00020;}
+    table {width: 100%; border-collapse: collapse; margin-top: 15px; background:#fff;}
     td, th {border: 1px solid #ccc; padding: 10px; text-align: center;}
     .numero {font-weight: bold; font-size: 1.1em;}
+    .card {background:#fff; border:1px solid #ddd; border-radius:12px; padding:14px;}
+    .row {display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .row > * {flex: 0 0 auto;}
+    .pill {display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; background:#eee;}
+    .ok {background:#e6ffed; border:1px solid #b7f5c8;}
+    .bad {background:#ffecec; border:1px solid #ffb3b3;}
+    small {opacity:.75;}
   </style>
 </head>
+
 <body>
-
-  <h1>Painel de Controle - Administrador</h1>
-
-  <h2>1. Linhas Ativas (selecione as linhas do volante)</h2>
-  <div>
-    <label><input type="checkbox" class="linha" value="1"> Linha 1 (01-10)</label><br>
-    <label><input type="checkbox" class="linha" value="2"> Linha 2 (11-20)</label><br>
-    <label><input type="checkbox" class="linha" value="3"> Linha 3 (21-30)</label><br>
-    <label><input type="checkbox" class="linha" value="4"> Linha 4 (31-40)</label><br>
-    <label><input type="checkbox" class="linha" value="5"> Linha 5 (41-50)</label><br>
-    <label><input type="checkbox" class="linha" value="6"> Linha 6 (51-60)</label>
-  </div>
-
-  <h2>2. Dezenas do Sorteio Anterior (6 números)</h2>
-  <input type="number" class="anterior" min="1" max="60" placeholder="01">
-  <input type="number" class="anterior" min="1" max="60" placeholder="02">
-  <input type="number" class="anterior" min="1" max="60" placeholder="03">
-  <input type="number" class="anterior" min="1" max="60" placeholder="04">
-  <input type="number" class="anterior" min="1" max="60" placeholder="05">
-  <input type="number" class="anterior" min="1" max="60" placeholder="06">
-
-  <h2>3. 5 Dezenas Mais Atrasadas</h2>
-  <input type="number" class="atrasada" min="1" max="60" placeholder="01">
-  <input type="number" class="atrasada" min="1" max="60" placeholder="02">
-  <input type="number" class="atrasada" min="1" max="60" placeholder="03">
-  <input type="number" class="atrasada" min="1" max="60" placeholder="04">
-  <input type="number" class="atrasada" min="1" max="60" placeholder="05">
-
-  <br><br>
-  <button id="btnGerar">GERAR JOGO</button>
-
-  <h2>Jogos Gerados</h2>
-  <table id="tabelaJogos">
-    <thead><tr><th>Jogo</th><th>Acertos</th><th>Data</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <h2>Controle de Acesso dos Usuários</h2>
-  <table id="tabelaUsuarios">
-    <thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Ação</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- 1) Proteção simples do Admin (não é segura para produção, mas funciona) -->
   <script>
+    // ===== PROTEÇÃO ADMIN (senha) =====
     if (sessionStorage.getItem("admin_ok") !== "1") {
       const senha = (prompt("Digite a senha do administrador:") || "").trim();
       if (senha !== "Eu63b@56") {
@@ -71,21 +40,85 @@
     }
   </script>
 
-  <!-- 2) Seu gerador (mantém suas constantes/funções globais) -->
+  <h1>Painel de Controle - Administrador</h1>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <div>
+        <span class="pill" id="statusFirestore">Conectando ao Firestore...</span>
+        <div><small id="statusInfo"></small></div>
+      </div>
+      <button class="sec" id="btnRecarregar">Recarregar</button>
+    </div>
+  </div>
+
+  <h2>1. Linhas Ativas (selecione as linhas do volante)</h2>
+  <div class="card">
+    <label><input type="checkbox" class="linha" value="1"> Linha 1 (01-10)</label><br>
+    <label><input type="checkbox" class="linha" value="2"> Linha 2 (11-20)</label><br>
+    <label><input type="checkbox" class="linha" value="3"> Linha 3 (21-30)</label><br>
+    <label><input type="checkbox" class="linha" value="4"> Linha 4 (31-40)</label><br>
+    <label><input type="checkbox" class="linha" value="5"> Linha 5 (41-50)</label><br>
+    <label><input type="checkbox" class="linha" value="6"> Linha 6 (51-60)</label>
+  </div>
+
+  <h2>2. Dezenas do Sorteio Anterior (6 números)</h2>
+  <div class="card">
+    <input type="number" class="anterior" min="1" max="60" placeholder="01">
+    <input type="number" class="anterior" min="1" max="60" placeholder="02">
+    <input type="number" class="anterior" min="1" max="60" placeholder="03">
+    <input type="number" class="anterior" min="1" max="60" placeholder="04">
+    <input type="number" class="anterior" min="1" max="60" placeholder="05">
+    <input type="number" class="anterior" min="1" max="60" placeholder="06">
+  </div>
+
+  <h2>3. 5 Dezenas Mais Atrasadas</h2>
+  <div class="card">
+    <input type="number" class="atrasada" min="1" max="60" placeholder="01">
+    <input type="number" class="atrasada" min="1" max="60" placeholder="02">
+    <input type="number" class="atrasada" min="1" max="60" placeholder="03">
+    <input type="number" class="atrasada" min="1" max="60" placeholder="04">
+    <input type="number" class="atrasada" min="1" max="60" placeholder="05">
+  </div>
+
+  <br>
+  <button id="btnSalvarConfig">SALVAR CONFIG (Firestore)</button>
+  <button id="btnGerar">GERAR JOGO</button>
+
+  <h2>Jogos Gerados (local neste PC)</h2>
+  <div class="card">
+    <small>Obs: os jogos gerados continuam salvos apenas neste navegador (localStorage), se quiser também salvar no Firestore eu faço depois.</small>
+    <table id="tabelaJogos">
+      <thead><tr><th>Jogo</th><th>Acertos</th><th>Data</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2>Controle de Acesso dos Usuários (Firestore)</h2>
+  <div class="card">
+    <table id="tabelaUsuarios">
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Ação</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Seu gerador -->
   <script src="gerador.js"></script>
 
-  <!-- 3) Admin + Firebase/Firestore (módulo) -->
+  <!-- Firebase + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
       getFirestore,
-      doc, setDoc, getDoc,
-      collection, getDocs,
+      doc,
+      getDoc,
+      setDoc,
       updateDoc,
-      onSnapshot
+      getDocs,
+      collection
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    // Firebase config
+    // ======= CONFIG DO SEU FIREBASE =======
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -98,114 +131,134 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ---------- Helpers DOM ----------
+    // ======= Helpers =======
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(ok, msg) {
+      const el = $("statusFirestore");
+      el.textContent = msg;
+      el.className = "pill " + (ok ? "ok" : "bad");
+    }
+
     function getLinhas() {
-      return [...document.querySelectorAll(".linha:checked")].map(el => +el.value);
+      return [...document.querySelectorAll('.linha:checked')].map(el => +el.value);
     }
     function getAnterior() {
-      return [...document.querySelectorAll(".anterior")]
+      return [...document.querySelectorAll('.anterior')]
         .map(el => +el.value)
         .filter(n => n >= 1 && n <= 60);
     }
     function getAtrasadas() {
-      return [...document.querySelectorAll(".atrasada")]
+      return [...document.querySelectorAll('.atrasada')]
         .map(el => +el.value)
         .filter(n => n >= 1 && n <= 60);
     }
 
-    function renderJogosLocal() {
-      const tbody = document.querySelector("#tabelaJogos tbody");
+    // ======= CONFIG (Firestore) =======
+    async function carregarConfigFirestore() {
+      const ref = doc(db, "config", "global");
+      const snap = await getDoc(ref);
+
+      if (!snap.exists()) {
+        $("statusInfo").textContent = "Config ainda não existe no Firestore. Clique em SALVAR CONFIG para criar.";
+        return;
+      }
+
+      const cfg = snap.data();
+      $("statusInfo").textContent = `Config carregada (updatedAt: ${cfg.updatedAt ? new Date(cfg.updatedAt).toLocaleString() : "sem data"})`;
+
+      // marcar checkboxes
+      const linhas = Array.isArray(cfg.linhasAtivas) ? cfg.linhasAtivas : [];
+      document.querySelectorAll(".linha").forEach(cb => {
+        cb.checked = linhas.includes(+cb.value);
+      });
+
+      // preencher inputs
+      const anteriores = Array.isArray(cfg.dezenasAnteriores) ? cfg.dezenasAnteriores : [];
+      const atrasadas  = Array.isArray(cfg.dezenasAtrasadas) ? cfg.dezenasAtrasadas : [];
+
+      document.querySelectorAll(".anterior").forEach((inp, i) => inp.value = anteriores[i] ?? "");
+      document.querySelectorAll(".atrasada").forEach((inp, i) => inp.value = atrasadas[i] ?? "");
+    }
+
+    async function salvarConfigFirestore() {
+      const linhasAtivas = getLinhas();
+      const anterior = getAnterior();
+      const atrasadas = getAtrasadas();
+
+      if (linhasAtivas.length === 0) {
+        alert("Selecione pelo menos uma linha!");
+        return;
+      }
+
+      await setDoc(doc(db, "config", "global"), {
+        linhasAtivas,
+        dezenasAnteriores: anterior,
+        dezenasAtrasadas: atrasadas,
+        updatedAt: Date.now()
+      });
+
+      alert("Config salva no Firestore com sucesso!");
+      await carregarConfigFirestore();
+    }
+
+    // ======= USERS (Firestore) =======
+    async function renderUsuarios() {
+      const tbody = document.querySelector('#tabelaUsuarios tbody');
       tbody.innerHTML = "";
-      const jogos = JSON.parse(localStorage.getItem("jogos") || "[]");
+
+      const snap = await getDocs(collection(db, "users"));
+      const users = [];
+
+      snap.forEach(docSnap => {
+        users.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      // ordena por nome/email
+      users.sort((a,b) => (a.nome || "").localeCompare(b.nome || "") || (a.email || "").localeCompare(b.email || ""));
+
+      users.forEach((u) => {
+        const acesso = u.accessGranted ? '✅ Liberado' : '⛔ Bloqueado';
+        const btnTxt = u.accessGranted ? 'Bloquear' : 'Liberar';
+        const btnCls = u.accessGranted ? 'warn' : '';
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.nome || '(sem nome)'}</td>
+          <td>${u.email || ''}</td>
+          <td>${acesso}</td>
+          <td><button class="${btnCls}" data-id="${u.id}" data-access="${u.accessGranted ? "1":"0"}">${btnTxt}</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // listeners dos botões
+      tbody.querySelectorAll("button[data-id]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-id");
+          const current = btn.getAttribute("data-access") === "1";
+          await updateDoc(doc(db, "users", id), { accessGranted: !current });
+          await renderUsuarios();
+        });
+      });
+    }
+
+    // ======= Jogos (local) =======
+    function renderJogos() {
+      const tbody = document.querySelector('#tabelaJogos tbody');
+      tbody.innerHTML = '';
+      const jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
       jogos.forEach(j => {
         tbody.innerHTML += `<tr>
-          <td>${j.numeros.map(n => String(n).padStart(2, "0")).join(", ")}</td>
+          <td>${j.numeros.map(n => String(n).padStart(2, '0')).join(', ')}</td>
           <td><strong>${j.acertos}</strong></td>
           <td>${j.data}</td>
         </tr>`;
       });
     }
 
-    // ---------- Firestore: CONFIG ----------
-    // config/global -> { linhasAtivas, dezenasAnteriores, dezenasAtrasadas, updatedAt }
-    const configRef = doc(db, "config", "global");
-
-    async function salvarConfigNoFirestore(linhasAtivas, anterior, atrasadas) {
-      await setDoc(configRef, {
-        linhasAtivas,
-        dezenasAnteriores: anterior,
-        dezenasAtrasadas: atrasadas,
-        updatedAt: Date.now()
-      }, { merge: true });
-    }
-
-    async function carregarConfigParaTela() {
-      const snap = await getDoc(configRef);
-      if (!snap.exists()) return;
-      const data = snap.data();
-
-      // marca checkboxes
-      const linhas = new Set(data.linhasAtivas || []);
-      document.querySelectorAll(".linha").forEach(cb => {
-        cb.checked = linhas.has(+cb.value);
-      });
-
-      // preenche inputs (se houver)
-      const ant = (data.dezenasAnteriores || []);
-      const atr = (data.dezenasAtrasadas || []);
-      document.querySelectorAll(".anterior").forEach((inp, i) => inp.value = ant[i] ?? "");
-      document.querySelectorAll(".atrasada").forEach((inp, i) => inp.value = atr[i] ?? "");
-    }
-
-    // ---------- Firestore: USERS ----------
-    // users/{email} -> { nome, email, senha, accessGranted, createdAt }
-    const usersCol = collection(db, "users");
-
-    async function renderUsuarios() {
-      const tbody = document.querySelector("#tabelaUsuarios tbody");
-      tbody.innerHTML = "";
-
-      const snap = await getDocs(usersCol);
-      const rows = [];
-      snap.forEach(docSnap => rows.push({ id: docSnap.id, ...docSnap.data() }));
-
-      // ordena por e-mail
-      rows.sort((a,b) => String(a.email||a.id).localeCompare(String(b.email||b.id)));
-
-      rows.forEach(u => {
-        const email = u.email || u.id;
-        const nome  = u.nome || "(sem nome)";
-        const ok    = !!u.accessGranted;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${nome}</td>
-          <td>${email}</td>
-          <td>${ok ? "✅ Liberado" : "⛔ Bloqueado"}</td>
-          <td><button data-email="${email}">${ok ? "Bloquear" : "Liberar"}</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      // liga botões
-      tbody.querySelectorAll("button[data-email]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const email = btn.getAttribute("data-email");
-          const userRef = doc(db, "users", email);
-          const snapUser = await getDoc(userRef);
-          if (!snapUser.exists()) return alert("Usuário não encontrado no Firestore.");
-
-          const atual = !!snapUser.data().accessGranted;
-          await updateDoc(userRef, { accessGranted: !atual });
-
-          // renderiza de novo (ou deixe o onSnapshot atualizar)
-          await renderUsuarios();
-        });
-      });
-    }
-
-    // ---------- GERAÇÃO DO JOGO ----------
-    async function gerarJogoAdmin() {
+    // ======= Gerar jogo (local) + salvar config =======
+    async function gerarJogo() {
       const linhasAtivas = getLinhas();
       if (linhasAtivas.length === 0) {
         alert("Selecione pelo menos uma linha!");
@@ -214,50 +267,47 @@
 
       const anterior = getAnterior();
       const atrasadas = getAtrasadas();
-
-      // 1) Salva config no Firestore (isso é o que faz funcionar em qualquer dispositivo)
-      await salvarConfigNoFirestore(linhasAtivas, anterior, atrasadas);
-
-      // 2) Continua seu fluxo normal (gerar jogo local no admin, se quiser)
       const excluidas = new Set([...anterior, ...atrasadas]);
-      const jogo = gerarJogoValido(linhasAtivas, excluidas);
 
-      jogo.sort((a, b) => a - b);
-      const jogoFormatado = jogo.map(n => String(n).padStart(2, "0"));
+      // Salva config no Firestore (para os usuários pegarem)
+      await setDoc(doc(db, "config", "global"), {
+        linhasAtivas,
+        dezenasAnteriores: anterior,
+        dezenasAtrasadas: atrasadas,
+        updatedAt: Date.now()
+      });
+
+      // Gerar jogo usando seu algoritmo
+      const jogo = gerarJogoValido(linhasAtivas, excluidas);
       const acertos = jogo.filter(n => anterior.includes(n)).length;
 
-      // mantém histórico local do admin (opcional)
-      const jogos = JSON.parse(localStorage.getItem("jogos") || "[]");
+      let jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
       jogos.push({ numeros: jogo, acertos, data: new Date().toLocaleString() });
-      localStorage.setItem("jogos", JSON.stringify(jogos));
-      renderJogosLocal();
+      localStorage.setItem('jogos', JSON.stringify(jogos));
 
-      alert(`Jogo gerado: ${jogoFormatado.join(" - ")} | Acertos: ${acertos}`);
+      renderJogos();
+      alert(`Jogo gerado: ${jogo.map(n => String(n).padStart(2,'0')).join(' - ')} | Acertos: ${acertos}`);
     }
 
-    // ---------- INIT ----------
-    document.getElementById("btnGerar").addEventListener("click", () => {
-      gerarJogoAdmin().catch(err => alert("Erro no admin: " + err.message));
-    });
+    // ======= Init =======
+    async function init() {
+      try {
+        setStatus(true, "Firestore conectado ✅");
+        await carregarConfigFirestore();
+        await renderUsuarios();
+        renderJogos();
+      } catch (e) {
+        console.error(e);
+        setStatus(false, "Erro Firestore ❌");
+        $("statusInfo").textContent = "Erro: " + (e?.message || e);
+      }
+    }
 
-    // Carrega config inicial na tela (para o admin ver o último estado)
-    await carregarConfigParaTela();
+    $("btnSalvarConfig").addEventListener("click", salvarConfigFirestore);
+    $("btnGerar").addEventListener("click", gerarJogo);
+    $("btnRecarregar").addEventListener("click", init);
 
-    // Lista usuários e atualiza em tempo real
-    await renderUsuarios();
-    onSnapshot(usersCol, async () => {
-      await renderUsuarios();
-    });
-
-    // Opcional: também ouvir mudanças na config
-    onSnapshot(configRef, async () => {
-      // se quiser que o admin veja atualizações externas, descomente:
-      // await carregarConfigParaTela();
-    });
-
-    // histórico local do admin (se existir)
-    renderJogosLocal();
+    init();
   </script>
-
 </body>
 </html>
