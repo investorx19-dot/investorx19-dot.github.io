@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel Admin - Gerador de Jogos</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7;}
+    h2 {margin-top: 25px; color: #333;}
+    input, button {margin: 5px; padding: 8px;}
+    button {background: #0066cc; color: white; border: none; cursor: pointer;}
+    table {width: 100%; border-collapse: collapse; margin-top: 15px;}
+    td, th {border: 1px solid #ccc; padding: 10px; text-align: center;}
+    .numero {font-weight: bold; font-size: 1.1em;}
+  </style>
+</head>
+<body>
+  <h1>Painel de Controle - Administrador</h1>
+
+  <h2>1. Linhas Ativas (selecione as linhas do volante)</h2>
+  <div>
+    <label><input type="checkbox" class="linha" value="1"> Linha 1 (01-10)</label><br>
+    <label><input type="checkbox" class="linha" value="2"> Linha 2 (11-20)</label><br>
+    <label><input type="checkbox" class="linha" value="3"> Linha 3 (21-30)</label><br>
+    <label><input type="checkbox" class="linha" value="4"> Linha 4 (31-40)</label><br>
+    <label><input type="checkbox" class="linha" value="5"> Linha 5 (41-50)</label><br>
+    <label><input type="checkbox" class="linha" value="6"> Linha 6 (51-60)</label>
+  </div>
+
+  <h2>2. Dezenas do Sorteio Anterior (6 números)</h2>
+  <input type="number" class="anterior" min="1" max="60" placeholder="01">
+  <input type="number" class="anterior" min="1" max="60" placeholder="02">
+  <input type="number" class="anterior" min="1" max="60" placeholder="03">
+  <input type="number" class="anterior" min="1" max="60" placeholder="04">
+  <input type="number" class="anterior" min="1" max="60" placeholder="05">
+  <input type="number" class="anterior" min="1" max="60" placeholder="06">
+
+  <h2>3. 5 Dezenas Mais Atrasadas</h2>
+  <input type="number" class="atrasada" min="1" max="60" placeholder="01">
+  <input type="number" class="atrasada" min="1" max="60" placeholder="02">
+  <input type="number" class="atrasada" min="1" max="60" placeholder="03">
+  <input type="number" class="atrasada" min="1" max="60" placeholder="04">
+  <input type="number" class="atrasada" min="1" max="60" placeholder="05">
+
+  <br><br>
+  <button onclick="gerarJogo()">GERAR JOGO</button>
+
+  <h2>Jogos Gerados</h2>
+  <table id="tabelaJogos">
+    <thead><tr><th>Jogo</th><th>Acertos</th><th>Data</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Controle de Acesso dos Usuários</h2>
+  <table id="tabelaUsuarios">
+    <thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Ação</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="gerador.js"></script>
+
+  <script>
+    // Funções auxiliares
+    function getLinhas() {
+      return [...document.querySelectorAll('.linha:checked')].map(el => +el.value);
+    }
+
+    function getAnterior() {
+      return [...document.querySelectorAll('.anterior')].map(el => +el.value)
+        .filter(n => n >= 1 && n <= 60);
+    }
+
+    function getAtrasadas() {
+      return [...document.querySelectorAll('.atrasada')].map(el => +el.value)
+        .filter(n => n >= 1 && n <= 60);
+    }
+
+    // Função de geração de jogo (completa e corrigida)
+    function gerarJogo() {
+      console.log("PASSO 1: Função iniciada");
+
+      const linhasAtivas = getLinhas();
+      console.log("PASSO 2: Linhas selecionadas:", linhasAtivas);
+
+      if (linhasAtivas.length === 0) {
+        alert("Selecione pelo menos uma linha!");
+        console.log("PASSO 3: Saiu cedo - nenhuma linha");
+        return;
+      }
+
+      const anterior = getAnterior();
+      const atrasadas = getAtrasadas();
+      const excluidas = new Set([...anterior, ...atrasadas]);
+      console.log("PASSO 4: Excluídas:", Array.from(excluidas));
+
+      // Mapa de números disponíveis por linha
+      const disponiveisPorLinha = {};
+      linhasAtivas.forEach(l => {
+        disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
+      });
+
+      // Verifica se todas as linhas têm pelo menos 1 número disponível
+      for (const l of linhasAtivas) {
+        if (disponiveisPorLinha[l].length === 0) {
+          alert(`A Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}) não tem números disponíveis (todos excluídos).`);
+          return;
+        }
+      }
+
+      // 1. Distribuição mínima: exatamente 1 dezena por linha marcada
+      const jogo = [];
+      const usados = new Set();
+
+      linhasAtivas.forEach(l => {
+        const nums = disponiveisPorLinha[l];
+        const idx = Math.floor(Math.random() * nums.length);
+        const n = nums[idx];
+        jogo.push(n);
+        usados.add(n);
+        disponiveisPorLinha[l].splice(idx, 1); // remove para não repetir
+      });
+
+      console.log("PASSO 5: 1 dezena por linha distribuída →", jogo);
+
+      // 2. Quantos números ainda faltam (normalmente 6 - número de linhas)
+      let faltam = 6 - jogo.length;
+
+      if (faltam > 0) {
+        // Coleta todos os números restantes disponíveis
+        let restantes = [];
+        linhasAtivas.forEach(l => {
+          restantes.push(...disponiveisPorLinha[l]);
+        });
+        restantes = [...new Set(restantes.filter(n => !usados.has(n)))];
+
+        if (restantes.length < faltam) {
+          alert(`Não há números suficientes para completar 6 dezenas.`);
+          return;
+        }
+
+        // Categorização nos restantes
+        let f = restantes.filter(n => FIBONACCI.includes(n));
+        let p = restantes.filter(n => PRIMOS.includes(n));
+        let m = restantes.filter(n => MULT3.includes(n));
+        let r = restantes.filter(n => 
+          !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n)
+        );
+
+        // Quantidades ajustadas ao que falta
+        let qFib = Math.random() < 0.6 ? 0 : 1;
+        let qPri = Math.floor(Math.random() * 3);
+        let qMul = 1 + Math.floor(Math.random() * 3);
+        let qRan = 1 + Math.floor(Math.random() * 3);
+
+        let total = qFib + qPri + qMul + qRan;
+        if (total > faltam) {
+          qMul = Math.max(1, qMul - (total - faltam));
+          total = qFib + qPri + qMul + qRan;
+        }
+        if (total < faltam) {
+          qMul += (faltam - total);
+        }
+
+        const pegar = arr => arr.length ? arr.splice(Math.floor(Math.random() * arr.length), 1)[0] : null;
+
+        // Adiciona conforme regras (para de adicionar quando chega a 6)
+        for (let i = 0; i < qFib && jogo.length < 6; i++) { let n = pegar(f); if (n) jogo.push(n); }
+        for (let i = 0; i < qPri && jogo.length < 6; i++) { let n = pegar(p); if (n) jogo.push(n); }
+        for (let i = 0; i < qMul && jogo.length < 6; i++) { let n = pegar(m); if (n) jogo.push(n); }
+        for (let i = 0; i < qRan && jogo.length < 6; i++) { let n = pegar(r); if (n) jogo.push(n); }
+
+        // Completa com qualquer restante se ainda faltar
+        restantes = restantes.filter(n => !jogo.includes(n));
+        while (jogo.length < 6 && restantes.length > 0) {
+          let idx = Math.floor(Math.random() * restantes.length);
+          jogo.push(restantes.splice(idx, 1)[0]);
+        }
+      }
+
+      jogo.sort((a, b) => a - b);
+      const jogoFormatado = jogo.map(n => String(n).padStart(2, '0'));
+
+      const acertos = jogo.filter(n => anterior.includes(n)).length;
+
+      // Salvar
+      let jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
+      jogos.push({numeros: jogo, acertos, data: new Date().toLocaleString()});
+      localStorage.setItem('jogos', JSON.stringify(jogos));
+
+      localStorage.setItem('linhasAtivas', JSON.stringify(linhasAtivas));
+      localStorage.setItem('dezenasAnteriores', JSON.stringify(anterior));
+      localStorage.setItem('dezenasAtrasadas', JSON.stringify(atrasadas));
+
+      renderJogos();
+
+      alert(`Jogo gerado: ${jogoFormatado.join(' - ')} | Acertos: ${acertos}`);
+    }
+
+    function renderJogos() {
+      const tbody = document.querySelector('#tabelaJogos tbody');
+      tbody.innerHTML = '';
+      const jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
+      jogos.forEach(j => {
+        tbody.innerHTML += `<tr>
+          <td>${j.numeros.map(n => String(n).padStart(2, '0')).join(', ')}</td>
+          <td><strong>${j.acertos}</strong></td>
+          <td>${j.data}</td>
+        </tr>`;
+      });
+    }
+
+    function renderUsuarios() {
+      const tbody = document.querySelector('#tabelaUsuarios tbody');
+      tbody.innerHTML = '';
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      users.forEach((u, i) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${u.nome || '(sem nome)'}</td>
+            <td>${u.email}</td>
+            <td>${u.accessGranted ? '✅ Liberado' : '⛔ Bloqueado'}</td>
+            <td><button onclick="toggleAccess(${i})">${u.accessGranted ? 'Bloquear' : 'Liberar'}</button></td>
+          </tr>`;
+      });
+    }
+
+    function toggleAccess(i) {
+      let users = JSON.parse(localStorage.getItem('users') || '[]');
+      users[i].accessGranted = !users[i].accessGranted;
+      localStorage.setItem('users', JSON.stringify(users));
+      renderUsuarios();
+    }
+
+    // Inicializar ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      renderJogos();
+      renderUsuarios();
+    });
+  </script>
+</body>
+</html>

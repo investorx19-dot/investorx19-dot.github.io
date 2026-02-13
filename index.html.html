@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gerador de Jogos - Usuário</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    .linha {margin: 15px 0; padding: 10px; background: #fff; border: 1px solid #ccc;}
+    .numero {display: inline-block; width: 38px; height: 38px; line-height: 38px; text-align: center; margin: 2px; font-weight: bold; border-radius: 6px;}
+    .selecionado {background: yellow; color: black;}
+    button {padding: 12px 20px; font-size: 16px; margin: 5px; cursor: pointer;}
+    #login, #app {max-width: 600px; margin: 0 auto;}
+  </style>
+</head>
+<body>
+  <h1>Gerador de Jogos - Mega-Sena</h1>
+
+  <div id="login">
+    <h2>Cadastro / Login</h2>
+    <input id="nome" placeholder="Nome" /><br><br>
+    <input id="email" placeholder="E-mail" /><br><br>
+    <input id="senha" type="password" placeholder="Senha" /><br><br>
+    <button onclick="cadastrar()">Cadastrar</button>
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <div id="app" style="display:none;">
+    <button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+    <h2>Cartão Virtual</h2>
+    <div id="cartao"></div>
+    <p><strong>Acertos no último sorteio:</strong> <span id="acertos">0</span></p>
+
+    <h3>Assinatura para liberar o gerador</h3>
+    <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX', '_blank')">
+      Assinatura Mensal - R$ 29,90
+    </button>
+    <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx', '_blank')">
+      Assinatura Anual - R$ 238,80
+    </button>
+  </div>
+
+  <script src="gerador.js"></script>
+  <script>
+    let usuarioAtual = null;
+
+    function cadastrar() {
+      const nome  = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+      if (!nome || !email || !senha) return alert("Preencha todos os campos");
+
+      let users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (users.some(u => u.email === email)) return alert("E-mail já cadastrado");
+
+      users.push({nome, email, senha, accessGranted: false});
+      localStorage.setItem('users', JSON.stringify(users));
+      alert("Cadastrado com sucesso! Aguarde liberação do administrador.");
+    }
+
+    function login() {
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.email === email && u.senha === senha);
+
+      if (!user) return alert("Credenciais inválidas");
+      if (!user.accessGranted) return alert("Seu acesso ainda não foi liberado pelo administrador");
+
+      usuarioAtual = user;
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      renderCartao([]);
+    }
+
+    function gerarJogoUsuario() {
+      try {
+        const linhasAtivas = JSON.parse(localStorage.getItem('linhasAtivas') || '[]');
+        const anteriores = JSON.parse(localStorage.getItem('dezenasAnteriores') || '[]');
+        const atrasadas  = JSON.parse(localStorage.getItem('dezenasAtrasadas') || '[]');
+
+        if (linhasAtivas.length === 0) {
+          alert("O administrador ainda não configurou as linhas ativas.");
+          return;
+        }
+
+        const excluidas = new Set([...anteriores, ...atrasadas]);
+
+        const jogo = gerarJogoValido(linhasAtivas, excluidas);
+
+        renderCartao(jogo);
+
+        const acertos = jogo.filter(n => anteriores.includes(n)).length;
+        document.getElementById('acertos').textContent = acertos;
+
+      } catch (err) {
+        alert("Erro ao gerar jogo: " + err.message);
+      }
+    }
+
+    function renderCartao(jogo) {
+      const cartao = document.getElementById('cartao');
+      cartao.innerHTML = '';
+
+      for (let l = 1; l <= 6; l++) {
+        const div = document.createElement('div');
+        div.className = 'linha';
+        div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
+
+        LINE_RANGES[l].forEach(n => {
+          const span = document.createElement('span');
+          span.className = 'numero';
+          span.textContent = String(n).padStart(2, '0');
+          if (jogo.includes(n)) span.classList.add('selecionado');
+          div.appendChild(span);
+        });
+
+        cartao.appendChild(div);
+      }
+    }
+  </script>
+</body>
+</html>
