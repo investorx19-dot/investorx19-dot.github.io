@@ -17,14 +17,19 @@
 <body>
   </div>
 <script>
-  const senha = prompt("Digite a senha do administrador:");
+  <script>
+  // Se já liberou nesta aba/navegador, não pede de novo
+  if (sessionStorage.getItem("admin_ok") !== "1") {
+    const senha = (prompt("Digite a senha do administrador:") || "").trim();
 
-  if (senha !== "Eu63b@56") {
+    if (senha !== "Eu63b@56") {
       alert("Acesso negado!");
       window.location.href = "index.html";
+    } else {
+      sessionStorage.setItem("admin_ok", "1");
+    }
   }
 </script>
-
 
 </body>
 </html>
@@ -253,5 +258,6 @@
   </script>
 </body>
 </html>
+
 
 
