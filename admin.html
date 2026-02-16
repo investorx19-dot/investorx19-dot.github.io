@@ -6,16 +6,15 @@
   <title>Painel Admin • Mark6</title>
   <style>
     :root{
-      --bg: #0b1220;
+      --bg:#0b1220;
       --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.08);
-      --text: #eaf0ff;
-      --muted: rgba(234,240,255,.75);
-      --line: rgba(255,255,255,.10);
-      --blue: #2d6cff;
+      --card2: rgba(255,255,255,.09);
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.72);
+      --line: rgba(255,255,255,.12);
+      --blue:#2d6cff;
       --green:#22c55e;
       --red:#ef4444;
-      --amber:#f59e0b;
       --shadow: 0 18px 60px rgba(0,0,0,.45);
       --radius: 18px;
     }
@@ -23,56 +22,49 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(900px 500px at 20% 10%, rgba(45,108,255,.25), transparent 60%),
-                  radial-gradient(900px 500px at 80% 20%, rgba(245,158,11,.12), transparent 55%),
-                  linear-gradient(180deg, #061024 0%, #030712 100%);
-      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 20% 10%, rgba(45,108,255,.22), transparent 60%),
+        radial-gradient(900px 520px at 80% 20%, rgba(245,158,11,.10), transparent 55%),
+        linear-gradient(180deg, #061024 0%, #030712 100%);
+      color:var(--text);
       min-height:100vh;
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:26px 18px 60px}
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;
-      gap:12px;margin-bottom:18px
-    }
-    .brand{
-      display:flex;align-items:center;gap:12px
-    }
+    .wrap{max-width:1160px;margin:0 auto;padding:26px 18px 60px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:12px}
     .brand .logo{
-      width:44px;height:44px;border-radius:12px;object-fit:cover;
+      width:46px;height:46px;border-radius:14px;object-fit:cover;
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.12);
       background:#0f172a;
     }
-    h1{margin:0;font-size:24px;letter-spacing:.2px}
+    h1{margin:0;font-size:22px;letter-spacing:.2px}
     .sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size:13px;
+    }
     .btn{
-      appearance:none;border:1px solid rgba(255,255,255,.12);
+      appearance:none;
+      border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
       color: var(--text);
       padding:10px 14px;border-radius:12px;
       cursor:pointer;transition:.15s;
-      font-weight:600;
+      font-weight:700;
     }
     .btn:hover{transform:translateY(-1px);background: rgba(255,255,255,.09)}
     .btn.primary{background: var(--blue);border-color: rgba(255,255,255,.12)}
-    .btn.primary:hover{filter:brightness(1.05)}
+    .btn.primary:hover{filter:brightness(1.06)}
     .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
     .btn.success{background: rgba(34,197,94,.16);border-color: rgba(34,197,94,.35)}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      color: var(--muted);
-      font-size:13px;
-    }
-    .grid{
-      display:grid;gap:14px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 980px){
-      .grid{grid-template-columns: 1fr 1fr}
-    }
+    .grid{display:grid;gap:14px;grid-template-columns:1fr}
+    @media (min-width: 980px){ .grid{grid-template-columns: 1fr 1.25fr} }
     .card{
       background: var(--card);
       border:1px solid rgba(255,255,255,.10);
@@ -81,7 +73,6 @@
       padding:16px;
     }
     .card h2{margin:0 0 10px;font-size:16px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .sep{height:1px;background: var(--line);margin:12px 0}
     label{font-size:13px;color:var(--muted)}
     input{
@@ -93,89 +84,57 @@
     }
     input::placeholder{color: rgba(234,240,255,.45)}
     .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width: 700px){
-      .two{grid-template-columns:1fr}
-    }
-
-    /* ✅ Quadradinhos numéricos (admin) */
-    .numsGrid{
-      display:grid;
-      gap:10px;
-      grid-template-columns: repeat(6, 56px);
-      align-items:center;
-    }
-    .numsGrid.five{grid-template-columns: repeat(5, 56px);}
-    @media (max-width: 520px){
-      .numsGrid{grid-template-columns: repeat(3, 56px);}
-      .numsGrid.five{grid-template-columns: repeat(3, 56px);}
-    }
-    .numsGrid input{
-      width:56px;height:46px;
-      text-align:center;
-      font-size:16px;
-      padding:0;
-      border-radius:14px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .numsGrid input:focus{
-      border-color: rgba(120,180,255,.8);
-      box-shadow: 0 0 0 3px rgba(80,140,255,.18);
-    }
-
-    .checkboxes{
-      display:grid;
-      gap:10px;
-      grid-template-columns: 1fr;
-    }
+    @media (max-width: 700px){ .two{grid-template-columns:1fr} }
+    .checkboxes{display:grid;gap:10px}
     .checkboxes label{
       display:flex;align-items:center;gap:10px;
       padding:10px 12px;border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.05);
       border-radius:14px;
       cursor:pointer;
+      user-select:none;
     }
     .checkboxes input{width:auto}
-
+    .nums{display:grid;gap:10px}
+    .nums-6{grid-template-columns: repeat(6, 1fr)}
+    .nums-5{grid-template-columns: repeat(5, 1fr)}
+    @media (max-width: 700px){
+      .nums-6{grid-template-columns: repeat(3, 1fr)}
+      .nums-5{grid-template-columns: repeat(3, 1fr)}
+    }
     .toast{
-      display:none;
-      margin: 0 0 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
+      display:none;margin:0 0 14px;padding:12px 14px;border-radius:14px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.06);
       color: var(--muted);
     }
     .toast.show{display:block}
-    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.9)}
-    .toast.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: rgba(255,255,255,.92)}
+    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.92)}
+    .toast.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: rgba(255,255,255,.95)}
     table{
       width:100%;
       border-collapse: collapse;
-      overflow:hidden;
-      border-radius: 14px;
+      border-radius:14px; overflow:hidden;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.18);
     }
     th, td{
-      padding: 10px 10px;
+      padding:10px 10px;
       border-bottom: 1px solid rgba(255,255,255,.08);
       text-align:left;
-      font-size: 13px;
+      font-size:13px;
+      vertical-align:middle;
     }
-    th{color: rgba(234,240,255,.85); font-weight:700; background: rgba(255,255,255,.04)}
-    td{color: rgba(234,240,255,.85)}
+    th{color: rgba(234,240,255,.9); font-weight:800; background: rgba(255,255,255,.04)}
+    td{color: rgba(234,240,255,.86)}
     .right{text-align:right}
-    .status{
-      font-weight:800;
-      display:inline-flex;align-items:center;gap:8px;
-    }
-    .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
+    .status{font-weight:900;display:inline-flex;align-items:center;gap:8px}
+    .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
     .dot.green{background: var(--green)}
     .dot.red{background: var(--red)}
     .small{font-size:12px;color: var(--muted)}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-    .loginBox{max-width:520px;margin: 20px auto 0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace}
+    .loginBox{max-width:560px;margin: 10px auto 0}
   </style>
 </head>
 <body>
@@ -188,8 +147,9 @@
           <div class="sub">Mark6 • Firebase Auth + Firestore</div>
         </div>
       </div>
+
       <div class="row">
-        <span id="who" class="pill">Não autenticado</span>
+        <span id="who" class="pill">Carregando...</span>
         <button id="btnReload" class="btn">Recarregar</button>
         <button id="btnLogout" class="btn danger" style="display:none">Sair</button>
       </div>
@@ -198,7 +158,7 @@
     <div id="toast" class="toast"></div>
 
     <!-- LOGIN -->
-    <div id="loginCard" class="card loginBox">
+    <div id="loginCard" class="card loginBox" style="display:none">
       <h2>Login do Admin</h2>
       <div class="small">Acesso permitido apenas para <b class="mono">decarvalho01@gmail.com</b>.</div>
       <div class="sep"></div>
@@ -229,35 +189,32 @@
       <div class="grid">
         <!-- CONFIG -->
         <div class="card">
-          <div class="row" style="justify-content:space-between">
-            <h2 style="margin:0">Config do Gerador</h2>
-            <div class="row">
-              <button id="btnLoadConfig" class="btn">Recarregar config</button>
-              <button id="btnSaveConfig" class="btn primary">Salvar config</button>
-            </div>
-          </div>
-
-          <div class="sep"></div>
-
           <h2>1) Linhas Ativas</h2>
-          <div class="checkboxes">
-            <label><input type="checkbox" class="linha" value="1"> Linha 1 (01–10)</label>
-            <label><input type="checkbox" class="linha" value="2"> Linha 2 (11–20)</label>
-            <label><input type="checkbox" class="linha" value="3"> Linha 3 (21–30)</label>
-            <label><input type="checkbox" class="linha" value="4"> Linha 4 (31–40)</label>
-            <label><input type="checkbox" class="linha" value="5"> Linha 5 (41–50)</label>
-            <label><input type="checkbox" class="linha" value="6"> Linha 6 (51–60)</label>
+          <div class="checkboxes" id="linhasBox">
+            <label><input type="checkbox" class="linha" value="1"> Linha 1 (01-10)</label>
+            <label><input type="checkbox" class="linha" value="2"> Linha 2 (11-20)</label>
+            <label><input type="checkbox" class="linha" value="3"> Linha 3 (21-30)</label>
+            <label><input type="checkbox" class="linha" value="4"> Linha 4 (31-40)</label>
+            <label><input type="checkbox" class="linha" value="5"> Linha 5 (41-50)</label>
+            <label><input type="checkbox" class="linha" value="6"> Linha 6 (51-60)</label>
           </div>
 
           <div class="sep"></div>
 
           <h2>2) Dezenas do Sorteio Anterior</h2>
-          <div id="prevBox" class="numsGrid"></div>
+          <div class="nums nums-6" id="prevBox"></div>
 
           <div class="sep"></div>
 
           <h2>3) 5 Dezenas Mais Atrasadas</h2>
-          <div id="lateBox" class="numsGrid five"></div>
+          <div class="nums nums-5" id="lateBox"></div>
+
+          <div class="sep"></div>
+
+          <div class="row" style="justify-content:flex-end">
+            <button id="btnLoadConfig" class="btn">Recarregar config</button>
+            <button id="btnSaveConfig" class="btn primary">Salvar config</button>
+          </div>
 
           <div class="small" style="margin-top:10px">
             Config salva em <span class="mono">config/global</span>.
@@ -267,7 +224,7 @@
         <!-- USERS -->
         <div class="card">
           <h2>Controle de Acesso dos Usuários</h2>
-          <div class="row" style="justify-content:space-between; margin-bottom:10px">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
             <div class="small" id="dupInfo">—</div>
             <button id="btnReloadUsers" class="btn">Atualizar lista</button>
           </div>
@@ -291,25 +248,28 @@
 
           <div class="sep"></div>
           <div class="small">
-            Sem duplicação visual: se houver múltiplos docs com o mesmo e-mail, o painel mostra apenas o mais recente.
+            Se houver duplicidade por e-mail, o painel mostra apenas o mais recente.
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- FIREBASE + APP -->
   <script type="module">
     // ===============================
-    // FIREBASE (Web SDK modular)
+    // FIREBASE IMPORTS (MÓDULO)
     // ===============================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+
     import {
-  getAuth,
-  setPersistence,
-  browserLocalPersistence,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+      getAuth,
+      setPersistence,
+      browserLocalPersistence,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
     import {
       getFirestore,
@@ -321,6 +281,9 @@
       updateDoc
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+    // ===============================
+    // CONFIG
+    // ===============================
     const ADMIN_EMAIL = "decarvalho01@gmail.com";
 
     const firebaseConfig = {
@@ -334,11 +297,10 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    await setPersistence(auth, browserLocalPersistence);
     const db = getFirestore(app);
 
     // ===============================
-    // UI Helpers
+    // UI HELPERS
     // ===============================
     const $ = (id) => document.getElementById(id);
     const toastEl = $("toast");
@@ -349,12 +311,10 @@
       setTimeout(() => { toastEl.className = "toast"; }, 4200);
     }
 
-    function normEmail(s){
-      return String(s || "").trim().toLowerCase();
-    }
+    function normEmail(s){ return String(s||"").trim().toLowerCase(); }
 
     function escapeHtml(str){
-      return String(str)
+      return String(str ?? "")
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
@@ -371,11 +331,15 @@
         input.min = "1";
         input.max = "60";
         input.placeholder = "00";
-        input.className = cssClass; // anterior / atrasada
+        input.className = cssClass;
         input.inputMode = "numeric";
         box.appendChild(input);
       }
     }
+
+    // cria inputs (aparecem sempre)
+    mkNumberInputs("prevBox", "anterior", 6);
+    mkNumberInputs("lateBox", "atrasada", 5);
 
     function parseNumsFromInputs(selector){
       return [...document.querySelectorAll(selector)]
@@ -386,27 +350,28 @@
     function setInputsFromArray(selector, arr){
       const inputs = [...document.querySelectorAll(selector)];
       for(let i=0;i<inputs.length;i++){
-        inputs[i].value = (arr && typeof arr[i] === "number") ? arr[i] : "";
+        inputs[i].value = (arr && arr[i] != null) ? Number(arr[i]) : "";
       }
     }
 
-    // cria os quadradinhos
-    mkNumberInputs("prevBox", "anterior", 6);
-    mkNumberInputs("lateBox", "atrasada", 5);
+    // ===============================
+    // AUTH (mantém logado)
+    // ===============================
+    await setPersistence(auth, browserLocalPersistence);
 
-    // ===============================
-    // AUTH
-    // ===============================
+    $("btnReload").addEventListener("click", () => location.reload());
+
     $("btnLogin").addEventListener("click", async () => {
       const email = $("adminEmail").value.trim();
       const pass  = $("adminPass").value;
 
       try{
         await signInWithEmailAndPassword(auth, email, pass);
+        // onAuthStateChanged cuida do resto
       }catch(err){
-  console.error("LOGIN ERROR:", err);
-  toast(`Falha no login: ${err.code || "erro_desconhecido"}`, "error");
-}
+        console.error(err);
+        toast("Falha no login (email/senha).", "error");
+      }
     });
 
     $("btnLogout").addEventListener("click", async () => {
@@ -414,11 +379,8 @@
       toast("Você saiu.", "ok");
     });
 
-    $("btnReload").addEventListener("click", () => location.reload());
-
     onAuthStateChanged(auth, async (user) => {
       if(!user){
-        console.log("AUTH STATE:", user ? user.email : null);
         $("who").textContent = "Não autenticado";
         $("btnLogout").style.display = "none";
         $("loginCard").style.display = "block";
@@ -430,6 +392,7 @@
       $("who").textContent = `Logado: ${email}`;
       $("btnLogout").style.display = "inline-block";
 
+      // só admin
       if(email !== normEmail(ADMIN_EMAIL)){
         toast("Este usuário não é admin. Saindo...", "error");
         await signOut(auth);
@@ -457,11 +420,12 @@
 
         if(snap.exists()){
           const data = snap.data();
-          linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [];
-          dezenasAnteriores = Array.isArray(data.dezenasAnteriores) ? data.dezenasAnteriores : [];
-          dezenasAtrasadas = Array.isArray(data.dezenasAtrasadas) ? data.dezenasAtrasadas : [];
+          linhasAtivas = data.linhasAtivas || [];
+          dezenasAnteriores = data.dezenasAnteriores || [];
+          dezenasAtrasadas = data.dezenasAtrasadas || [];
         }
 
+        // checkboxes
         document.querySelectorAll(".linha").forEach(cb => {
           cb.checked = linhasAtivas.includes(Number(cb.value));
         });
@@ -500,7 +464,7 @@
     $("btnSaveConfig").addEventListener("click", saveConfig);
 
     // ===============================
-    // USERS LIST + NO DUPLICATION (visual)
+    // USERS (lista + dedupe por email)
     // ===============================
     async function loadUsers(){
       const tbody = $("usersTbody");
@@ -519,6 +483,7 @@
           if(!email) continue;
 
           const ts = Number(u.updatedAt || u.createdAt || 0);
+
           if(!map.has(email)){
             map.set(email, u);
           }else{
@@ -545,7 +510,7 @@
         tbody.innerHTML = "";
         for(const u of uniqueUsers){
           const granted = !!u.accessGranted;
-          const phone = (u.telefone || u.phone || "").toString();
+          const phone = (u.telefone || u.phone || "").toString().trim();
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -559,7 +524,8 @@
               </span>
             </td>
             <td class="right">
-              <button class="btn ${granted ? "danger" : "success"}" data-userid="${u.id}" data-granted="${granted}">
+              <button class="btn ${granted ? "danger" : "success"}"
+                data-userid="${u.id}" data-granted="${granted}">
                 ${granted ? "Bloquear" : "Liberar"}
               </button>
             </td>
@@ -600,5 +566,3 @@
   </script>
 </body>
 </html>
-
-
