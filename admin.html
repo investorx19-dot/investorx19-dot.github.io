@@ -334,6 +334,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    await setPersistence(auth, browserLocalPersistence);
     const db = getFirestore(app);
 
     // ===============================
@@ -403,9 +404,9 @@
       try{
         await signInWithEmailAndPassword(auth, email, pass);
       }catch(err){
-        console.error(err);
-        toast("Falha no login (email/senha).", "error");
-      }
+  console.error("LOGIN ERROR:", err);
+  toast(`Falha no login: ${err.code || "erro_desconhecido"}`, "error");
+}
     });
 
     $("btnLogout").addEventListener("click", async () => {
@@ -417,6 +418,7 @@
 
     onAuthStateChanged(auth, async (user) => {
       if(!user){
+        console.log("AUTH STATE:", user ? user.email : null);
         $("who").textContent = "Não autenticado";
         $("btnLogout").style.display = "none";
         $("loginCard").style.display = "block";
@@ -598,4 +600,5 @@
   </script>
 </body>
 </html>
+
 
