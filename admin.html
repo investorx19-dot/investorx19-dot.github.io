@@ -328,19 +328,23 @@
     }
 
     function mkNumberInputs(containerId, cssClass, count){
-      const box = $(containerId);
-      box.innerHTML = "";
-      for(let i=0;i<count;i++){
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = "1";
-        input.max = "60";
-        input.placeholder = "00";
-        input.className = cssClass;
-        input.inputMode = "numeric";
-        box.appendChild(input);
-      }
-    }
+  const box = document.getElementById(containerId);
+  box.innerHTML = "";
+
+  for(let i=0;i<count;i++){
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "1";
+    input.max = "60";
+    input.placeholder = "00";
+
+    // ✅ classe correta (anterior / atrasada)
+    input.className = cssClass;
+
+    input.inputMode = "numeric";
+    box.appendChild(input);
+  }
+}
 
     mkNumberInputs("prevBox", "anterior", 6);
     mkNumberInputs("lateBox", "atrasada", 5);
@@ -569,3 +573,4 @@
   </script>
 </body>
 </html>
+
