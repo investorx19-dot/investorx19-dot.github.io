@@ -2,230 +2,240 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mark6 - Gerador de Jogos</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mark6 • Gerador de Jogos - Mega-Sena</title>
   <style>
     :root{
-      --bg:#0b1220;
-      --card:#111a2f;
-      --muted:#9fb0d0;
+      --bg1:#070b14;
+      --bg2:#0b1633;
+      --card:#0f1f3a;
+      --card2:#0c1930;
+      --line:rgba(255,255,255,.10);
       --text:#eaf0ff;
-      --line:#233154;
-      --btn:#2b6cff;
-      --btn2:#1e2a44;
-      --warn:#ffcc00;
-      --ok:#37d67a;
-      --bad:#ff5a5a;
+      --muted:rgba(234,240,255,.70);
+      --blue:#2f6bff;
+      --blue2:#1b4fd6;
+      --good:#30d158;
+      --bad:#ff453a;
+      --warn:#ffd60a;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius:18px;
     }
 
     *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 50% 0%, #132046 0%, var(--bg) 55%, #070c16 100%);
-      color:var(--text);
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 50% -100px, rgba(47,107,255,.25), transparent 55%),
+                  radial-gradient(900px 500px at 80% 10%, rgba(255,214,10,.12), transparent 60%),
+                  linear-gradient(180deg, var(--bg2), var(--bg1));
       min-height:100vh;
     }
 
     .wrap{
-      width:100%;
-      max-width: 980px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 26px 16px 60px;
+      padding: 34px 18px 60px;
     }
 
     .topo{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:12px;
-      margin-top: 10px;
+      text-align:center;
       margin-bottom: 18px;
     }
 
     .logo{
-      width: 180px;
+      width: 120px;
       height: auto;
       display:block;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+      margin: 0 auto 8px;
+      filter: drop-shadow(0 10px 24px rgba(0,0,0,.55));
     }
 
     h1{
-      margin: 0;
-      font-size: 34px;
-      text-align:center;
+      margin: 0 0 6px;
+      font-size: 38px;
       letter-spacing: .2px;
     }
 
     .sub{
-      margin: 6px 0 0;
-      text-align:center;
+      margin: 0;
       color: var(--muted);
       font-size: 14px;
+    }
+
+    .panel{
+      margin-top: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      overflow:hidden;
     }
 
     .grid{
       display:grid;
       grid-template-columns: 1fr;
-      gap:16px;
-      margin-top: 18px;
+      gap: 16px;
     }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,31,58,.90), rgba(12,25,48,.92));
+      border:1px solid var(--line);
       border-radius: 16px;
       padding: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.35);
     }
 
     .card h2{
-      margin:0 0 10px;
+      margin: 0 0 10px;
       font-size: 18px;
     }
 
     .row{
       display:grid;
       grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-
-    .row3{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap:10px;
-    }
-
-    @media (max-width:700px){
-      .row, .row3{ grid-template-columns: 1fr; }
-      h1{ font-size: 28px; }
+      gap: 12px;
     }
 
     label{
       display:block;
       font-size: 13px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin: 0 0 6px;
     }
 
     input{
       width:100%;
       padding: 12px 12px;
       border-radius: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
       color: var(--text);
-      outline: none;
-      font-size: 14px;
+      outline:none;
+    }
+    input:focus{
+      border-color: rgba(47,107,255,.55);
+      box-shadow: 0 0 0 4px rgba(47,107,255,.12);
     }
 
-    input::placeholder{ color: rgba(234,240,255,.45); }
-
-    .btnrow{
+    .btns{
       display:flex;
       gap:10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
 
     button{
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid transparent;
+      border:none;
       cursor:pointer;
+      padding: 11px 14px;
+      border-radius: 12px;
       font-weight: 700;
-      font-size: 14px;
+      color: #fff;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.10);
     }
 
-    .btn{
-      background: var(--btn);
-      color:#fff;
-      box-shadow: 0 10px 24px rgba(43,108,255,.25);
+    .primary{
+      background: linear-gradient(180deg, var(--blue), var(--blue2));
+      border-color: rgba(47,107,255,.55);
     }
-
-    .btn:active{ transform: translateY(1px); }
-
-    .btn2{
+    .ghost{
       background: rgba(255,255,255,.06);
-      border: 1px solid var(--line);
-      color: var(--text);
+    }
+
+    .status{
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
     }
 
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid var(--line);
-      color: var(--muted);
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
       font-size: 12px;
-      margin-top: 10px;
     }
 
-    .pill b{ color: var(--text); }
+    .pill.good{ border-color: rgba(48,209,88,.35); }
+    .pill.bad{ border-color: rgba(255,69,58,.35); }
+    .pill.warn{ border-color: rgba(255,214,10,.35); }
 
-    .area-app-top{
+    .actions{
       display:flex;
-      justify-content:space-between;
+      justify-content: space-between;
       align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom: 12px;
-    }
-
-    .cartao{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-      margin-top: 10px;
-    }
-
-    .linha{
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      overflow:auto;
-      white-space:nowrap;
-    }
-
-    .numero{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      margin: 3px;
-      font-weight: 800;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.18);
-    }
-
-    .selecionado{
-      background: rgba(255,204,0,.2);
-      border: 1px solid rgba(255,204,0,.55);
-      color: var(--warn);
-      box-shadow: 0 8px 18px rgba(255,204,0,.12);
-    }
-
-    .status-ok{ color: var(--ok); font-weight:700; }
-    .status-bad{ color: var(--bad); font-weight:700; }
-
-    .tiny{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 8px;
-      line-height: 1.35;
+      gap: 12px;
+      margin: 8px 0 14px;
+      flex-wrap: wrap;
     }
 
     .divider{
       height:1px;
-      background: var(--line);
-      margin: 12px 0;
+      background: rgba(255,255,255,.10);
+      margin: 14px 0;
+    }
+
+    .cartao h2{
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .linha{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.20);
+      border:1px solid rgba(255,255,255,.08);
+      margin: 10px 0;
+      overflow-x:auto;
+      white-space: nowrap;
+    }
+
+    .linha strong{
+      min-width: 150px;
+      color: var(--text);
+    }
+
+    .num{
+      display:inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items:center;
+      justify-content:center;
+      border-radius: 10px;
+      margin-right: 6px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      font-weight: 800;
+    }
+
+    .sel{
+      background: rgba(255,214,10,.18);
+      border-color: rgba(255,214,10,.45);
+      color: #fff;
+    }
+
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 820px){
+      .row{ grid-template-columns: 1fr; }
+      h1{ font-size: 30px; }
+      .logo{ width: 105px; }
     }
   </style>
 </head>
@@ -234,110 +244,84 @@
   <div class="wrap">
 
     <div class="topo">
-      <!-- ✅ SUA LOGO AQUI -->
-      <img src="logo-marck6.jpg" alt="Mark6" class="logo">
+      <!-- LOGO: arquivo no repo precisa ser exatamente logo-marck6.jpg -->
+      <img src="./logo-marck6.jpg" alt="Mark6" class="logo" />
       <h1>Gerador de Jogos - Mega-Sena</h1>
       <p class="sub">Cadastro e liberação pelo administrador • Mark6</p>
     </div>
 
-    <!-- LOGIN / CADASTRO -->
-    <div id="login" class="grid">
-      <div class="card">
-        <h2>Cadastro / Login</h2>
+    <div class="panel">
+      <div id="loginArea" class="grid">
+        <div class="card">
+          <h2>Cadastro / Login</h2>
 
-        <div class="row">
-          <div>
-            <label for="nome">Nome</label>
-            <input id="nome" placeholder="Seu nome completo" autocomplete="name" />
+          <div class="row">
+            <div>
+              <label for="nome">Nome</label>
+              <input id="nome" placeholder="Seu nome completo" autocomplete="name" />
+            </div>
+
+            <div>
+              <label for="telefone">Telefone (WhatsApp)</label>
+              <input id="telefone" placeholder="(21) 99999-9999" autocomplete="tel" />
+            </div>
+
+            <div>
+              <label for="email">E-mail</label>
+              <input id="email" placeholder="seuemail@gmail.com" autocomplete="email" />
+            </div>
+
+            <div>
+              <label for="senha">Senha</label>
+              <input id="senha" type="password" placeholder="Crie sua senha" autocomplete="current-password" />
+            </div>
           </div>
 
-          <div>
-            <label for="telefone">Telefone (WhatsApp)</label>
-            <input id="telefone" placeholder="(21) 99999-9999" autocomplete="tel" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label for="email">E-mail</label>
-            <input id="email" placeholder="seuemail@exemplo.com" autocomplete="email" />
+          <div class="btns">
+            <button class="primary" id="btnCadastrar">Cadastrar</button>
+            <button class="ghost" id="btnEntrar">Entrar</button>
           </div>
 
-          <div>
-            <label for="senha">Senha</label>
-            <input id="senha" type="password" placeholder="Crie sua senha" autocomplete="current-password" />
+          <div class="status">
+            <span class="pill" id="statusPill">Status: —</span>
+            <span class="pill" id="userPill" style="display:none;"></span>
           </div>
-        </div>
 
-        <div class="btnrow">
-          <button class="btn" onclick="cadastrar()">Cadastrar</button>
-          <button class="btn2" onclick="login()">Entrar</button>
-        </div>
-
-        <div class="pill">
-          Status: <b id="statusLogin">Aguardando ação</b>
-        </div>
-
-        <div class="tiny">
-          • O acesso ao gerador só é liberado após aprovação do administrador.<br>
-          • Seu cadastro é salvo no Firestore (não depende do seu navegador).
+          <div class="hint">
+            • O acesso ao gerador só é liberado após aprovação do administrador.<br>
+            • Seu cadastro é salvo no Firestore (não depende do seu navegador).
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- APP -->
-    <div id="app" class="grid" style="display:none;">
-      <div class="card">
-        <div class="area-app-top">
-          <button class="btn" onclick="gerarJogoUsuario()">GERAR JOGO</button>
-          <button class="btn2" onclick="sair()">Sair</button>
+      <div id="appArea" style="display:none;">
+        <div class="actions">
+          <button class="primary" id="btnGerar">GERAR JOGO</button>
+          <button class="ghost" id="btnSair">Sair</button>
         </div>
 
-        <div class="pill">
-          Usuário: <b id="userEmailPill">-</b> • Acesso: <b id="userAccessPill">-</b>
+        <div class="status">
+          <span class="pill" id="pillUsuario"></span>
+          <span class="pill" id="pillAcesso"></span>
         </div>
 
         <div class="divider"></div>
 
-        <h2>Cartão Virtual</h2>
-        <div id="cartao" class="cartao"></div>
-
-        <p style="margin:10px 0 0;">
-          <strong>Acertos no último sorteio:</strong>
-          <span id="acertos">0</span>
-        </p>
-
-        <div class="divider"></div>
-
-        <h2>Assinatura para liberar o gerador</h2>
-        <div class="btnrow">
-          <button class="btn2" onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX', '_blank')">
-            Assinatura Mensal - R$ 29,90
-          </button>
-          <button class="btn2" onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx', '_blank')">
-            Assinatura Anual - R$ 238,80
-          </button>
-        </div>
-
-        <div class="tiny">
-          Dica: se o botão “GERAR JOGO” disser que o admin não configurou as linhas, peça para o administrador salvar a config no painel.
+        <div class="cartao card">
+          <h2>Cartão Virtual</h2>
+          <div id="cartao"></div>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ✅ Seu gerador (mantém como está no repositório) -->
-  <script src="gerador.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-  <!-- ✅ Firebase (Compat) para funcionar com scripts normais (sem module) -->
-  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore-compat.js"></script>
-
-  <script>
-    // ============================
-    // FIREBASE CONFIG (SEU PROJETO)
-    // ============================
+    // Firebase config (o seu)
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -347,198 +331,85 @@
       appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    // ============================
-    // ESTADO
-    // ============================
-    let usuarioAtual = null;
+    // ====== UI refs
+    const loginArea = document.getElementById("loginArea");
+    const appArea   = document.getElementById("appArea");
 
-    function setStatus(msg, ok=true){
-      const el = document.getElementById("statusLogin");
-      el.textContent = msg;
-      el.className = ok ? "status-ok" : "status-bad";
+    const nomeEl = document.getElementById("nome");
+    const telEl  = document.getElementById("telefone");
+    const emailEl= document.getElementById("email");
+    const senhaEl= document.getElementById("senha");
+
+    const btnCadastrar = document.getElementById("btnCadastrar");
+    const btnEntrar    = document.getElementById("btnEntrar");
+    const btnGerar     = document.getElementById("btnGerar");
+    const btnSair      = document.getElementById("btnSair");
+
+    const statusPill = document.getElementById("statusPill");
+    const userPill   = document.getElementById("userPill");
+
+    const pillUsuario = document.getElementById("pillUsuario");
+    const pillAcesso  = document.getElementById("pillAcesso");
+
+    const cartao = document.getElementById("cartao");
+
+    // ====== Helpers
+    const emailKey = (e) => (e || "").trim().toLowerCase();
+
+    function setStatus(texto, tipo=""){
+      statusPill.textContent = "Status: " + texto;
+      statusPill.className = "pill " + (tipo || "");
     }
 
-    function normEmail(email){
-      return (email || "").trim().toLowerCase();
+    function validarTelefone(t){
+      const s = (t || "").trim();
+      // validação simples: precisa ter pelo menos 10 dígitos
+      const digits = s.replace(/\D/g, "");
+      return digits.length >= 10;
     }
 
-    // ============================
-    // CADASTRO (SEM DUPLICAÇÃO)
-    // ID do doc = email
-    // ============================
-    async function cadastrar() {
-      try{
-        const nome  = document.getElementById('nome').value.trim();
-        const telefone = document.getElementById('telefone').value.trim();
-        const email = normEmail(document.getElementById('email').value);
-        const senha = document.getElementById('senha').value;
+    function showApp(user){
+      loginArea.style.display = "none";
+      appArea.style.display = "block";
 
-        if (!nome || !telefone || !email || !senha){
-          setStatus("Preencha nome, telefone, e-mail e senha.", false);
-          return alert("Preencha todos os campos (incluindo telefone).");
-        }
+      pillUsuario.textContent = `Usuário: ${user.email}`;
+      pillAcesso.textContent  = user.accessGranted ? "Acesso: Liberado" : "Acesso: Bloqueado";
+      pillAcesso.className = "pill " + (user.accessGranted ? "good" : "bad");
 
-        // Doc por e-mail (evita duplicar)
-        const ref = db.collection("users").doc(email);
-        const snap = await ref.get();
-
-        if (snap.exists){
-          setStatus("E-mail já cadastrado. Faça login.", false);
-          return alert("E-mail já cadastrado. Clique em Entrar.");
-        }
-
-        await ref.set({
-          nome,
-          telefone,
-          email,
-          senha,              // (simples) — depois podemos melhorar com Auth
-          accessGranted: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        });
-
-        setStatus("Cadastro realizado! Aguarde liberação do admin.", true);
-        alert("Cadastrado com sucesso! Aguarde liberação do administrador.");
-      }catch(err){
-        console.error(err);
-        setStatus("Erro ao cadastrar.", false);
-        alert("Erro ao cadastrar: " + (err.message || err));
-      }
+      renderCartao([]); // começa vazio
     }
 
-    // ============================
-    // LOGIN
-    // ============================
-    async function login() {
-      try{
-        const email = normEmail(document.getElementById('email').value);
-        const senha = document.getElementById('senha').value;
-
-        if (!email || !senha){
-          setStatus("Informe e-mail e senha.", false);
-          return alert("Digite e-mail e senha.");
-        }
-
-        const ref = db.collection("users").doc(email);
-        const snap = await ref.get();
-
-        if (!snap.exists){
-          setStatus("Usuário não encontrado.", false);
-          return alert("Credenciais inválidas");
-        }
-
-        const user = snap.data();
-
-        if (user.senha !== senha){
-          setStatus("Senha incorreta.", false);
-          return alert("Credenciais inválidas");
-        }
-
-        if (!user.accessGranted){
-          setStatus("Acesso ainda bloqueado pelo admin.", false);
-          return alert("Seu acesso ainda não foi liberado pelo administrador");
-        }
-
-        usuarioAtual = user;
-
-        // guarda sessão local
-        localStorage.setItem("user_session_email", user.email);
-
-        abrirApp(user);
-      }catch(err){
-        console.error(err);
-        setStatus("Erro ao entrar.", false);
-        alert("Erro ao entrar: " + (err.message || err));
-      }
+    function showLogin(){
+      loginArea.style.display = "grid";
+      appArea.style.display = "none";
+      userPill.style.display = "none";
+      setStatus("—");
     }
 
-    function abrirApp(user){
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
+    // ====== Cartão Virtual (exemplo)
+    const LINE_RANGES = {
+      1: Array.from({length:10}, (_,i)=>i+1),
+      2: Array.from({length:10}, (_,i)=>i+11),
+      3: Array.from({length:10}, (_,i)=>i+21),
+      4: Array.from({length:10}, (_,i)=>i+31),
+      5: Array.from({length:10}, (_,i)=>i+41),
+      6: Array.from({length:10}, (_,i)=>i+51),
+    };
 
-      document.getElementById("userEmailPill").textContent = user.email;
-      document.getElementById("userAccessPill").textContent = "Liberado";
+    function renderCartao(jogo){
+      cartao.innerHTML = "";
+      for (let l=1; l<=6; l++){
+        const div = document.createElement("div");
+        div.className = "linha";
+        div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong>`;
 
-      // começa com cartão vazio
-      renderCartao([]);
-      document.getElementById("acertos").textContent = "0";
-    }
-
-    function sair(){
-      usuarioAtual = null;
-      localStorage.removeItem("user_session_email");
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('login').style.display = 'block';
-      setStatus("Aguardando ação", true);
-
-      // limpa campos de senha por segurança
-      document.getElementById('senha').value = "";
-    }
-
-    // ============================
-    // GERAR JOGO (LÊ CONFIG DO ADMIN)
-    // config/global => linhasAtivas, dezenasAnteriores, dezenasAtrasadas
-    // ============================
-    async function gerarJogoUsuario() {
-      try {
-        if (!usuarioAtual){
-          alert("Faça login novamente.");
-          return;
-        }
-
-        const cfgSnap = await db.collection("config").doc("global").get();
-
-        if (!cfgSnap.exists){
-          alert("O administrador ainda não configurou as linhas ativas.");
-          return;
-        }
-
-        const cfg = cfgSnap.data() || {};
-        const linhasAtivas = Array.isArray(cfg.linhasAtivas) ? cfg.linhasAtivas : [];
-        const anteriores   = Array.isArray(cfg.dezenasAnteriores) ? cfg.dezenasAnteriores : [];
-        const atrasadas    = Array.isArray(cfg.dezenasAtrasadas) ? cfg.dezenasAtrasadas : [];
-
-        if (linhasAtivas.length === 0) {
-          alert("O administrador ainda não configurou as linhas ativas.");
-          return;
-        }
-
-        const excluidas = new Set([...(anteriores||[]), ...(atrasadas||[])]);
-
-        // gerarJogoValido vem do gerador.js
-        const jogo = gerarJogoValido(linhasAtivas, excluidas);
-
-        renderCartao(jogo);
-
-        const acertos = jogo.filter(n => anteriores.includes(n)).length;
-        document.getElementById('acertos').textContent = acertos;
-
-      } catch (err) {
-        console.error(err);
-        alert("Erro ao gerar jogo: " + (err.message || err));
-      }
-    }
-
-    // ============================
-    // RENDER CARTÃO (usa LINE_RANGES do gerador.js)
-    // ============================
-    function renderCartao(jogo) {
-      const cartao = document.getElementById('cartao');
-      cartao.innerHTML = '';
-
-      for (let l = 1; l <= 6; l++) {
-        const div = document.createElement('div');
-        div.className = 'linha';
-        div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
-
-        LINE_RANGES[l].forEach(n => {
-          const span = document.createElement('span');
-          span.className = 'numero';
-          span.textContent = String(n).padStart(2, '0');
-          if (jogo.includes(n)) span.classList.add('selecionado');
+        LINE_RANGES[l].forEach(n=>{
+          const span = document.createElement("span");
+          span.className = "num" + (jogo.includes(n) ? " sel" : "");
+          span.textContent = String(n).padStart(2,"0");
           div.appendChild(span);
         });
 
@@ -546,32 +417,121 @@
       }
     }
 
-    // ============================
-    // AUTO-LOGIN (se já logou antes)
-    // ============================
-    document.addEventListener("DOMContentLoaded", async () => {
-      try{
-        setStatus("Aguardando ação", true);
+    // ====== Firestore: users/{emailLower}
+    async function cadastrar(){
+      const nome = (nomeEl.value || "").trim();
+      const telefone = (telEl.value || "").trim();
+      const email = emailKey(emailEl.value);
+      const senha = (senhaEl.value || "").trim();
 
-        const email = normEmail(localStorage.getItem("user_session_email"));
-        if (!email) return;
+      if (!nome) return alert("Informe seu nome.");
+      if (!email.includes("@")) return alert("Informe um e-mail válido.");
+      if (!validarTelefone(telefone)) return alert("Informe um telefone válido (com DDD).");
+      if (senha.length < 4) return alert("A senha deve ter pelo menos 4 caracteres.");
 
-        const snap = await db.collection("users").doc(email).get();
-        if (!snap.exists) return;
+      const ref = doc(db, "users", email);
+      const snap = await getDoc(ref);
 
-        const user = snap.data();
-        if (!user.accessGranted) return;
-
-        usuarioAtual = user;
-        abrirApp(user);
-      }catch(e){
-        console.warn("Auto-login falhou:", e);
+      // ✅ sem duplicação: se já existe, não cadastra de novo
+      if (snap.exists()){
+        setStatus("E-mail já cadastrado. Use Entrar.", "warn");
+        return;
       }
+
+      await setDoc(ref, {
+        nome,
+        telefone,
+        email,
+        senha,                // ⚠️ simples (não recomendado em produção)
+        accessGranted: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      setStatus("Cadastro criado. Aguarde liberação do admin.", "warn");
+      userPill.style.display = "inline-block";
+      userPill.textContent = `Usuário: ${email}`;
+      userPill.className = "pill";
+    }
+
+    async function entrar(){
+      const email = emailKey(emailEl.value);
+      const senha = (senhaEl.value || "").trim();
+      if (!email.includes("@")) return alert("Informe um e-mail válido.");
+      if (!senha) return alert("Informe sua senha.");
+
+      const ref = doc(db, "users", email);
+      const snap = await getDoc(ref);
+
+      if (!snap.exists()){
+        setStatus("Usuário não encontrado. Cadastre-se.", "bad");
+        return;
+      }
+
+      const u = snap.data();
+
+      if (u.senha !== senha){
+        setStatus("Credenciais inválidas.", "bad");
+        return;
+      }
+
+      userPill.style.display = "inline-block";
+      userPill.textContent = `Usuário: ${email}`;
+      userPill.className = "pill";
+
+      if (!u.accessGranted){
+        setStatus("Aguardando ação do administrador.", "warn");
+        return;
+      }
+
+      // atualiza último login
+      await updateDoc(ref, { updatedAt: serverTimestamp() });
+
+      setStatus("Liberado. Bem-vindo!", "good");
+      showApp(u);
+      sessionStorage.setItem("user_email", email);
+    }
+
+    async function gerarJogo(){
+      // Aqui você pode integrar sua lógica real (admin salva config/global e user lê).
+      // Por enquanto um jogo simples aleatório só para mostrar no cartão:
+      const nums = new Set();
+      while (nums.size < 6){
+        nums.add(1 + Math.floor(Math.random()*60));
+      }
+      const jogo = Array.from(nums).sort((a,b)=>a-b);
+      renderCartao(jogo);
+      alert("Jogo gerado: " + jogo.map(n=>String(n).padStart(2,"0")).join(" - "));
+    }
+
+    // ====== eventos
+    btnCadastrar.addEventListener("click", cadastrar);
+    btnEntrar.addEventListener("click", entrar);
+    btnGerar.addEventListener("click", gerarJogo);
+    btnSair.addEventListener("click", ()=>{
+      sessionStorage.removeItem("user_email");
+      showLogin();
     });
+
+    // ====== auto-login (se já entrou na sessão)
+    (async ()=>{
+      const saved = sessionStorage.getItem("user_email");
+      if (!saved) {
+        setStatus("—");
+        return;
+      }
+      const ref = doc(db, "users", saved);
+      const snap = await getDoc(ref);
+      if (snap.exists()){
+        const u = snap.data();
+        if (u.accessGranted){
+          setStatus("Liberado. Bem-vindo!", "good");
+          showApp(u);
+        } else {
+          setStatus("Aguardando ação do administrador.", "warn");
+        }
+      }
+    })();
   </script>
 </body>
 </html>
-
-
-
-
