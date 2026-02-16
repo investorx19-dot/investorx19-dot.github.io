@@ -3,122 +3,288 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel Admin - Gerador de Jogos</title>
+  <title>Painel Admin • Mark6</title>
   <style>
-    body {font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7;}
-    h1 {margin: 0 0 10px 0;}
-    h2 {margin-top: 25px; color: #333;}
-    input, button {margin: 5px; padding: 8px;}
-    button {background: #0066cc; color: white; border: none; cursor: pointer; border-radius: 6px;}
-    button:hover {opacity: .9;}
-    button.sec {background:#444;}
-    button.warn {background:#b00020;}
-    table {width: 100%; border-collapse: collapse; margin-top: 15px; background:#fff;}
-    td, th {border: 1px solid #ccc; padding: 10px; text-align: center;}
-    .numero {font-weight: bold; font-size: 1.1em;}
-    .card {background:#fff; border:1px solid #ddd; border-radius:12px; padding:14px;}
-    .row {display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .row > * {flex: 0 0 auto;}
-    .pill {display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; background:#eee;}
-    .ok {background:#e6ffed; border:1px solid #b7f5c8;}
-    .bad {background:#ffecec; border:1px solid #ffb3b3;}
-    small {opacity:.75;}
+    :root{
+      --bg: #0b1220;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --text: #eaf0ff;
+      --muted: rgba(234,240,255,.75);
+      --line: rgba(255,255,255,.10);
+      --blue: #2d6cff;
+      --green:#22c55e;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(900px 500px at 20% 10%, rgba(45,108,255,.25), transparent 60%),
+                  radial-gradient(900px 500px at 80% 20%, rgba(245,158,11,.12), transparent 55%),
+                  linear-gradient(180deg, #061024 0%, #030712 100%);
+      color: var(--text);
+      min-height:100vh;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:26px 18px 60px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;margin-bottom:18px
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px
+    }
+    .brand .logo{
+      width:44px;height:44px;border-radius:12px;object-fit:cover;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      background:#0f172a;
+    }
+    h1{margin:0;font-size:24px;letter-spacing:.2px}
+    .sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .btn{
+      appearance:none;border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 14px;border-radius:12px;
+      cursor:pointer;transition:.15s;
+      font-weight:600;
+    }
+    .btn:hover{transform:translateY(-1px);background: rgba(255,255,255,.09)}
+    .btn.primary{background: var(--blue);border-color: rgba(255,255,255,.12)}
+    .btn.primary:hover{filter:brightness(1.05)}
+    .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
+    .btn.success{background: rgba(34,197,94,.16);border-color: rgba(34,197,94,.35)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      font-size:13px;
+    }
+    .grid{
+      display:grid;gap:14px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 980px){
+      .grid{grid-template-columns: 1fr 1fr}
+    }
+    .card{
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{margin:0 0 10px;font-size:16px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .sep{height:1px;background: var(--line);margin:12px 0}
+    label{font-size:13px;color:var(--muted)}
+    input{
+      width:100%;padding:11px 12px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{color: rgba(234,240,255,.45)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .six{display:grid;grid-template-columns: repeat(6, 1fr); gap:10px}
+    @media (max-width: 700px){
+      .two{grid-template-columns:1fr}
+      .six{grid-template-columns: repeat(3, 1fr)}
+    }
+    .checkboxes label{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      border-radius:14px;
+      cursor:pointer;
+    }
+    .checkboxes input{width:auto}
+    .toast{
+      display:none;
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+    }
+    .toast.show{display:block}
+    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.9)}
+    .toast.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: rgba(255,255,255,.92)}
+    table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+    }
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      text-align:left;
+      font-size: 13px;
+    }
+    th{color: rgba(234,240,255,.85); font-weight:700; background: rgba(255,255,255,.04)}
+    td{color: rgba(234,240,255,.85)}
+    .right{text-align:right}
+    .status{
+      font-weight:800;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
+    .dot.green{background: var(--green)}
+    .dot.red{background: var(--red)}
+    .small{font-size:12px;color: var(--muted)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .loginBox{max-width:520px;margin: 20px auto 0}
   </style>
 </head>
-
 <body>
-  <script>
-    // ===== PROTEÇÃO ADMIN (senha) =====
-    if (sessionStorage.getItem("admin_ok") !== "1") {
-      const senha = (prompt("Digite a senha do administrador:") || "").trim();
-      if (senha !== "Eu63b@56") {
-        alert("Acesso negado!");
-        window.location.href = "index.html";
-      } else {
-        sessionStorage.setItem("admin_ok", "1");
-      }
-    }
-  </script>
-
-  <h1>Painel de Controle - Administrador</h1>
-
-  <div class="card">
-    <div class="row" style="justify-content:space-between;">
-      <div>
-        <span class="pill" id="statusFirestore">Conectando ao Firestore...</span>
-        <div><small id="statusInfo"></small></div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <!-- Se quiser, adicione a logo também no admin: coloque o arquivo no repo e ajuste o src -->
+        <img class="logo" src="logo-marck6.jpg" alt="Mark6" onerror="this.style.display='none'">
+        <div>
+          <h1>Painel de Controle • Administrador</h1>
+          <div class="sub">Mark6 • Firebase Auth + Firestore</div>
+        </div>
       </div>
-      <button class="sec" id="btnRecarregar">Recarregar</button>
+      <div class="row">
+        <span id="who" class="pill">Não autenticado</span>
+        <button id="btnReload" class="btn">Recarregar</button>
+        <button id="btnLogout" class="btn danger" style="display:none">Sair</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- LOGIN -->
+    <div id="loginCard" class="card loginBox">
+      <h2>Login do Admin</h2>
+      <div class="small">Acesso permitido apenas para <b class="mono">decarvalho01@gmail.com</b>.</div>
+      <div class="sep"></div>
+
+      <div class="two">
+        <div>
+          <label for="adminEmail">E-mail</label>
+          <input id="adminEmail" type="email" placeholder="decarvalho01@gmail.com" autocomplete="username">
+        </div>
+        <div>
+          <label for="adminPass">Senha</label>
+          <input id="adminPass" type="password" placeholder="Sua senha" autocomplete="current-password">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button id="btnLogin" class="btn primary">Entrar</button>
+      </div>
+
+      <div class="sep"></div>
+      <div class="small">
+        Se aparecer “Missing or insufficient permissions”, é regra do Firestore (Rules) ou usuário não é admin.
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app" style="display:none">
+      <div class="grid">
+        <div class="card">
+          <h2>1) Linhas Ativas</h2>
+          <div class="checkboxes" style="display:grid;gap:10px">
+            <label><input type="checkbox" class="linha" value="1"> Linha 1 (01–10)</label>
+            <label><input type="checkbox" class="linha" value="2"> Linha 2 (11–20)</label>
+            <label><input type="checkbox" class="linha" value="3"> Linha 3 (21–30)</label>
+            <label><input type="checkbox" class="linha" value="4"> Linha 4 (31–40)</label>
+            <label><input type="checkbox" class="linha" value="5"> Linha 5 (41–50)</label>
+            <label><input type="checkbox" class="linha" value="6"> Linha 6 (51–60)</label>
+          </div>
+
+          <div class="sep"></div>
+
+          <h2>2) Dezenas do Sorteio Anterior</h2>
+          <div class="six" id="prevBox"></div>
+
+          <div class="sep"></div>
+
+          <h2>3) 5 Dezenas Mais Atrasadas</h2>
+          <div class="six" id="lateBox"></div>
+
+          <div class="row" style="margin-top:14px;justify-content:flex-end">
+            <button id="btnLoadConfig" class="btn">Carregar</button>
+            <button id="btnSaveConfig" class="btn primary">Salvar Config</button>
+          </div>
+
+          <div class="small" style="margin-top:10px">
+            Config salva em <span class="mono">config/global</span>.
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Controle de Acesso dos Usuários</h2>
+          <div class="row" style="justify-content:space-between; margin-bottom:10px">
+            <div class="small" id="dupInfo">—</div>
+            <button id="btnReloadUsers" class="btn">Atualizar lista</button>
+          </div>
+
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>E-mail</th>
+                  <th>Telefone</th>
+                  <th class="right">Acesso</th>
+                  <th class="right">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody">
+                <tr><td colspan="5" class="small">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sep"></div>
+          <div class="small">
+            **Sem duplicação visual**: se houver múltiplos documentos com o mesmo e-mail, o painel mostra apenas o mais recente.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <h2>1. Linhas Ativas (selecione as linhas do volante)</h2>
-  <div class="card">
-    <label><input type="checkbox" class="linha" value="1"> Linha 1 (01-10)</label><br>
-    <label><input type="checkbox" class="linha" value="2"> Linha 2 (11-20)</label><br>
-    <label><input type="checkbox" class="linha" value="3"> Linha 3 (21-30)</label><br>
-    <label><input type="checkbox" class="linha" value="4"> Linha 4 (31-40)</label><br>
-    <label><input type="checkbox" class="linha" value="5"> Linha 5 (41-50)</label><br>
-    <label><input type="checkbox" class="linha" value="6"> Linha 6 (51-60)</label>
-  </div>
-
-  <h2>2. Dezenas do Sorteio Anterior (6 números)</h2>
-  <div class="card">
-    <input type="number" class="anterior" min="1" max="60" placeholder="01">
-    <input type="number" class="anterior" min="1" max="60" placeholder="02">
-    <input type="number" class="anterior" min="1" max="60" placeholder="03">
-    <input type="number" class="anterior" min="1" max="60" placeholder="04">
-    <input type="number" class="anterior" min="1" max="60" placeholder="05">
-    <input type="number" class="anterior" min="1" max="60" placeholder="06">
-  </div>
-
-  <h2>3. 5 Dezenas Mais Atrasadas</h2>
-  <div class="card">
-    <input type="number" class="atrasada" min="1" max="60" placeholder="01">
-    <input type="number" class="atrasada" min="1" max="60" placeholder="02">
-    <input type="number" class="atrasada" min="1" max="60" placeholder="03">
-    <input type="number" class="atrasada" min="1" max="60" placeholder="04">
-    <input type="number" class="atrasada" min="1" max="60" placeholder="05">
-  </div>
-
-  <br>
-  <button id="btnSalvarConfig">SALVAR CONFIG (Firestore)</button>
-  <button id="btnGerar">GERAR JOGO</button>
-
-  <h2>Jogos Gerados (local neste PC)</h2>
-  <div class="card">
-    <small>Obs: os jogos gerados continuam salvos apenas neste navegador (localStorage), se quiser também salvar no Firestore eu faço depois.</small>
-    <table id="tabelaJogos">
-      <thead><tr><th>Jogo</th><th>Acertos</th><th>Data</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <h2>Controle de Acesso dos Usuários (Firestore)</h2>
-  <div class="card">
-    <table id="tabelaUsuarios">
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Acesso</th><th>Ação</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- Seu gerador -->
-  <script src="gerador.js"></script>
-
-  <!-- Firebase + Firestore -->
   <script type="module">
+    // ===============================
+    // FIREBASE (Web SDK modular)
+    // ===============================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
     import {
       getFirestore,
       doc,
       getDoc,
       setDoc,
-      updateDoc,
+      collection,
       getDocs,
-      collection
+      updateDoc
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    // ======= CONFIG DO SEU FIREBASE =======
+    const ADMIN_EMAIL = "decarvalho01@gmail.com";
+
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -129,185 +295,277 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ======= Helpers =======
+    // ===============================
+    // UI Helpers
+    // ===============================
     const $ = (id) => document.getElementById(id);
+    const toastEl = $("toast");
 
-    function setStatus(ok, msg) {
-      const el = $("statusFirestore");
-      el.textContent = msg;
-      el.className = "pill " + (ok ? "ok" : "bad");
+    function toast(msg, type="ok"){
+      toastEl.className = "toast show " + (type === "error" ? "error" : "ok");
+      toastEl.textContent = msg;
+      setTimeout(() => { toastEl.className = "toast"; }, 4200);
     }
 
-    function getLinhas() {
-      return [...document.querySelectorAll('.linha:checked')].map(el => +el.value);
-    }
-    function getAnterior() {
-      return [...document.querySelectorAll('.anterior')]
-        .map(el => +el.value)
-        .filter(n => n >= 1 && n <= 60);
-    }
-    function getAtrasadas() {
-      return [...document.querySelectorAll('.atrasada')]
-        .map(el => +el.value)
-        .filter(n => n >= 1 && n <= 60);
+    function normEmail(s){
+      return String(s || "").trim().toLowerCase();
     }
 
-    // ======= CONFIG (Firestore) =======
-    async function carregarConfigFirestore() {
-      const ref = doc(db, "config", "global");
-      const snap = await getDoc(ref);
+    function parseNumsFromInputs(selector){
+      return [...document.querySelectorAll(selector)]
+        .map(i => Number(i.value))
+        .filter(n => Number.isFinite(n) && n >= 1 && n <= 60);
+    }
 
-      if (!snap.exists()) {
-        $("statusInfo").textContent = "Config ainda não existe no Firestore. Clique em SALVAR CONFIG para criar.";
+    function setInputsFromArray(selector, arr, max){
+      const inputs = [...document.querySelectorAll(selector)];
+      for(let i=0;i<inputs.length;i++){
+        inputs[i].value = arr?.[i] ?? "";
+      }
+    }
+
+    function mkNumberInputs(containerId, cssClass, count){
+      const box = $(containerId);
+      box.innerHTML = "";
+      for(let i=0;i<count;i++){
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "1";
+        input.max = "60";
+        input.placeholder = "00";
+        input.className = cssClass;
+        input.inputMode = "numeric";
+        box.appendChild(input);
+      }
+    }
+
+    mkNumberInputs("prevBox", "anterior", 6);
+    mkNumberInputs("lateBox", "atrasada", 5);
+
+    // ===============================
+    // AUTH
+    // ===============================
+    $("btnLogin").addEventListener("click", async () => {
+      const email = $("adminEmail").value.trim();
+      const pass  = $("adminPass").value;
+
+      try{
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        // onAuthStateChanged vai cuidar do resto
+      }catch(err){
+        console.error(err);
+        toast("Falha no login (email/senha).", "error");
+      }
+    });
+
+    $("btnLogout").addEventListener("click", async () => {
+      await signOut(auth);
+      toast("Você saiu.", "ok");
+    });
+
+    $("btnReload").addEventListener("click", () => location.reload());
+
+    onAuthStateChanged(auth, async (user) => {
+      if(!user){
+        $("who").textContent = "Não autenticado";
+        $("btnLogout").style.display = "none";
+        $("loginCard").style.display = "block";
+        $("app").style.display = "none";
         return;
       }
 
-      const cfg = snap.data();
-      $("statusInfo").textContent = `Config carregada (updatedAt: ${cfg.updatedAt ? new Date(cfg.updatedAt).toLocaleString() : "sem data"})`;
+      const email = normEmail(user.email);
+      $("who").textContent = `Logado: ${email}`;
+      $("btnLogout").style.display = "inline-block";
 
-      // marcar checkboxes
-      const linhas = Array.isArray(cfg.linhasAtivas) ? cfg.linhasAtivas : [];
-      document.querySelectorAll(".linha").forEach(cb => {
-        cb.checked = linhas.includes(+cb.value);
-      });
-
-      // preencher inputs
-      const anteriores = Array.isArray(cfg.dezenasAnteriores) ? cfg.dezenasAnteriores : [];
-      const atrasadas  = Array.isArray(cfg.dezenasAtrasadas) ? cfg.dezenasAtrasadas : [];
-
-      document.querySelectorAll(".anterior").forEach((inp, i) => inp.value = anteriores[i] ?? "");
-      document.querySelectorAll(".atrasada").forEach((inp, i) => inp.value = atrasadas[i] ?? "");
-    }
-
-    async function salvarConfigFirestore() {
-      const linhasAtivas = getLinhas();
-      const anterior = getAnterior();
-      const atrasadas = getAtrasadas();
-
-      if (linhasAtivas.length === 0) {
-        alert("Selecione pelo menos uma linha!");
+      // Bloqueia se não for o admin
+      if(email !== normEmail(ADMIN_EMAIL)){
+        toast("Este usuário não é admin. Saindo...", "error");
+        await signOut(auth);
         return;
       }
 
-      await setDoc(doc(db, "config", "global"), {
-        linhasAtivas,
-        dezenasAnteriores: anterior,
-        dezenasAtrasadas: atrasadas,
-        updatedAt: Date.now()
-      });
+      // Admin OK
+      $("loginCard").style.display = "none";
+      $("app").style.display = "block";
 
-      alert("Config salva no Firestore com sucesso!");
-      await carregarConfigFirestore();
-    }
+      // Carrega dados
+      await loadConfig();
+      await loadUsers();
+    });
 
-    // ======= USERS (Firestore) =======
-    async function renderUsuarios() {
-      const tbody = document.querySelector('#tabelaUsuarios tbody');
-      tbody.innerHTML = "";
+    // ===============================
+    // CONFIG (config/global)
+    // ===============================
+    async function loadConfig(){
+      try{
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
 
-      const snap = await getDocs(collection(db, "users"));
-      const users = [];
+        // default
+        let linhasAtivas = [];
+        let dezenasAnteriores = [];
+        let dezenasAtrasadas = [];
 
-      snap.forEach(docSnap => {
-        users.push({ id: docSnap.id, ...docSnap.data() });
-      });
+        if(snap.exists()){
+          const data = snap.data();
+          linhasAtivas = data.linhasAtivas || [];
+          dezenasAnteriores = data.dezenasAnteriores || [];
+          dezenasAtrasadas = data.dezenasAtrasadas || [];
+        }
 
-      // ordena por nome/email
-      users.sort((a,b) => (a.nome || "").localeCompare(b.nome || "") || (a.email || "").localeCompare(b.email || ""));
-
-      users.forEach((u) => {
-        const acesso = u.accessGranted ? '✅ Liberado' : '⛔ Bloqueado';
-        const btnTxt = u.accessGranted ? 'Bloquear' : 'Liberar';
-        const btnCls = u.accessGranted ? 'warn' : '';
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${u.nome || '(sem nome)'}</td>
-          <td>${u.email || ''}</td>
-          <td>${acesso}</td>
-          <td><button class="${btnCls}" data-id="${u.id}" data-access="${u.accessGranted ? "1":"0"}">${btnTxt}</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      // listeners dos botões
-      tbody.querySelectorAll("button[data-id]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.getAttribute("data-id");
-          const current = btn.getAttribute("data-access") === "1";
-          await updateDoc(doc(db, "users", id), { accessGranted: !current });
-          await renderUsuarios();
+        // checkboxes
+        document.querySelectorAll(".linha").forEach(cb => {
+          cb.checked = linhasAtivas.includes(Number(cb.value));
         });
-      });
-    }
 
-    // ======= Jogos (local) =======
-    function renderJogos() {
-      const tbody = document.querySelector('#tabelaJogos tbody');
-      tbody.innerHTML = '';
-      const jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
-      jogos.forEach(j => {
-        tbody.innerHTML += `<tr>
-          <td>${j.numeros.map(n => String(n).padStart(2, '0')).join(', ')}</td>
-          <td><strong>${j.acertos}</strong></td>
-          <td>${j.data}</td>
-        </tr>`;
-      });
-    }
+        setInputsFromArray(".anterior", dezenasAnteriores, 6);
+        setInputsFromArray(".atrasada", dezenasAtrasadas, 5);
 
-    // ======= Gerar jogo (local) + salvar config =======
-    async function gerarJogo() {
-      const linhasAtivas = getLinhas();
-      if (linhasAtivas.length === 0) {
-        alert("Selecione pelo menos uma linha!");
-        return;
-      }
-
-      const anterior = getAnterior();
-      const atrasadas = getAtrasadas();
-      const excluidas = new Set([...anterior, ...atrasadas]);
-
-      // Salva config no Firestore (para os usuários pegarem)
-      await setDoc(doc(db, "config", "global"), {
-        linhasAtivas,
-        dezenasAnteriores: anterior,
-        dezenasAtrasadas: atrasadas,
-        updatedAt: Date.now()
-      });
-
-      // Gerar jogo usando seu algoritmo
-      const jogo = gerarJogoValido(linhasAtivas, excluidas);
-      const acertos = jogo.filter(n => anterior.includes(n)).length;
-
-      let jogos = JSON.parse(localStorage.getItem('jogos') || '[]');
-      jogos.push({ numeros: jogo, acertos, data: new Date().toLocaleString() });
-      localStorage.setItem('jogos', JSON.stringify(jogos));
-
-      renderJogos();
-      alert(`Jogo gerado: ${jogo.map(n => String(n).padStart(2,'0')).join(' - ')} | Acertos: ${acertos}`);
-    }
-
-    // ======= Init =======
-    async function init() {
-      try {
-        setStatus(true, "Firestore conectado ✅");
-        await carregarConfigFirestore();
-        await renderUsuarios();
-        renderJogos();
-      } catch (e) {
-        console.error(e);
-        setStatus(false, "Erro Firestore ❌");
-        $("statusInfo").textContent = "Erro: " + (e?.message || e);
+        toast("Config carregada.", "ok");
+      }catch(err){
+        console.error(err);
+        toast("Erro ao carregar config (Rules?).", "error");
       }
     }
 
-    $("btnSalvarConfig").addEventListener("click", salvarConfigFirestore);
-    $("btnGerar").addEventListener("click", gerarJogo);
-    $("btnRecarregar").addEventListener("click", init);
+    async function saveConfig(){
+      try{
+        const linhasAtivas = [...document.querySelectorAll(".linha:checked")].map(el => Number(el.value));
+        const anterior = parseNumsFromInputs(".anterior");
+        const atrasadas = parseNumsFromInputs(".atrasada");
 
-    init();
+        await setDoc(doc(db, "config", "global"), {
+          linhasAtivas,
+          dezenasAnteriores: anterior,
+          dezenasAtrasadas: atrasadas,
+          updatedAt: Date.now()
+        }, { merge: true });
+
+        toast("Config salva com sucesso.", "ok");
+      }catch(err){
+        console.error(err);
+        toast("Erro ao salvar config (Missing permissions).", "error");
+      }
+    }
+
+    $("btnLoadConfig").addEventListener("click", loadConfig);
+    $("btnSaveConfig").addEventListener("click", saveConfig);
+
+    // ===============================
+    // USERS LIST + NO DUPLICATION
+    // ===============================
+    async function loadUsers(){
+      const tbody = $("usersTbody");
+      tbody.innerHTML = `<tr><td colspan="5" class="small">Carregando...</td></tr>`;
+
+      try{
+        const snap = await getDocs(collection(db, "users"));
+        const docs = [];
+        snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+        // de-dupe by email (keep most recent updatedAt/createdAt)
+        const map = new Map();
+        let duplicatesHidden = 0;
+
+        for(const u of docs){
+          const email = normEmail(u.email);
+          if(!email) continue;
+
+          const ts = Number(u.updatedAt || u.createdAt || 0);
+          if(!map.has(email)){
+            map.set(email, u);
+          }else{
+            const cur = map.get(email);
+            const curTs = Number(cur.updatedAt || cur.createdAt || 0);
+            if(ts >= curTs){
+              map.set(email, u);
+            }
+            duplicatesHidden++;
+          }
+        }
+
+        const uniqueUsers = [...map.values()]
+          .sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
+
+        $("dupInfo").textContent =
+          duplicatesHidden > 0
+            ? `⚠️ ${duplicatesHidden} duplicado(s) ocultado(s) por e-mail (mostrando apenas o mais recente).`
+            : `Sem duplicações detectadas.`;
+
+        if(uniqueUsers.length === 0){
+          tbody.innerHTML = `<tr><td colspan="5" class="small">Nenhum usuário encontrado.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = "";
+        for(const u of uniqueUsers){
+          const granted = !!u.accessGranted;
+          const phone = (u.telefone || u.phone || "").toString();
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
+            <td class="mono">${escapeHtml(u.email || "")}</td>
+            <td class="mono">${escapeHtml(phone || "-")}</td>
+            <td class="right">
+              <span class="status">
+                <span class="dot ${granted ? "green" : "red"}"></span>
+                ${granted ? "Liberado" : "Bloqueado"}
+              </span>
+            </td>
+            <td class="right">
+              <button class="btn ${granted ? "danger" : "success"}" data-userid="${u.id}" data-granted="${granted}">
+                ${granted ? "Bloquear" : "Liberar"}
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+        // bind toggle buttons
+        tbody.querySelectorAll("button[data-userid]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const currentlyGranted = btn.getAttribute("data-granted") === "true";
+            await toggleAccess(userId, !currentlyGranted);
+          });
+        });
+
+      }catch(err){
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="5" class="small">Erro ao carregar usuários.</td></tr>`;
+        toast("Erro ao carregar usuários (Missing permissions).", "error");
+      }
+    }
+
+    async function toggleAccess(userDocId, newValue){
+      try{
+        await updateDoc(doc(db, "users", userDocId), {
+          accessGranted: newValue,
+          updatedAt: Date.now()
+        });
+        toast(newValue ? "Usuário liberado." : "Usuário bloqueado.", "ok");
+        await loadUsers();
+      }catch(err){
+        console.error(err);
+        toast("Falha ao alterar acesso (Rules?).", "error");
+      }
+    }
+
+    $("btnReloadUsers").addEventListener("click", loadUsers);
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
   </script>
 </body>
 </html>
