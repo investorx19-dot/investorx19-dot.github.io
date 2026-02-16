@@ -2,334 +2,324 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mark6 • Gerador de Jogos - Mega-Sena</title>
   <style>
     :root{
-      --bg1:#061023;
-      --bg2:#0b1f3a;
+      --bg1:#061024;
+      --bg2:#030712;
       --card: rgba(255,255,255,.06);
-      --border: rgba(255,255,255,.12);
-      --text:#eaf2ff;
-      --muted: rgba(234,242,255,.72);
-      --accent:#2f7bff;
-      --good:#2ecc71;
-      --bad:#ff4d4d;
-      --gold:#f5c542;
+      --card2: rgba(255,255,255,.08);
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.72);
+      --line: rgba(255,255,255,.10);
+      --blue:#2d6cff;
+      --green:#22c55e;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background:
-        radial-gradient(1000px 500px at 50% -10%, rgba(47,123,255,.25), transparent 60%),
-        radial-gradient(800px 500px at 20% 10%, rgba(245,197,66,.15), transparent 60%),
-        linear-gradient(180deg,var(--bg2),var(--bg1));
+        radial-gradient(900px 500px at 20% 10%, rgba(45,108,255,.25), transparent 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(245,158,11,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      color: var(--text);
       min-height:100vh;
-      padding:28px 16px 60px;
     }
-
-    .wrap{max-width:980px;margin:0 auto}
-    .topo{
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 70px}
+    .top{
       text-align:center;
       margin-bottom:18px;
     }
+    .brand{
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+    }
     .logo{
-      width:110px;
-      height:auto;
-      display:block;
-      margin:0 auto 10px;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.45));
+      width:78px;height:78px;border-radius:18px;object-fit:cover;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      background:#0f172a;
     }
     h1{
       margin:0;
-      font-size:38px;
+      font-size:36px;
       letter-spacing:.2px;
     }
     .sub{
-      margin:10px 0 0;
-      color:var(--muted);
+      margin:4px 0 0;
+      color: var(--muted);
       font-size:14px;
     }
 
     .grid{
       display:grid;
+      gap:14px;
       grid-template-columns: 1fr;
-      gap:16px;
-      margin-top:18px;
+    }
+    @media (min-width: 980px){
+      .grid{grid-template-columns: 1fr 1fr}
     }
 
     .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:18px;
-      box-shadow: 0 20px 50px rgba(0,0,0,.35);
-      backdrop-filter: blur(10px);
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
     }
-
-    .card h2{
-      margin:0 0 12px;
-      font-size:18px;
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width:760px){
-      .row{grid-template-columns:1fr}
-      h1{font-size:30px}
-    }
-
-    label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin:0 0 6px;
-    }
-
+    .card h2{margin:0 0 10px;font-size:16px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .sep{height:1px;background: var(--line);margin:12px 0}
+    label{font-size:13px;color:var(--muted)}
     input{
       width:100%;
-      padding:12px 12px;
+      padding:11px 12px;
       border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
       color: var(--text);
       outline:none;
     }
-    input:focus{
-      border-color: rgba(47,123,255,.55);
-      box-shadow: 0 0 0 3px rgba(47,123,255,.18);
-    }
+    input::placeholder{color: rgba(234,240,255,.45)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 700px){ .two{grid-template-columns:1fr} }
 
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-
-    button{
-      border:none;
-      cursor:pointer;
-      border-radius:12px;
-      padding:11px 14px;
+    .btn{
+      appearance:none;border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 14px;border-radius:12px;
+      cursor:pointer;transition:.15s;
       font-weight:700;
-      color:white;
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
     }
-    button.primary{
-      background: linear-gradient(180deg, rgba(47,123,255,1), rgba(47,123,255,.65));
-      border-color: rgba(47,123,255,.6);
-    }
-    button.danger{
-      background: rgba(255,77,77,.14);
-      border-color: rgba(255,77,77,.35);
-    }
-    button:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-    }
-
-    .statusline{
-      margin-top:12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.14);
-      color:var(--muted);
+    .btn:hover{transform:translateY(-1px);background: rgba(255,255,255,.09)}
+    .btn.primary{background: var(--blue);border-color: rgba(255,255,255,.12)}
+    .btn.primary:hover{filter:brightness(1.05)}
+    .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
       font-size:13px;
     }
+    .pill strong{color: rgba(234,240,255,.92)}
+    .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
+    .dot.green{background: var(--green)}
+    .dot.red{background: var(--red)}
+    .dot.amber{background: var(--amber)}
 
-    .pill{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.14);
-      color:var(--text);
-      font-size:12px;
+    .toast{
+      display:none;
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
     }
-    .dot{
-      width:8px;height:8px;border-radius:999px;background:var(--gold);
-    }
-    .dot.good{background:var(--good)}
-    .dot.bad{background:var(--bad)}
+    .toast.show{display:block}
+    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.92)}
+    .toast.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: rgba(255,255,255,.92)}
 
-    .hidden{display:none !important}
+    .small{font-size:12px;color: var(--muted)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
 
     /* Cartão virtual */
-    .cartao{margin-top:14px}
-    .linha{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.12);
-      margin:10px 0;
-      overflow-x:auto;
-    }
-    .linha strong{min-width:120px}
-    .num{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:34px;
-      height:32px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.14);
+    .cardBox{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
       background: rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .lineRow{
+      padding:12px 12px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .lineRow:first-child{border-top:none}
+    .lineTitle{
+      min-width:140px;
+      color: rgba(234,240,255,.92);
       font-weight:800;
-      color:var(--text);
     }
-    .num.sel{
-      border-color: rgba(245,197,66,.7);
-      box-shadow: 0 0 0 3px rgba(245,197,66,.18);
-      color: var(--gold);
+    .nums{
+      display:flex;flex-wrap:wrap;gap:8px;
     }
+    .n{
+      width:36px;height:32px;
+      display:flex;align-items:center;justify-content:center;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(234,240,255,.92);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .n.sel{border-color: rgba(245,158,11,.75); background: rgba(245,158,11,.16)}
+    .n.off{opacity:.35}
 
     table{
       width:100%;
-      border-collapse:collapse;
-      margin-top:12px;
+      border-collapse: collapse;
       overflow:hidden;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
     }
-    th,td{
-      padding:10px;
-      border-bottom:1px solid rgba(255,255,255,.10);
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
       text-align:left;
-      font-size:13px;
-      color:var(--muted);
+      font-size: 13px;
     }
-    th{color:var(--text); background: rgba(0,0,0,.16)}
-    tr:last-child td{border-bottom:none}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;color:var(--text)}
-    .right{margin-left:auto}
+    th{color: rgba(234,240,255,.85); font-weight:800; background: rgba(255,255,255,.04)}
+    td{color: rgba(234,240,255,.85)}
+    .right{text-align:right}
+
+    .hide{display:none!important}
   </style>
 </head>
-
 <body>
   <div class="wrap">
-    <div class="topo">
-      <!-- ✅ Logo: arquivo precisa existir na raiz do repo com esse nome -->
-      <img src="./logo-marck6.jpg" alt="Mark6" class="logo" />
-      <h1>Gerador de Jogos - Mega-Sena</h1>
-      <p class="sub">Cadastro e liberação pelo administrador • Mark6</p>
+    <div class="top">
+      <div class="brand">
+        <img class="logo" src="logo-marck6.jpg" alt="Mark6"
+             onerror="this.style.display='none'">
+        <h1>Gerador de Jogos - Mega-Sena</h1>
+        <div class="sub">Cadastro e liberação pelo administrador • Mark6</div>
+      </div>
     </div>
 
-    <!-- ====== LOGIN / CADASTRO ====== -->
-    <div id="boxAuth" class="card">
-      <h2>Cadastro / Login</h2>
+    <div id="toast" class="toast"></div>
 
+    <div class="row" style="justify-content:space-between;margin-bottom:14px">
+      <span id="who" class="pill">Não autenticado</span>
       <div class="row">
-        <div>
-          <label for="nome">Nome</label>
-          <input id="nome" placeholder="Seu nome completo" autocomplete="name" />
-        </div>
-        <div>
-          <label for="telefone">Telefone (WhatsApp)</label>
-          <input id="telefone" placeholder="(21) 99999-9999" autocomplete="tel" />
-        </div>
+        <button id="btnLogout" class="btn danger hide">Sair</button>
       </div>
-
-      <div class="row" style="margin-top:10px">
-        <div>
-          <label for="email">E-mail</label>
-          <input id="email" placeholder="seuemail@gmail.com" autocomplete="email" />
-        </div>
-        <div>
-          <label for="senha">Senha</label>
-          <input id="senha" type="password" placeholder="Crie sua senha (mín. 6)" autocomplete="new-password" />
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="btnCadastrar" class="primary">Cadastrar</button>
-        <button id="btnEntrar">Entrar</button>
-        <button id="btnChecar" class="right">Checar liberação</button>
-      </div>
-
-      <div class="statusline">
-        <span id="status">Status: aguardando ação</span>
-        <span id="badge" class="pill"><span class="dot"></span><span id="badgeText">Deslogado</span></span>
-      </div>
-
-      <p class="sub" style="margin-top:10px">
-        • O acesso ao gerador só é liberado após aprovação do administrador.<br/>
-        • Seu cadastro é salvo no Firestore (não depende do seu navegador).
-      </p>
     </div>
 
-    <!-- ====== APP LOGADO ====== -->
-    <div id="boxApp" class="card hidden">
-      <div class="actions" style="justify-content:space-between; margin-top:0">
-        <button id="btnGerar" class="primary">GERAR JOGO</button>
-        <button id="btnSair" class="danger">Sair</button>
+    <div class="grid">
+      <!-- LOGIN / CADASTRO -->
+      <div id="authCard" class="card">
+        <h2>Cadastro / Login</h2>
+        <div class="sep"></div>
+
+        <div class="two">
+          <div>
+            <label for="nome">Nome</label>
+            <input id="nome" placeholder="Seu nome completo" autocomplete="name">
+          </div>
+          <div>
+            <label for="telefone">Telefone (WhatsApp)</label>
+            <input id="telefone" placeholder="(21) 99999-9999" inputmode="tel" autocomplete="tel">
+          </div>
+        </div>
+
+        <div class="two" style="margin-top:10px">
+          <div>
+            <label for="email">E-mail</label>
+            <input id="email" type="email" placeholder="seuemail@gmail.com" autocomplete="username">
+          </div>
+          <div>
+            <label for="senha">Senha</label>
+            <input id="senha" type="password" placeholder="Crie sua senha" autocomplete="current-password">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button id="btnRegister" class="btn primary">Cadastrar</button>
+          <button id="btnLogin" class="btn">Entrar</button>
+        </div>
+
+        <div class="sep"></div>
+        <div class="small">
+          • Seu cadastro é salvo no Firestore (não depende do seu navegador).<br>
+          • O acesso ao gerador só é liberado após aprovação do administrador.
+        </div>
+
+        <div style="margin-top:12px">
+          <span id="statusPill" class="pill">
+            <span class="dot amber"></span>
+            Status: <strong id="statusText">Aguardando ação</strong>
+          </span>
+        </div>
       </div>
 
-      <div class="statusline">
-        <span class="mono" id="who">Usuário: -</span>
-        <span class="pill"><span class="dot good"></span><span>Acesso: Liberado</span></span>
+      <!-- APP (GERADOR) -->
+      <div id="appCard" class="card hide">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0">Painel do Usuário</h2>
+          <button id="btnGerar" class="btn primary">Gerar Jogo</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row" style="justify-content:space-between">
+          <span class="pill">
+            <span id="dotAccess" class="dot red"></span>
+            Acesso: <strong id="accessText">Bloqueado</strong>
+          </span>
+
+          <span class="pill">
+            <span class="dot green"></span>
+            Usuário: <strong id="userEmail">—</strong>
+          </span>
+        </div>
+
+        <div class="sep"></div>
+
+        <h2>Cartão Virtual</h2>
+        <div class="small">Mostra as linhas e destaca o jogo gerado.</div>
+
+        <div class="cardBox" id="cartao"></div>
+
+        <div class="sep"></div>
+
+        <h2>Último jogo</h2>
+        <div class="pill" style="width:100%;justify-content:space-between">
+          <span class="mono" id="lastGame">—</span>
+          <span class="mono">Acertos: <strong id="lastHits">0</strong></span>
+        </div>
+
+        <div class="sep"></div>
+        <div class="small">
+          Regras: usa <span class="mono">config/global</span> (linhasAtivas + dezenas anteriores/atrasadas) e exclui esses números do sorteio.
+        </div>
       </div>
-
-      <h2 style="margin-top:14px">Cartão Virtual</h2>
-      <div id="cartao" class="cartao"></div>
-
-      <h2 style="margin-top:18px">Jogos Gerados</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Jogo</th>
-            <th>Acertos</th>
-            <th>Data</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyJogos"></tbody>
-      </table>
     </div>
   </div>
 
-  <!-- ====== FIREBASE + APP (MODULE) ====== -->
   <script type="module">
+    // ===============================
+    // FIREBASE SDK (modular)
+    // ===============================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-
     import {
       getAuth,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
+      onAuthStateChanged,
+      signOut
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
     import {
       getFirestore,
       doc,
-      setDoc,
       getDoc,
-      collection,
-      addDoc,
-      query,
-      orderBy,
-      limit,
-      getDocs
+      setDoc
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    // ✅ Seu config
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -343,168 +333,32 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ===== UI refs =====
-    const boxAuth = document.getElementById("boxAuth");
-    const boxApp = document.getElementById("boxApp");
+    // ===============================
+    // HELPERS
+    // ===============================
+    const $ = (id) => document.getElementById(id);
+    const toastEl = $("toast");
 
-    const elNome = document.getElementById("nome");
-    const elTelefone = document.getElementById("telefone");
-    const elEmail = document.getElementById("email");
-    const elSenha = document.getElementById("senha");
-
-    const btnCadastrar = document.getElementById("btnCadastrar");
-    const btnEntrar = document.getElementById("btnEntrar");
-    const btnChecar = document.getElementById("btnChecar");
-    const btnSair = document.getElementById("btnSair");
-    const btnGerar = document.getElementById("btnGerar");
-
-    const statusEl = document.getElementById("status");
-    const badge = document.getElementById("badge");
-    const badgeText = document.getElementById("badgeText");
-    const who = document.getElementById("who");
-
-    const cartao = document.getElementById("cartao");
-    const tbodyJogos = document.getElementById("tbodyJogos");
-
-    function setStatus(msg){ statusEl.textContent = "Status: " + msg; }
-
-    function setBadge(type, text){
-      const dot = badge.querySelector(".dot");
-      dot.classList.remove("good","bad");
-      if (type === "good") dot.classList.add("good");
-      if (type === "bad") dot.classList.add("bad");
-      badgeText.textContent = text;
+    function toast(msg, type="ok"){
+      toastEl.className = "toast show " + (type === "error" ? "error" : "ok");
+      toastEl.textContent = msg;
+      setTimeout(() => { toastEl.className = "toast"; }, 4200);
     }
 
-    function normalizarTelefone(tel){
-      // guarda só dígitos (ex.: 5521999999999)
-      return (tel || "").replace(/\D/g,"").slice(0,13);
+    function normEmail(s){
+      return String(s || "").trim().toLowerCase();
     }
 
-    // ===== LÓGICA SAAS =====
-    async function ensureUserDoc(user, nome, telefone){
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      if (!snap.exists()){
-        await setDoc(ref, {
-          nome: nome || "",
-          telefone: telefone || "",
-          email: user.email,
-          accessGranted: false,
-          createdAt: Date.now()
-        });
-      }
+    function cleanPhone(phone){
+      // mantém só dígitos (bom para salvar)
+      return String(phone || "").replace(/\D/g, "");
     }
 
-    async function readUserDoc(user){
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      return snap.exists() ? snap.data() : null;
-    }
+    function format2(n){ return String(n).padStart(2, "0"); }
 
-    async function cadastrar(){
-      const nome = (elNome.value || "").trim();
-      const telefone = normalizarTelefone(elTelefone.value || "");
-      const email = (elEmail.value || "").trim().toLowerCase();
-      const senha = (elSenha.value || "").trim();
-
-      if (!nome) return alert("Digite seu nome.");
-      if (!telefone) return alert("Digite seu telefone/WhatsApp.");
-      if (!email) return alert("Digite seu e-mail.");
-      if (senha.length < 6) return alert("A senha precisa ter no mínimo 6 caracteres.");
-
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, senha);
-        await ensureUserDoc(cred.user, nome, telefone);
-
-        setStatus("Cadastro criado. Aguardando liberação...");
-        setBadge("bad","Aguardando liberação");
-        alert("Cadastro realizado! Agora aguarde liberação do administrador.");
-      }catch(e){
-        if (e.code === "auth/email-already-in-use"){
-          alert("Esse e-mail já está cadastrado. Clique em Entrar.");
-          return;
-        }
-        console.error(e);
-        alert("Erro ao cadastrar: " + (e.message || e.code));
-      }
-    }
-
-    async function entrar(){
-      const email = (elEmail.value || "").trim().toLowerCase();
-      const senha = (elSenha.value || "").trim();
-      if (!email || !senha) return alert("Informe e-mail e senha.");
-
-      try{
-        const cred = await signInWithEmailAndPassword(auth, email, senha);
-
-        // garante doc
-        await ensureUserDoc(cred.user, "", "");
-
-        // checa liberação
-        const data = await readUserDoc(cred.user);
-        if (!data){
-          await signOut(auth);
-          return alert("Usuário não encontrado no Firestore.");
-        }
-
-        if (!data.accessGranted){
-          await signOut(auth);
-          setStatus("Aguardando liberação do administrador");
-          setBadge("bad","Aguardando liberação");
-          return alert("Aguardando liberação do administrador.");
-        }
-
-        // liberado -> UI vai abrir no onAuthStateChanged
-      }catch(e){
-        console.error(e);
-        alert("Credenciais inválidas");
-      }
-    }
-
-    async function checarLiberacao(){
-      const user = auth.currentUser;
-      if (!user){
-        return alert("Você ainda não está logado. Entre primeiro.");
-      }
-      const data = await readUserDoc(user);
-      if (!data) return alert("Usuário não encontrado no Firestore.");
-
-      if (!data.accessGranted){
-        setStatus("Ainda não liberado");
-        setBadge("bad","Aguardando liberação");
-        return alert("Ainda não liberado. Peça para o admin liberar.");
-      }
-
-      setStatus("Liberado ✅");
-      setBadge("good","Liberado");
-      abrirApp(user, data);
-    }
-
-    async function sair(){
-      await signOut(auth);
-    }
-
-    // ===== CONFIG GLOBAL (FireStore) =====
-    async function loadGlobalConfig(){
-      const ref = doc(db, "config", "global");
-      const snap = await getDoc(ref);
-      if (!snap.exists()){
-        return {
-          linhasAtivas:[1,2,3,4,5,6],
-          dezenasAnteriores:[],
-          dezenasAtrasadas:[]
-        };
-      }
-      const d = snap.data();
-      return {
-        linhasAtivas: Array.isArray(d.linhasAtivas) ? d.linhasAtivas : [1,2,3,4,5,6],
-        dezenasAnteriores: Array.isArray(d.dezenasAnteriores) ? d.dezenasAnteriores : [],
-        dezenasAtrasadas: Array.isArray(d.dezenasAtrasadas) ? d.dezenasAtrasadas : []
-      };
-    }
-
-    // ===== GERADOR =====
+    // ===============================
+    // MEGA-SENA LINES
+    // ===============================
     const LINE_RANGES = {
       1: Array.from({length:10}, (_,i)=> i+1),
       2: Array.from({length:10}, (_,i)=> i+11),
@@ -514,204 +368,322 @@
       6: Array.from({length:10}, (_,i)=> i+51),
     };
 
-    const FIBONACCI = [1,2,3,5,8,13,21,34,55];
-    const PRIMOS = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59];
-    const MULT3 = Array.from({length:20}, (_,i)=> (i+1)*3).filter(n=>n<=60);
+    function buildCardUI(selectedNums = [], linhasAtivas = [1,2,3,4,5,6]){
+      const sel = new Set(selectedNums);
+      const activeSet = new Set(linhasAtivas);
 
-    function pickRandom(arr){
-      return arr.splice(Math.floor(Math.random()*arr.length),1)[0];
-    }
-
-    function renderCartao(jogo = []){
+      const cartao = $("cartao");
       cartao.innerHTML = "";
-      for (let l=1; l<=6; l++){
-        const div = document.createElement("div");
-        div.className = "linha";
-        div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong>`;
-        LINE_RANGES[l].forEach(n=>{
-          const span = document.createElement("span");
-          span.className = "num" + (jogo.includes(n) ? " sel" : "");
-          span.textContent = String(n).padStart(2,"0");
-          div.appendChild(span);
-        });
-        cartao.appendChild(div);
+
+      for(let l=1; l<=6; l++){
+        const row = document.createElement("div");
+        row.className = "lineRow";
+
+        const title = document.createElement("div");
+        title.className = "lineTitle";
+        title.textContent = `Linha ${l} (${format2(LINE_RANGES[l][0])}-${format2(LINE_RANGES[l][9])}):`;
+
+        const nums = document.createElement("div");
+        nums.className = "nums";
+
+        for(const n of LINE_RANGES[l]){
+          const chip = document.createElement("div");
+          chip.className = "n";
+          chip.textContent = format2(n);
+
+          if(!activeSet.has(l)) chip.classList.add("off");
+          if(sel.has(n)) chip.classList.add("sel");
+
+          nums.appendChild(chip);
+        }
+
+        row.appendChild(title);
+        row.appendChild(nums);
+        cartao.appendChild(row);
       }
     }
 
-    async function gerarJogo(){
-      const user = auth.currentUser;
-      if (!user) return alert("Faça login novamente.");
+    // ===============================
+    // STATE
+    // ===============================
+    let currentUser = null;
+    let userDoc = null;
+    let configGlobal = null;
 
-      const cfg = await loadGlobalConfig();
-      const linhasAtivas = cfg.linhasAtivas;
-      const anterior = cfg.dezenasAnteriores;
-      const atrasadas = cfg.dezenasAtrasadas;
+    // ===============================
+    // READ CONFIG
+    // ===============================
+    async function loadConfig(){
+      // config/global pode ser lido por usuários (pelas rules que te passei)
+      const ref = doc(db, "config", "global");
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        return {
+          linhasAtivas: [1,2,3,4,5,6],
+          dezenasAnteriores: [],
+          dezenasAtrasadas: []
+        };
+      }
+      const d = snap.data() || {};
+      return {
+        linhasAtivas: Array.isArray(d.linhasAtivas) ? d.linhasAtivas : [1,2,3,4,5,6],
+        dezenasAnteriores: Array.isArray(d.dezenasAnteriores) ? d.dezenasAnteriores : [],
+        dezenasAtrasadas: Array.isArray(d.dezenasAtrasadas) ? d.dezenasAtrasadas : []
+      };
+    }
 
-      if (!linhasAtivas.length) return alert("Admin ainda não selecionou linhas ativas.");
+    // ===============================
+    // READ USER DOC (users/{uid})
+    // ===============================
+    async function loadUserDoc(uid){
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return null;
+      return snap.data();
+    }
+
+    // ===============================
+    // UI MODE
+    // ===============================
+    function setAuthUI(){
+      $("authCard").classList.remove("hide");
+      $("appCard").classList.add("hide");
+      $("btnLogout").classList.add("hide");
+
+      $("who").textContent = "Não autenticado";
+      $("userEmail").textContent = "—";
+
+      $("statusText").textContent = "Aguardando ação";
+      $("statusPill").innerHTML = `<span class="dot amber"></span> Status: <strong id="statusText">Aguardando ação</strong>`;
+    }
+
+    function setLoggedUI(email){
+      $("btnLogout").classList.remove("hide");
+      $("who").innerHTML = `Logado: <strong>${email}</strong>`;
+      $("userEmail").textContent = email;
+    }
+
+    function setAccessUI(granted){
+      $("dotAccess").className = "dot " + (granted ? "green" : "red");
+      $("accessText").textContent = granted ? "Liberado" : "Bloqueado";
+
+      // status pill no login
+      const html = granted
+        ? `<span class="dot green"></span> Status: <strong>Liberado</strong>`
+        : `<span class="dot amber"></span> Status: <strong>Aguardando aprovação</strong>`;
+      $("statusPill").innerHTML = html;
+    }
+
+    // ===============================
+    // AUTH ACTIONS
+    // ===============================
+    $("btnRegister").addEventListener("click", async () => {
+      const nome = $("nome").value.trim();
+      const telefoneRaw = $("telefone").value.trim();
+      const telefone = cleanPhone(telefoneRaw);
+      const email = $("email").value.trim();
+      const senha = $("senha").value;
+
+      if(!nome){
+        toast("Informe seu nome.", "error"); return;
+      }
+      if(telefone.length < 10){
+        toast("Informe um telefone válido (com DDD).", "error"); return;
+      }
+      if(!email || !email.includes("@")){
+        toast("Informe um e-mail válido.", "error"); return;
+      }
+      if(!senha || senha.length < 6){
+        toast("A senha precisa ter no mínimo 6 caracteres.", "error"); return;
+      }
+
+      try{
+        const cred = await createUserWithEmailAndPassword(auth, email, senha);
+        const uid = cred.user.uid;
+
+        // salva SEM duplicação: users/{uid}
+        await setDoc(doc(db, "users", uid), {
+          uid,
+          email: normEmail(cred.user.email),
+          nome,
+          telefone,
+          accessGranted: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }, { merge: true });
+
+        toast("Cadastro realizado! Aguarde liberação do administrador.", "ok");
+      }catch(err){
+        console.error(err);
+        toast("Falha no cadastro (email já usado ou senha fraca).", "error");
+      }
+    });
+
+    $("btnLogin").addEventListener("click", async () => {
+      const email = $("email").value.trim();
+      const senha = $("senha").value;
+
+      if(!email || !senha){
+        toast("Informe e-mail e senha.", "error"); return;
+      }
+
+      try{
+        await signInWithEmailAndPassword(auth, email, senha);
+        // onAuthStateChanged cuida do resto
+      }catch(err){
+        console.error(err);
+        toast("Credenciais inválidas.", "error");
+      }
+    });
+
+    $("btnLogout").addEventListener("click", async () => {
+      await signOut(auth);
+      toast("Você saiu.", "ok");
+    });
+
+    // ===============================
+    // ON AUTH STATE
+    // ===============================
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+
+      if(!user){
+        userDoc = null;
+        configGlobal = null;
+        setAuthUI();
+        buildCardUI([], [1,2,3,4,5,6]);
+        $("lastGame").textContent = "—";
+        $("lastHits").textContent = "0";
+        return;
+      }
+
+      const email = normEmail(user.email);
+      setLoggedUI(email);
+
+      try{
+        // carrega doc do usuário (somente o próprio)
+        userDoc = await loadUserDoc(user.uid);
+
+        // se não existir (usuário antigo), cria o mínimo
+        if(!userDoc){
+          await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            email,
+            nome: $("nome").value.trim() || "(sem nome)",
+            telefone: cleanPhone($("telefone").value.trim() || ""),
+            accessGranted: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          }, { merge: true });
+          userDoc = await loadUserDoc(user.uid);
+        }
+
+        // carrega config/global
+        configGlobal = await loadConfig();
+
+        const granted = !!userDoc.accessGranted;
+        setAccessUI(granted);
+
+        // UI:
+        $("authCard").classList.remove("hide"); // mantém visível (mostra status)
+        $("appCard").classList.remove("hide");
+
+        // Se bloqueado: desabilita gerar
+        $("btnGerar").disabled = !granted;
+        $("btnGerar").style.opacity = granted ? "1" : ".5";
+        $("btnGerar").style.cursor = granted ? "pointer" : "not-allowed";
+
+        // constrói cartão virtual (sem seleção no começo)
+        buildCardUI([], configGlobal.linhasAtivas);
+
+      }catch(err){
+        console.error(err);
+        toast("Erro ao carregar dados do Firestore (Rules?).", "error");
+        // mantém usuário logado, mas sem app
+        $("appCard").classList.add("hide");
+      }
+    });
+
+    // ===============================
+    // GERAR JOGO (respeita config/global)
+    // ===============================
+    function randomPick(arr){
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateGame(config){
+      const linhasAtivas = (config?.linhasAtivas?.length ? config.linhasAtivas : [1,2,3,4,5,6])
+        .map(n => Number(n)).filter(n => n>=1 && n<=6);
+
+      const anterior = (config?.dezenasAnteriores || []).map(Number).filter(n => n>=1 && n<=60);
+      const atrasadas = (config?.dezenasAtrasadas || []).map(Number).filter(n => n>=1 && n<=60);
 
       const excluidas = new Set([...anterior, ...atrasadas]);
 
-      // disponiveis por linha
+      // números disponíveis por linha ativa (excluindo)
       const disponiveisPorLinha = {};
-      linhasAtivas.forEach(l=>{
-        disponiveisPorLinha[l] = LINE_RANGES[l].filter(n=>!excluidas.has(n));
-      });
-
-      for (const l of linhasAtivas){
-        if (disponiveisPorLinha[l].length === 0){
-          return alert(`A Linha ${l} não tem números disponíveis (todos excluídos).`);
+      for(const l of linhasAtivas){
+        disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
+        if(disponiveisPorLinha[l].length === 0){
+          throw new Error(`Linha ${l} sem números disponíveis.`);
         }
       }
 
-      // 1 número por linha
+      // 1 por linha marcada
       const jogo = [];
       const usados = new Set();
-      linhasAtivas.forEach(l=>{
-        const nums = disponiveisPorLinha[l];
-        const idx = Math.floor(Math.random()*nums.length);
-        const n = nums[idx];
-        jogo.push(n);
-        usados.add(n);
-        nums.splice(idx,1);
-      });
 
-      let faltam = 6 - jogo.length;
-      if (faltam > 0){
-        let restantes = [];
-        linhasAtivas.forEach(l=> restantes.push(...disponiveisPorLinha[l]));
-        restantes = [...new Set(restantes.filter(n=>!usados.has(n)))];
+      for(const l of linhasAtivas){
+        const nums = disponiveisPorLinha[l].filter(n => !usados.has(n));
+        const chosen = randomPick(nums);
+        jogo.push(chosen);
+        usados.add(chosen);
+      }
 
-        if (restantes.length < faltam){
-          return alert("Não há números suficientes para completar 6 dezenas.");
-        }
+      // completa até 6 com quaisquer disponíveis das linhas ativas
+      let pool = [];
+      for(const l of linhasAtivas){
+        pool.push(...disponiveisPorLinha[l]);
+      }
+      pool = [...new Set(pool)].filter(n => !usados.has(n));
 
-        let f = restantes.filter(n=>FIBONACCI.includes(n));
-        let p = restantes.filter(n=>PRIMOS.includes(n));
-        let m = restantes.filter(n=>MULT3.includes(n));
-        let r = restantes.filter(n=>!FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n));
-
-        let qFib = Math.random() < 0.6 ? 0 : 1;
-        let qPri = Math.floor(Math.random()*3);
-        let qMul = 1 + Math.floor(Math.random()*3);
-        let qRan = 1 + Math.floor(Math.random()*3);
-
-        let total = qFib + qPri + qMul + qRan;
-        if (total > faltam){
-          qMul = Math.max(1, qMul - (total - faltam));
-          total = qFib + qPri + qMul + qRan;
-        }
-        if (total < faltam){
-          qMul += (faltam - total);
-        }
-
-        for (let i=0;i<qFib && jogo.length<6;i++){ if (f.length) jogo.push(pickRandom(f)); }
-        for (let i=0;i<qPri && jogo.length<6;i++){ if (p.length) jogo.push(pickRandom(p)); }
-        for (let i=0;i<qMul && jogo.length<6;i++){ if (m.length) jogo.push(pickRandom(m)); }
-        for (let i=0;i<qRan && jogo.length<6;i++){ if (r.length) jogo.push(pickRandom(r)); }
-
-        // completa se faltar
-        let sobrou = [...new Set(restantes.filter(n=>!jogo.includes(n)))];
-        while (jogo.length < 6 && sobrou.length){
-          jogo.push(pickRandom(sobrou));
-        }
+      while(jogo.length < 6){
+        if(pool.length === 0) throw new Error("Não há números suficientes para completar 6 dezenas.");
+        const chosen = randomPick(pool);
+        jogo.push(chosen);
+        usados.add(chosen);
+        pool = pool.filter(n => n !== chosen);
       }
 
       jogo.sort((a,b)=>a-b);
 
-      const acertos = jogo.filter(n=>anterior.includes(n)).length;
-      const dataStr = new Date().toLocaleString();
+      const acertos = jogo.filter(n => anterior.includes(n)).length;
 
-      renderCartao(jogo);
-
-      // salva no Firestore: jogos/{uid}/items
-      await addDoc(collection(db, "jogos", user.uid, "items"), {
-        numeros: jogo,
-        acertos,
-        createdAt: Date.now(),
-        data: dataStr
-      });
-
-      await carregarUltimosJogos(user.uid);
-      alert(`Jogo gerado: ${jogo.map(n=>String(n).padStart(2,"0")).join(" - ")} | Acertos: ${acertos}`);
+      return { jogo, acertos, linhasAtivas, anterior, atrasadas };
     }
 
-    async function carregarUltimosJogos(uid){
-      tbodyJogos.innerHTML = "";
-      const qy = query(collection(db, "jogos", uid, "items"), orderBy("createdAt","desc"), limit(20));
-      const snap = await getDocs(qy);
-      const docs = snap.docs.map(d=>d.data()).reverse(); // mais antigo em cima
+    $("btnGerar").addEventListener("click", () => {
+      try{
+        if(!userDoc?.accessGranted){
+          toast("Aguardando liberação do administrador.", "error");
+          return;
+        }
+        const res = generateGame(configGlobal);
 
-      if (!docs.length){
-        tbodyJogos.innerHTML = `<tr><td colspan="3">Nenhum jogo ainda.</td></tr>`;
-        return;
+        $("lastGame").textContent = res.jogo.map(format2).join(" - ");
+        $("lastHits").textContent = String(res.acertos);
+
+        buildCardUI(res.jogo, res.linhasAtivas);
+
+        toast("Jogo gerado com sucesso!", "ok");
+      }catch(err){
+        console.error(err);
+        toast(err.message || "Falha ao gerar jogo.", "error");
       }
-
-      docs.forEach(j=>{
-        const nums = (j.numeros||[]).map(n=>String(n).padStart(2,"0")).join(", ");
-        tbodyJogos.innerHTML += `
-          <tr>
-            <td class="mono">${nums}</td>
-            <td class="mono">${j.acertos ?? 0}</td>
-            <td>${j.data || ""}</td>
-          </tr>
-        `;
-      });
-    }
-
-    function abrirApp(user, userData){
-      boxAuth.classList.add("hidden");
-      boxApp.classList.remove("hidden");
-      who.textContent = `Usuário: ${user.email} • Acesso: Liberado`;
-      renderCartao([]); // vazio no início
-      carregarUltimosJogos(user.uid);
-      setStatus("Logado ✅");
-      setBadge("good","Liberado");
-    }
-
-    function fecharApp(){
-      boxApp.classList.add("hidden");
-      boxAuth.classList.remove("hidden");
-      setStatus("aguardando ação");
-      setBadge("", "Deslogado");
-    }
-
-    // ===== eventos =====
-    btnCadastrar.addEventListener("click", cadastrar);
-    btnEntrar.addEventListener("click", entrar);
-    btnChecar.addEventListener("click", checarLiberacao);
-    btnSair.addEventListener("click", sair);
-    btnGerar.addEventListener("click", gerarJogo);
-
-    // ===== sessão =====
-    onAuthStateChanged(auth, async (user)=>{
-      if (!user){
-        fecharApp();
-        return;
-      }
-
-      const data = await readUserDoc(user);
-      if (!data){
-        await signOut(auth);
-        fecharApp();
-        return;
-      }
-
-      // se não liberado, mantém no login
-      if (!data.accessGranted){
-        setStatus("Aguardando liberação do administrador");
-        setBadge("bad","Aguardando liberação");
-        // fica no boxAuth
-        boxApp.classList.add("hidden");
-        boxAuth.classList.remove("hidden");
-        return;
-      }
-
-      abrirApp(user, data);
     });
 
-    // primeira impressão
-    setStatus("aguardando ação");
-    setBadge("", "Deslogado");
+    // carrega cartão vazio de início
+    buildCardUI([], [1,2,3,4,5,6]);
   </script>
 </body>
 </html>
