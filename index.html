@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mark6 • Gerador de Jogos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mark6 • Gerador Mega-Sena</title>
+
   <style>
     :root{
       --bg1:#061024;
@@ -12,7 +13,7 @@
       --card2: rgba(255,255,255,.08);
       --line: rgba(255,255,255,.10);
       --text:#eaf0ff;
-      --muted: rgba(234,240,255,.75);
+      --muted: rgba(234,240,255,.72);
       --blue:#2d6cff;
       --green:#22c55e;
       --red:#ef4444;
@@ -23,80 +24,27 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+      min-height:100vh;
       background:
         radial-gradient(900px 500px at 20% 10%, rgba(45,108,255,.25), transparent 60%),
         radial-gradient(900px 500px at 80% 20%, rgba(245,158,11,.12), transparent 55%),
         linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
-      color: var(--text);
-      min-height:100vh;
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:26px 18px 60px}
+    .wrap{max-width:1100px;margin:0 auto;padding:26px 18px 70px}
     .topo{
-      text-align:center;
-      margin: 6px 0 18px;
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+      margin-bottom:18px;text-align:center;
     }
     .logo{
-      width:120px;height:auto;
-      display:block;
-      margin: 0 auto 10px;
-      filter: drop-shadow(0 14px 30px rgba(0,0,0,.5));
-    }
-    h1{margin:0;font-size:34px;letter-spacing:.2px}
-    .sub{margin:10px 0 0;color:var(--muted);font-size:14px}
-    .grid{display:grid;gap:14px;grid-template-columns:1fr}
-    @media(min-width: 980px){ .grid{grid-template-columns: 1fr 1fr} }
-
-    .card{
-      background: var(--card);
+      width:240px;max-width:70vw;height:auto;
+      border-radius:14px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.55);
       border:1px solid rgba(255,255,255,.10);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding:16px;
+      background:#0f172a;
     }
-    .card h2{margin:0 0 10px;font-size:18px}
-    label{font-size:13px;color:var(--muted)}
-    input{
-      width:100%;
-      padding:11px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color: var(--text);
-      outline:none;
-    }
-    input::placeholder{color: rgba(234,240,255,.45)}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media(max-width: 700px){ .two{grid-template-columns:1fr} }
-
-    .btn{
-      appearance:none;border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding:10px 14px;border-radius:12px;
-      cursor:pointer;transition:.15s;
-      font-weight:700;
-    }
-    .btn:hover{transform:translateY(-1px);background: rgba(255,255,255,.09)}
-    .btn.primary{background: var(--blue);border-color: rgba(255,255,255,.12)}
-    .btn.primary:hover{filter:brightness(1.05)}
-    .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
-    .btn:disabled{
-      opacity:.55; cursor:not-allowed; transform:none;
-    }
-
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      color: var(--muted);
-      font-size:13px;
-    }
-    .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
-    .dot.green{background: var(--green)}
-    .dot.red{background: var(--red)}
-    .sep{height:1px;background: var(--line);margin:12px 0}
+    h1{margin:0;font-size:38px;letter-spacing:.2px}
+    .sub{margin:0;color:var(--muted);font-size:14px}
 
     .toast{
       display:none;
@@ -108,52 +56,85 @@
       color: var(--muted);
     }
     .toast.show{display:block}
-    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.92)}
     .toast.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: rgba(255,255,255,.92)}
+    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.92)}
 
-    .panelTop{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    .grid{
+      display:grid;gap:14px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 980px){
+      .grid{grid-template-columns: 1fr 1fr}
     }
 
-    .cartao{
-      padding:14px;
-      border-radius: 16px;
+    .card{
+      background: var(--card);
       border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
     }
-    .linha{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:12px 12px;
-      border-radius: 14px;
+    .card h2{margin:0 0 10px;font-size:18px}
+    .small{font-size:12px;color:var(--muted);line-height:1.4}
+    .sep{height:1px;background: var(--line);margin:12px 0}
+
+    label{font-size:13px;color:var(--muted)}
+    input{
+      width:100%;padding:11px 12px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{color: rgba(234,240,255,.45)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:700px){ .row{grid-template-columns:1fr} }
+
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{
+      appearance:none;border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 14px;border-radius:12px;
+      cursor:pointer;transition:.15s;
+      font-weight:700;
+    }
+    .btn:hover{transform:translateY(-1px);background: rgba(255,255,255,.09)}
+    .btn.primary{background: var(--blue)}
+    .btn.primary:hover{filter:brightness(1.05)}
+    .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.05);
-      margin-top:10px;
+      color: var(--muted);
+      font-size:13px;
     }
-    .linha strong{color: rgba(234,240,255,.92)}
-    .nums{
-      display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;
-    }
-    .num{
-      min-width:34px;
-      padding:7px 9px;
-      border-radius:10px;
-      text-align:center;
+    .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
+    .dot.green{background: var(--green)}
+    .dot.red{background: var(--red)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    /* Cartão virtual */
+    .board{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .lineBox{
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.20);
-      color: rgba(234,240,255,.92);
+      border-radius:14px;
+      padding:12px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+    .lineTitle{font-weight:800;color: rgba(234,240,255,.9)}
+    .nums{display:flex;gap:8px;flex-wrap:wrap}
+    .ball{
+      width:36px;height:36px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
       font-weight:800;
     }
-    .num.sel{
-      background: rgba(245,158,11,.18);
-      border-color: rgba(245,158,11,.55);
-      color: #ffd27a;
-    }
-    .small{font-size:12px;color:var(--muted);line-height:1.45}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace}
-    ul{margin: 8px 0 0 16px; padding:0}
+    .ball.off{opacity:.35;filter:grayscale(30%)}
   </style>
 </head>
 
@@ -162,38 +143,35 @@
 
     <div class="topo">
       <img class="logo" src="logo-marck6.jpg" alt="Mark6"
-           onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block';" />
-      <div id="logoFallback" class="small" style="display:none">
-        (Logo não carregou: confirme se o arquivo é <span class="mono">logo-marck6.jpg</span> no mesmo diretório do index.html)
-      </div>
+           onerror="this.style.display='none'">
       <h1>Gerador de Jogos - Mega-Sena</h1>
-      <div class="sub">Cadastro e liberação pelo administrador • Mark6</div>
+      <p class="sub">Cadastro e liberação pelo administrador • Mark6</p>
     </div>
 
     <div id="toast" class="toast"></div>
 
     <div class="grid">
-      <!-- LOGIN/CADASTRO -->
-      <div class="card" id="cardAuth">
-        <div class="panelTop">
+      <!-- LOGIN / CADASTRO -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <h2>Cadastro / Login</h2>
-          <span id="statusPill" class="pill"><span class="dot red"></span> Deslogado</span>
+          <span id="pillAuth" class="pill"><span class="dot red"></span> Deslogado</span>
         </div>
 
         <div class="sep"></div>
 
-        <div class="two">
+        <div class="row">
           <div>
             <label for="nome">Nome</label>
             <input id="nome" placeholder="Seu nome completo" autocomplete="name" />
           </div>
           <div>
             <label for="telefone">Telefone (WhatsApp)</label>
-            <input id="telefone" placeholder="(21) 99999-9999" inputmode="tel" autocomplete="tel" />
+            <input id="telefone" placeholder="(21) 99999-9999" inputmode="numeric" />
           </div>
         </div>
 
-        <div class="two" style="margin-top:10px">
+        <div class="row" style="margin-top:10px">
           <div>
             <label for="email">E-mail</label>
             <input id="email" type="email" placeholder="seuemail@gmail.com" autocomplete="username" />
@@ -204,53 +182,45 @@
           </div>
         </div>
 
-        <div class="row" style="margin-top:12px">
+        <div class="btns">
           <button id="btnCadastrar" class="btn primary">Cadastrar</button>
           <button id="btnEntrar" class="btn">Entrar</button>
           <button id="btnSair" class="btn danger" style="display:none">Sair</button>
         </div>
 
         <div class="sep"></div>
-        <div class="small">
-          <ul>
-            <li>Seu cadastro é salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).</li>
-            <li>O acesso ao gerador só funciona quando o admin liberar <span class="mono">accessGranted</span>.</li>
-          </ul>
+        <div class="small" id="statusText">Status: aguardando ação.</div>
+        <div class="small" style="margin-top:8px">
+          • Seu cadastro é salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).<br>
+          • O acesso ao gerador só funciona quando o admin liberar <span class="mono">accessGranted</span>.
         </div>
       </div>
 
-      <!-- APP USUÁRIO -->
-      <div class="card" id="cardApp" style="display:none">
-        <div class="panelTop">
+      <!-- ÁREA DO USUÁRIO -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <h2>Área do Usuário</h2>
-          <div class="row">
-            <button id="btnGerar" class="btn primary" disabled>GERAR JOGO</button>
-          </div>
-        </div>
-
-        <div class="small" style="margin-top:8px">
-          Usuário: <span id="who" class="mono">—</span> • Acesso: <b id="accessText">—</b>
+          <button id="btnGerar" class="btn primary" disabled>GERAR JOGO</button>
         </div>
 
         <div class="sep"></div>
 
-        <div class="cartao">
-          <h2 style="margin:0 0 8px">Cartão Virtual</h2>
-          <div id="cartao"></div>
-        </div>
+        <div class="small" id="userInfo">Usuário: — • Acesso: —</div>
 
         <div class="sep"></div>
 
-        <div class="small" id="configInfo">
-          Config: carregando <span class="mono">config/global</span>...
-        </div>
+        <h2 style="font-size:16px;margin:0 0 6px">Cartão Virtual</h2>
+        <div class="board" id="board"></div>
+
+        <div class="sep"></div>
+        <div class="small" id="configInfo">Config: aguardando carregar…</div>
       </div>
     </div>
   </div>
 
   <script type="module">
     // ===============================
-    // FIREBASE SDK (modular)
+    // FIREBASE (Web SDK modular)
     // ===============================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
@@ -258,8 +228,7 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       onAuthStateChanged,
-      signOut,
-      updateProfile
+      signOut
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
     import {
@@ -270,9 +239,6 @@
       onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    // ===============================
-    // CONFIG DO SEU PROJETO
-    // ===============================
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -287,21 +253,39 @@
     const db   = getFirestore(app);
 
     // ===============================
-    // UI
+    // UI helpers
     // ===============================
-    const $ = (id) => document.getElementById(id);
+    const $ = (id)=>document.getElementById(id);
     const toastEl = $("toast");
 
     function toast(msg, type="ok"){
       toastEl.className = "toast show " + (type === "error" ? "error" : "ok");
       toastEl.textContent = msg;
-      setTimeout(() => { toastEl.className = "toast"; }, 4200);
+      setTimeout(()=> toastEl.className = "toast", 4200);
     }
 
-    function normEmail(s){ return String(s||"").trim().toLowerCase(); }
+    function normalizePhone(raw){
+      // mantém só dígitos
+      const d = String(raw||"").replace(/\D/g,"");
+      // permite vazio
+      if(!d) return "";
+      // valida mínimo 10 (DDD+8/9)
+      if(d.length < 10) return d;
+      // retorna como dígitos (salvar consistente)
+      return d;
+    }
+
+    function setAuthPill(logged){
+      const pill = $("pillAuth");
+      if(logged){
+        pill.innerHTML = '<span class="dot green"></span> Logado';
+      }else{
+        pill.innerHTML = '<span class="dot red"></span> Deslogado';
+      }
+    }
 
     // ===============================
-    // Regras de geração
+    // Card ranges (Mega-Sena)
     // ===============================
     const LINE_RANGES = {
       1: Array.from({length:10}, (_,i)=> i+1),
@@ -312,66 +296,108 @@
       6: Array.from({length:10}, (_,i)=> i+51),
     };
 
-    const FIBONACCI = [1,2,3,5,8,13,21,34,55];
-    const PRIMOS = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59];
-    const MULT3 = Array.from({length:20},(_,i)=> (i+1)*3).filter(n=>n<=60);
+    function renderBoard(linhasAtivas = []){
+      const board = $("board");
+      board.innerHTML = "";
+
+      for(let l=1; l<=6; l++){
+        const line = document.createElement("div");
+        line.className = "lineBox";
+
+        const title = document.createElement("div");
+        title.className = "lineTitle";
+        const from = LINE_RANGES[l][0];
+        const to   = LINE_RANGES[l][9];
+        title.textContent = `Linha ${l} (${String(from).padStart(2,"0")}-${String(to).padStart(2,"0")}):`;
+
+        const nums = document.createElement("div");
+        nums.className = "nums";
+        const active = linhasAtivas.includes(l);
+
+        for(const n of LINE_RANGES[l]){
+          const b = document.createElement("div");
+          b.className = "ball" + (active ? "" : " off");
+          b.textContent = String(n).padStart(2,"0");
+          nums.appendChild(b);
+        }
+
+        line.appendChild(title);
+        line.appendChild(nums);
+        board.appendChild(line);
+      }
+    }
+
+    renderBoard([]); // inicial vazio
 
     // ===============================
-    // STATE
+    // Live listeners
     // ===============================
-    let currentUser = null;
-    let userDocUnsub = null;
-    let configUnsub = null;
+    let unsubUser = null;
+    let unsubConfig = null;
 
-    let globalConfig = {
-      linhasAtivas: [1,2,3,4,5,6],
-      dezenasAnteriores: [],
-      dezenasAtrasadas: []
-    };
+    function stopListeners(){
+      if(unsubUser){ unsubUser(); unsubUser=null; }
+      if(unsubConfig){ unsubConfig(); unsubConfig=null; }
+    }
+
+    async function ensureUserDoc(user, extraData){
+      // 🔥 padrão definitivo: users/{uid}
+      const ref = doc(db, "users", user.uid);
+      await setDoc(ref, {
+        uid: user.uid,
+        email: user.email,
+        ...extraData,
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
 
     // ===============================
-    // AUTH ACTIONS
+    // Actions
     // ===============================
     $("btnCadastrar").addEventListener("click", async () => {
       const nome = $("nome").value.trim();
-      const telefone = $("telefone").value.trim();
-      const email = normEmail($("email").value);
+      const telefone = normalizePhone($("telefone").value);
+      const email = $("email").value.trim();
       const senha = $("senha").value;
 
-      if(!nome){ toast("Digite seu nome.", "error"); return; }
-      if(!email){ toast("Digite seu e-mail.", "error"); return; }
-      if(!senha || senha.length < 6){ toast("Senha precisa ter pelo menos 6 caracteres.", "error"); return; }
+      if(!email || !senha){
+        toast("Preencha email e senha.", "error");
+        return;
+      }
+      if(senha.length < 6){
+        toast("Senha precisa ter pelo menos 6 caracteres.", "error");
+        return;
+      }
 
       try{
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
 
-        // Define displayName (opcional)
-        try{ await updateProfile(cred.user, { displayName: nome }); }catch(e){}
-
-        // Salva SEM duplicação: users/{uid}
-        await setDoc(doc(db, "users", cred.user.uid), {
-          uid: cred.user.uid,
-          email,
-          nome,
-          telefone,
+        // cria o doc do usuário no padrão UID
+        await ensureUserDoc(cred.user, {
+          nome: nome || "(sem nome)",
+          telefone: telefone || "",
           accessGranted: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }, { merge: true });
+          createdAt: Date.now()
+        });
 
-        toast("Cadastro criado! Aguarde liberação do admin.", "ok");
+        toast("Cadastro realizado. Aguarde liberação do admin.", "ok");
       }catch(err){
         console.error(err);
-        toast("Falha no cadastro (email já existe? senha fraca?).", "error");
+        if(String(err?.code||"").includes("email-already-in-use")){
+          toast("Este e-mail já está cadastrado. Clique em Entrar.", "error");
+        }else{
+          toast("Erro ao cadastrar. Verifique email/senha.", "error");
+        }
       }
     });
 
     $("btnEntrar").addEventListener("click", async () => {
-      const email = normEmail($("email").value);
+      const email = $("email").value.trim();
       const senha = $("senha").value;
-
-      if(!email || !senha){ toast("Digite e-mail e senha.", "error"); return; }
-
+      if(!email || !senha){
+        toast("Preencha email e senha.", "error");
+        return;
+      }
       try{
         await signInWithEmailAndPassword(auth, email, senha);
       }catch(err){
@@ -386,213 +412,93 @@
     });
 
     // ===============================
-    // LISTENERS
+    // Auth state
     // ===============================
     onAuthStateChanged(auth, async (user) => {
-      currentUser = user || null;
-
-      // cleanup snapshots
-      if(userDocUnsub){ userDocUnsub(); userDocUnsub = null; }
-      if(configUnsub){ configUnsub(); configUnsub = null; }
+      stopListeners();
 
       if(!user){
-        $("cardApp").style.display = "none";
-        $("cardAuth").style.display = "block";
+        setAuthPill(false);
         $("btnSair").style.display = "none";
-        $("statusPill").innerHTML = `<span class="dot red"></span> Deslogado`;
         $("btnGerar").disabled = true;
-        $("who").textContent = "—";
-        $("accessText").textContent = "—";
+        $("userInfo").textContent = "Usuário: — • Acesso: —";
+        $("statusText").textContent = "Status: aguardando ação.";
+        $("configInfo").textContent = "Config: aguardando carregar…";
+        renderBoard([]);
         return;
       }
 
+      setAuthPill(true);
       $("btnSair").style.display = "inline-block";
-      $("statusPill").innerHTML = `<span class="dot green"></span> Logado`;
-      $("cardAuth").style.display = "block"; // continua mostrando login/cadastro (você pode esconder se quiser)
-      $("cardApp").style.display = "block";
-      $("who").textContent = normEmail(user.email);
+      $("email").value = user.email || "";
 
-      // garante doc users/{uid} existe (sem duplicar)
-      const refUser = doc(db, "users", user.uid);
-      const snapUser = await getDoc(refUser);
-      if(!snapUser.exists()){
-        await setDoc(refUser, {
-          uid: user.uid,
-          email: normEmail(user.email),
-          nome: user.displayName || "(sem nome)",
-          telefone: "",
-          accessGranted: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }, { merge: true });
+      // garante doc no padrão users/{uid}
+      // (se já existe, só faz merge e não duplica)
+      try{
+        const nome = $("nome").value.trim();
+        const telefone = normalizePhone($("telefone").value);
+        await ensureUserDoc(user, {
+          nome: nome || undefined,
+          telefone: telefone || undefined
+        });
+      }catch(e){
+        console.error(e);
       }
 
-      // Snapshot do user doc (pra atualizar accessGranted ao vivo)
-      userDocUnsub = onSnapshot(refUser, (s) => {
-        if(!s.exists()) return;
-
-        const u = s.data();
-        const granted = !!u.accessGranted;
-
-        $("accessText").textContent = granted ? "Liberado" : "Bloqueado";
-        $("accessText").style.color = granted ? "var(--green)" : "var(--red)";
-        $("btnGerar").disabled = !granted;
-
-        if(!granted){
-          toast("Aguardando liberação do administrador.", "ok");
-        }
+      // Listener config/global
+      const configRef = doc(db, "config", "global");
+      unsubConfig = onSnapshot(configRef, (snap) => {
+        const data = snap.exists() ? snap.data() : {};
+        const linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [];
+        renderBoard(linhasAtivas);
+        $("configInfo").textContent = `Config: ${linhasAtivas.length} linha(s) ativa(s).`;
       }, (err) => {
         console.error(err);
-        toast("Erro ao ler seu cadastro (Rules?).", "error");
+        $("configInfo").textContent = "Config: erro ao carregar (Rules?).";
       });
 
-      // Snapshot do config/global
-      const refCfg = doc(db, "config", "global");
-      configUnsub = onSnapshot(refCfg, (s) => {
-        if(s.exists()){
-          const data = s.data();
-          globalConfig.linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [1,2,3,4,5,6];
-          globalConfig.dezenasAnteriores = Array.isArray(data.dezenasAnteriores) ? data.dezenasAnteriores : [];
-          globalConfig.dezenasAtrasadas = Array.isArray(data.dezenasAtrasadas) ? data.dezenasAtrasadas : [];
-
-          $("configInfo").innerHTML = `Config carregada de <span class="mono">config/global</span>.`;
-        }else{
-          $("configInfo").innerHTML = `Config não encontrada em <span class="mono">config/global</span> (admin precisa salvar).`;
-        }
-      }, (err) => {
-        console.error(err);
-        $("configInfo").innerHTML = `Erro ao carregar <span class="mono">config/global</span> (Rules?).`;
-      });
-
-      // render inicial do cartão (sem seleção)
-      renderCartao([]);
-    });
-
-    // ===============================
-    // GERAR JOGO
-    // ===============================
-    $("btnGerar").addEventListener("click", async () => {
-      try{
-        const linhasAtivas = (globalConfig.linhasAtivas || []).map(Number).filter(n=>n>=1 && n<=6);
-        const anterior = (globalConfig.dezenasAnteriores || []).map(Number).filter(n=>n>=1 && n<=60);
-        const atrasadas = (globalConfig.dezenasAtrasadas || []).map(Number).filter(n=>n>=1 && n<=60);
-
-        if(linhasAtivas.length === 0){
-          toast("Config inválida: nenhuma linha ativa.", "error");
+      // Listener users/{uid}
+      const userRef = doc(db, "users", user.uid);
+      unsubUser = onSnapshot(userRef, async (snap) => {
+        if(!snap.exists()){
+          $("statusText").textContent = "Status: seu cadastro ainda não foi criado. Clique em Cadastrar.";
+          $("btnGerar").disabled = true;
+          $("userInfo").textContent = `Usuário: ${user.email} • Acesso: Bloqueado`;
           return;
         }
 
-        const excluidas = new Set([...anterior, ...atrasadas]);
+        const u = snap.data();
+        const granted = !!u.accessGranted;
 
-        // disponiveis por linha
-        const disponiveisPorLinha = {};
-        for(const l of linhasAtivas){
-          disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
-          if(disponiveisPorLinha[l].length === 0){
-            toast(`Linha ${l} sem números disponíveis (todos excluídos).`, "error");
-            return;
-          }
+        // mostra dados
+        $("nome").value = u.nome || $("nome").value;
+        $("telefone").value = u.telefone || $("telefone").value;
+
+        $("userInfo").innerHTML =
+          `Usuário: <span class="mono">${user.email}</span> • Acesso: <b style="color:${granted ? '#22c55e' : '#ef4444'}">${granted ? 'Liberado' : 'Bloqueado'}</b>`;
+
+        if(granted){
+          $("statusText").textContent = "Status: acesso liberado ✅";
+          $("btnGerar").disabled = false;
+        }else{
+          $("statusText").textContent = "Status: aguardando liberação do administrador.";
+          $("btnGerar").disabled = true;
         }
-
-        // 1 número por linha
-        const jogo = [];
-        const usados = new Set();
-
-        for(const l of linhasAtivas){
-          const nums = disponiveisPorLinha[l];
-          const idx = Math.floor(Math.random() * nums.length);
-          const n = nums[idx];
-          jogo.push(n);
-          usados.add(n);
-          nums.splice(idx, 1);
-        }
-
-        // completar até 6
-        let faltam = 6 - jogo.length;
-        if(faltam > 0){
-          let restantes = [];
-          for(const l of linhasAtivas) restantes.push(...disponiveisPorLinha[l]);
-          restantes = [...new Set(restantes.filter(n => !usados.has(n)))];
-
-          if(restantes.length < faltam){
-            toast("Não há números suficientes para completar 6 dezenas.", "error");
-            return;
-          }
-
-          let f = restantes.filter(n => FIBONACCI.includes(n));
-          let p = restantes.filter(n => PRIMOS.includes(n));
-          let m = restantes.filter(n => MULT3.includes(n));
-          let r = restantes.filter(n => !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n));
-
-          let qFib = Math.random() < 0.6 ? 0 : 1;
-          let qPri = Math.floor(Math.random() * 3);
-          let qMul = 1 + Math.floor(Math.random() * 3);
-          let qRan = 1 + Math.floor(Math.random() * 3);
-
-          let total = qFib + qPri + qMul + qRan;
-          if(total > faltam){
-            qMul = Math.max(1, qMul - (total - faltam));
-            total = qFib + qPri + qMul + qRan;
-          }
-          if(total < faltam) qMul += (faltam - total);
-
-          const pegar = (arr) => arr.length ? arr.splice(Math.floor(Math.random()*arr.length), 1)[0] : null;
-
-          for(let i=0;i<qFib && jogo.length<6;i++){ const n=pegar(f); if(n) jogo.push(n); }
-          for(let i=0;i<qPri && jogo.length<6;i++){ const n=pegar(p); if(n) jogo.push(n); }
-          for(let i=0;i<qMul && jogo.length<6;i++){ const n=pegar(m); if(n) jogo.push(n); }
-          for(let i=0;i<qRan && jogo.length<6;i++){ const n=pegar(r); if(n) jogo.push(n); }
-
-          restantes = restantes.filter(n => !jogo.includes(n));
-          while(jogo.length < 6 && restantes.length){
-            const idx = Math.floor(Math.random()*restantes.length);
-            jogo.push(restantes.splice(idx,1)[0]);
-          }
-        }
-
-        jogo.sort((a,b)=>a-b);
-        renderCartao(jogo);
-
-        const formatado = jogo.map(n=>String(n).padStart(2,'0')).join(" - ");
-        toast(`Jogo gerado: ${formatado}`, "ok");
-
-      }catch(err){
+      }, (err) => {
         console.error(err);
-        toast("Erro ao gerar jogo.", "error");
-      }
+        $("statusText").textContent = "Status: erro ao ler seu cadastro (Rules?).";
+        $("btnGerar").disabled = true;
+      });
     });
 
     // ===============================
-    // RENDER CARTÃO
+    // Gerar Jogo (placeholder)
     // ===============================
-    function renderCartao(jogo){
-      const cartao = $("cartao");
-      cartao.innerHTML = "";
+    $("btnGerar").addEventListener("click", () => {
+      toast("Gerar jogo: conecte aqui sua lógica do gerador.", "ok");
+      // aqui você pluga o seu gerador atual, mas mantendo a trava por accessGranted
+    });
 
-      for(let l=1;l<=6;l++){
-        const div = document.createElement("div");
-        div.className = "linha";
-
-        const title = document.createElement("strong");
-        const start = LINE_RANGES[l][0];
-        const end = LINE_RANGES[l][9];
-        title.textContent = `Linha ${l} (${String(start).padStart(2,'0')}-${String(end).padStart(2,'0')}):`;
-
-        const nums = document.createElement("div");
-        nums.className = "nums";
-
-        for(const n of LINE_RANGES[l]){
-          const span = document.createElement("span");
-          span.className = "num" + (jogo.includes(n) ? " sel" : "");
-          span.textContent = String(n).padStart(2,'0');
-          nums.appendChild(span);
-        }
-
-        div.appendChild(title);
-        div.appendChild(nums);
-        cartao.appendChild(div);
-      }
-    }
   </script>
 </body>
 </html>
