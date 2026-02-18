@@ -10,7 +10,6 @@
       --bg1:#061024;
       --bg2:#030712;
       --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.08);
       --line: rgba(255,255,255,.10);
       --text:#eaf0ff;
       --muted: rgba(234,240,255,.72);
@@ -142,8 +141,7 @@
   <div class="wrap">
 
     <div class="topo">
-      <img class="logo" src="logo-marck6.jpg" alt="Mark6"
-           onerror="this.style.display='none'">
+      <img class="logo" src="logo-marck6.jpg" alt="Mark6" onerror="this.style.display='none'">
       <h1>Gerador de Jogos - Mega-Sena</h1>
       <p class="sub">Cadastro e liberação pelo administrador • Mark6</p>
     </div>
@@ -178,7 +176,7 @@
           </div>
           <div>
             <label for="senha">Senha</label>
-            <input id="senha" type="password" placeholder="Crie sua senha" autocomplete="current-password" />
+            <input id="senha" type="password" placeholder="Sua senha" autocomplete="current-password" />
           </div>
         </div>
 
@@ -191,8 +189,8 @@
         <div class="sep"></div>
         <div class="small" id="statusText">Status: aguardando ação.</div>
         <div class="small" style="margin-top:8px">
-          • Seu cadastro é salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).<br>
-          • O acesso ao gerador só funciona quando o admin liberar <span class="mono">accessGranted</span>.
+          • Cadastro salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).<br>
+          • O gerador só libera quando o admin marcar <span class="mono">accessGranted = true</span>.
         </div>
       </div>
 
@@ -265,24 +263,17 @@
     }
 
     function normalizePhone(raw){
-      // mantém só dígitos
-      const d = String(raw||"").replace(/\D/g,"");
-      // permite vazio
-      if(!d) return "";
-      // valida mínimo 10 (DDD+8/9)
-      if(d.length < 10) return d;
-      // retorna como dígitos (salvar consistente)
-      return d;
+      return String(raw||"").replace(/\D/g,""); // só dígitos
     }
 
     function setAuthPill(logged){
       const pill = $("pillAuth");
-      if(logged){
-        pill.innerHTML = '<span class="dot green"></span> Logado';
-      }else{
-        pill.innerHTML = '<span class="dot red"></span> Deslogado';
-      }
+      pill.innerHTML = logged
+        ? '<span class="dot green"></span> Logado'
+        : '<span class="dot red"></span> Deslogado';
     }
+
+    function safeStr(v){ return (v === undefined || v === null) ? "" : String(v); }
 
     // ===============================
     // Card ranges (Mega-Sena)
@@ -327,7 +318,7 @@
       }
     }
 
-    renderBoard([]); // inicial vazio
+    renderBoard([]);
 
     // ===============================
     // Live listeners
@@ -340,15 +331,42 @@
       if(unsubConfig){ unsubConfig(); unsubConfig=null; }
     }
 
-    async function ensureUserDoc(user, extraData){
-      // 🔥 padrão definitivo: users/{uid}
+    async function ensureUserDocExists(user){
+      // Garante que exista users/{uid}. Se não existir, cria.
       const ref = doc(db, "users", user.uid);
-      await setDoc(ref, {
+      const snap = await getDoc(ref);
+
+      if(!snap.exists()){
+        const nome = $("nome").value.trim() || "(sem nome)";
+        const telefone = normalizePhone($("telefone").value);
+
+        await setDoc(ref, {
+          uid: user.uid,
+          email: user.email || "",
+          nome,
+          telefone,
+          accessGranted: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }, { merge: true });
+
+        return { created: true };
+      }
+
+      // Se existe, atualiza nome/telefone se o usuário preencheu (sem sobrescrever com vazio)
+      const nomeInput = $("nome").value.trim();
+      const telInput  = normalizePhone($("telefone").value);
+
+      const patch = {
         uid: user.uid,
-        email: user.email,
-        ...extraData,
+        email: user.email || "",
         updatedAt: Date.now()
-      }, { merge: true });
+      };
+      if(nomeInput) patch.nome = nomeInput;
+      if(telInput) patch.telefone = telInput;
+
+      await setDoc(ref, patch, { merge: true });
+      return { created: false };
     }
 
     // ===============================
@@ -370,24 +388,32 @@
       }
 
       try{
+        // 1) tenta criar
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
 
-        // cria o doc do usuário no padrão UID
-        await ensureUserDoc(cred.user, {
-          nome: nome || "(sem nome)",
-          telefone: telefone || "",
-          accessGranted: false,
-          createdAt: Date.now()
-        });
+        // 2) cria doc users/{uid}
+        await ensureUserDocExists(cred.user);
 
         toast("Cadastro realizado. Aguarde liberação do admin.", "ok");
       }catch(err){
         console.error(err);
-        if(String(err?.code||"").includes("email-already-in-use")){
-          toast("Este e-mail já está cadastrado. Clique em Entrar.", "error");
-        }else{
-          toast("Erro ao cadastrar. Verifique email/senha.", "error");
+
+        const code = String(err?.code || "");
+
+        // ✅ Se o usuário já existe no AUTH, isso NÃO é erro do sistema.
+        // Ele deve entrar (login). Aqui a gente tenta logar automaticamente.
+        if(code.includes("email-already-in-use")){
+          try{
+            await signInWithEmailAndPassword(auth, email, senha);
+            toast("Este e-mail já existe. Entrando na conta...", "ok");
+          }catch(e2){
+            console.error(e2);
+            toast("Este e-mail já existe. Clique em Entrar e use a senha correta.", "error");
+          }
+          return;
         }
+
+        toast("Erro ao cadastrar. Verifique email/senha.", "error");
       }
     });
 
@@ -432,17 +458,15 @@
       $("btnSair").style.display = "inline-block";
       $("email").value = user.email || "";
 
-      // garante doc no padrão users/{uid}
-      // (se já existe, só faz merge e não duplica)
+      // Garante doc users/{uid}
       try{
-        const nome = $("nome").value.trim();
-        const telefone = normalizePhone($("telefone").value);
-        await ensureUserDoc(user, {
-          nome: nome || undefined,
-          telefone: telefone || undefined
-        });
+        const r = await ensureUserDocExists(user);
+        if(r.created){
+          $("statusText").textContent = "Status: cadastro criado. Aguarde liberação do administrador.";
+        }
       }catch(e){
         console.error(e);
+        toast("Falha ao preparar seu cadastro no Firestore (Rules?).", "error");
       }
 
       // Listener config/global
@@ -459,9 +483,9 @@
 
       // Listener users/{uid}
       const userRef = doc(db, "users", user.uid);
-      unsubUser = onSnapshot(userRef, async (snap) => {
+      unsubUser = onSnapshot(userRef, (snap) => {
         if(!snap.exists()){
-          $("statusText").textContent = "Status: seu cadastro ainda não foi criado. Clique em Cadastrar.";
+          $("statusText").textContent = "Status: seu cadastro não existe no Firestore (clique em Cadastrar/Entrar).";
           $("btnGerar").disabled = true;
           $("userInfo").textContent = `Usuário: ${user.email} • Acesso: Bloqueado`;
           return;
@@ -470,9 +494,11 @@
         const u = snap.data();
         const granted = !!u.accessGranted;
 
-        // mostra dados
-        $("nome").value = u.nome || $("nome").value;
-        $("telefone").value = u.telefone || $("telefone").value;
+        // preencher campos, mas sem sobrescrever se usuário está digitando algo
+        const nomeAtual = $("nome").value.trim();
+        const telAtual  = normalizePhone($("telefone").value);
+        if(!nomeAtual) $("nome").value = safeStr(u.nome);
+        if(!telAtual)  $("telefone").value = safeStr(u.telefone);
 
         $("userInfo").innerHTML =
           `Usuário: <span class="mono">${user.email}</span> • Acesso: <b style="color:${granted ? '#22c55e' : '#ef4444'}">${granted ? 'Liberado' : 'Bloqueado'}</b>`;
@@ -496,7 +522,7 @@
     // ===============================
     $("btnGerar").addEventListener("click", () => {
       toast("Gerar jogo: conecte aqui sua lógica do gerador.", "ok");
-      // aqui você pluga o seu gerador atual, mas mantendo a trava por accessGranted
+      // aqui você pluga o seu gerador atual, mantendo a trava por accessGranted
     });
 
   </script>
