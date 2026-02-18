@@ -345,6 +345,26 @@
     }
 
     renderBoard([], []);
+<div class="sep"></div>
+
+<h2 style="font-size:16px;margin:0 0 6px">Assinatura Mark6</h2>
+<div class="small">
+Para liberar o gerador de jogos, escolha um plano abaixo.
+Após o pagamento, clique em <b>“Já paguei”</b> para solicitar liberação.
+</div>
+
+<div class="btns" style="margin-top:12px">
+  <button class="btn" id="btnMensal">Plano Mensal • R$ 29,90</button>
+  <button class="btn primary" id="btnAnual">Plano Anual • R$ 238,80</button>
+</div>
+
+<div class="btns" style="margin-top:10px">
+  <button class="btn" id="btnJaPaguei">✅ Já paguei</button>
+</div>
+
+<div class="small" style="margin-top:10px">
+O acesso será liberado após confirmação do pagamento.
+</div>
 
     // ===============================
     // Live listeners
@@ -428,6 +448,49 @@
       await signOut(auth);
       toast("Você saiu.", "ok");
     });
+// ===============================
+// LINKS INFINITEPAY
+// ===============================
+const LINK_MENSAL = "https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX";
+const LINK_ANUAL  = "https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx";
+
+// 🔴 COLOQUE SEU WHATSAPP AQUI (formato: 55 + DDD + número)
+const SUPORTE_WHATS = "55SEUNUMEROAQUI";
+
+// abrir checkout
+function abrirCheckout(url){
+  window.open(url, "_blank");
+}
+
+// abrir whatsapp com mensagem automática
+function abrirWhatsSuporte(){
+  const nome = $("nome").value.trim();
+  const telefone = $("telefone").value.trim();
+  const email = auth.currentUser?.email || $("email").value.trim();
+
+  if(!email){
+    toast("Faça login primeiro.", "error");
+    return;
+  }
+
+  const msg =
+`Olá! Já realizei o pagamento da assinatura Mark6.
+
+📧 Email do cadastro: ${email}
+👤 Nome: ${nome || "-"}
+📱 Telefone: ${telefone || "-"}
+🕒 Data: ${new Date().toLocaleString()}
+
+Segue comprovante em anexo.`;
+
+  const url = `https://wa.me/${SUPORTE_WHATS}?text=${encodeURIComponent(msg)}`;
+  window.open(url, "_blank");
+}
+
+// binds
+$("btnMensal").addEventListener("click", ()=> abrirCheckout(LINK_MENSAL));
+$("btnAnual").addEventListener("click", ()=> abrirCheckout(LINK_ANUAL));
+$("btnJaPaguei").addEventListener("click", abrirWhatsSuporte);
 
     // ===============================
     // Auth state
@@ -546,4 +609,5 @@
   </script>
 </body>
 </html>
+
 
