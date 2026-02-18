@@ -103,6 +103,8 @@
     .btn.primary{background: var(--blue)}
     .btn.primary:hover{filter:brightness(1.05)}
     .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
     .pill{
       display:inline-flex;align-items:center;gap:8px;
       padding:8px 12px;border-radius:999px;
@@ -133,26 +135,14 @@
       background: rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.10);
       font-weight:800;
+      transition:.12s;
     }
     .ball.off{opacity:.35;filter:grayscale(30%)}
-
-    /* Resultado do jogo */
-    .result{
-      margin-top:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      border-radius:14px;
-      padding:12px;
-    }
-    .resultTitle{font-weight:800;margin:0 0 8px}
-    .resultNums{display:flex;gap:10px;flex-wrap:wrap}
-    .bigBall{
-      width:44px;height:44px;border-radius:14px;
-      display:flex;align-items:center;justify-content:center;
-      background: rgba(45,108,255,.20);
-      border:1px solid rgba(255,255,255,.12);
-      font-weight:900;
-      font-size:16px;
+    .ball.hit{
+      border-color: rgba(34,197,94,.65);
+      background: rgba(34,197,94,.18);
+      box-shadow: 0 10px 22px rgba(34,197,94,.10);
+      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -230,22 +220,17 @@
         <h2 style="font-size:16px;margin:0 0 6px">Cartão Virtual</h2>
         <div class="board" id="board"></div>
 
-        <div class="result" id="resultBox" style="display:none">
-          <div class="resultTitle">Jogo gerado</div>
-          <div class="resultNums" id="resultNums"></div>
-          <div class="small" id="resultMeta" style="margin-top:8px"></div>
-        </div>
-
         <div class="sep"></div>
         <div class="small" id="configInfo">Config: aguardando carregar…</div>
+        <div class="small" id="lastGameInfo" style="margin-top:6px">Último jogo: —</div>
       </div>
     </div>
   </div>
 
-  <!-- ✅ Carrega seu gerador (deixa na raiz do repo) -->
-  <script src="gerador.js"></script>
-
   <script type="module">
+    // ✅ Importa o gerador via ES Module (corrige o erro LINE_RANGES não carregou)
+    import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
+
     // ===============================
     // FIREBASE (Web SDK modular)
     // ===============================
@@ -292,8 +277,7 @@
 
     function normalizePhone(raw){
       const d = String(raw||"").replace(/\D/g,"");
-      if(!d) return "";
-      return d;
+      return d || "";
     }
 
     function setAuthPill(logged){
@@ -304,37 +288,32 @@
     }
 
     // ===============================
-    // Board usando o LINE_RANGES do gerador.js (fonte única)
+    // Cartão Virtual render
     // ===============================
-    function renderBoard(linhasAtivas = []){
+    let lastGame = [];
+
+    function renderBoard(linhasAtivas = [], highlight = []){
       const board = $("board");
       board.innerHTML = "";
-
-      const ranges = window.LINE_RANGES; // vem do gerador.js
-      if(!ranges){
-        board.innerHTML = `<div class="small">Erro: LINE_RANGES não carregou (verifique se gerador.js está na raiz).</div>`;
-        return;
-      }
+      const hit = new Set(highlight);
 
       for(let l=1; l<=6; l++){
-        const numsRange = ranges[l] || [];
-        const from = numsRange[0];
-        const to = numsRange[numsRange.length - 1];
-
         const line = document.createElement("div");
         line.className = "lineBox";
 
         const title = document.createElement("div");
         title.className = "lineTitle";
+        const from = LINE_RANGES[l][0];
+        const to   = LINE_RANGES[l][9];
         title.textContent = `Linha ${l} (${String(from).padStart(2,"0")}-${String(to).padStart(2,"0")}):`;
 
         const nums = document.createElement("div");
         nums.className = "nums";
         const active = linhasAtivas.includes(l);
 
-        for(const n of numsRange){
+        for(const n of LINE_RANGES[l]){
           const b = document.createElement("div");
-          b.className = "ball" + (active ? "" : " off");
+          b.className = "ball" + (active ? "" : " off") + (hit.has(n) ? " hit" : "");
           b.textContent = String(n).padStart(2,"0");
           nums.appendChild(b);
         }
@@ -345,35 +324,13 @@
       }
     }
 
-    function showResult(jogo, metaText){
-      const box = $("resultBox");
-      const nums = $("resultNums");
-      const meta = $("resultMeta");
-
-      nums.innerHTML = "";
-      for(const n of jogo){
-        const d = document.createElement("div");
-        d.className = "bigBall";
-        d.textContent = String(n).padStart(2,"0");
-        nums.appendChild(d);
-      }
-      meta.textContent = metaText || "";
-      box.style.display = "block";
-    }
-
-    renderBoard([]); // inicial
+    renderBoard([], []);
 
     // ===============================
     // Live listeners
     // ===============================
     let unsubUser = null;
     let unsubConfig = null;
-
-    let latestConfig = {
-      linhasAtivas: [],
-      dezenasAnteriores: [],
-      dezenasAtrasadas: []
-    };
 
     function stopListeners(){
       if(unsubUser){ unsubUser(); unsubUser=null; }
@@ -389,6 +346,9 @@
         updatedAt: Date.now()
       }, { merge: true });
     }
+
+    // Estado da config
+    let gConfig = { linhasAtivas: [], dezenasAnteriores: [], dezenasAtrasadas: [] };
 
     // ===============================
     // Actions
@@ -422,7 +382,7 @@
       }catch(err){
         console.error(err);
         if(String(err?.code||"").includes("email-already-in-use")){
-          toast("Este e-mail já está cadastrado (Authentication). Clique em Entrar.", "error");
+          toast("Este e-mail já está cadastrado. Clique em Entrar.", "error");
         }else{
           toast("Erro ao cadastrar. Verifique email/senha.", "error");
         }
@@ -454,9 +414,8 @@
     // ===============================
     onAuthStateChanged(auth, async (user) => {
       stopListeners();
-
-      // limpa resultado
-      $("resultBox").style.display = "none";
+      lastGame = [];
+      $("lastGameInfo").textContent = "Último jogo: —";
 
       if(!user){
         setAuthPill(false);
@@ -465,8 +424,8 @@
         $("userInfo").textContent = "Usuário: — • Acesso: —";
         $("statusText").textContent = "Status: aguardando ação.";
         $("configInfo").textContent = "Config: aguardando carregar…";
-        latestConfig = { linhasAtivas: [], dezenasAnteriores: [], dezenasAtrasadas: [] };
-        renderBoard([]);
+        gConfig = { linhasAtivas: [], dezenasAnteriores: [], dezenasAtrasadas: [] };
+        renderBoard([], []);
         return;
       }
 
@@ -490,16 +449,13 @@
       const configRef = doc(db, "config", "global");
       unsubConfig = onSnapshot(configRef, (snap) => {
         const data = snap.exists() ? snap.data() : {};
-        latestConfig.linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [];
-        latestConfig.dezenasAnteriores = Array.isArray(data.dezenasAnteriores) ? data.dezenasAnteriores : [];
-        latestConfig.dezenasAtrasadas = Array.isArray(data.dezenasAtrasadas) ? data.dezenasAtrasadas : [];
-
-        renderBoard(latestConfig.linhasAtivas);
-
-        const exc = [...latestConfig.dezenasAnteriores, ...latestConfig.dezenasAtrasadas]
-          .filter(n => Number.isFinite(Number(n)));
-        $("configInfo").textContent =
-          `Config: ${latestConfig.linhasAtivas.length} linha(s) ativa(s) • Excluídas: ${exc.length} dezenas`;
+        gConfig = {
+          linhasAtivas: Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [],
+          dezenasAnteriores: Array.isArray(data.dezenasAnteriores) ? data.dezenasAnteriores : [],
+          dezenasAtrasadas: Array.isArray(data.dezenasAtrasadas) ? data.dezenasAtrasadas : [],
+        };
+        renderBoard(gConfig.linhasAtivas, lastGame);
+        $("configInfo").textContent = `Config: ${gConfig.linhasAtivas.length} linha(s) ativa(s).`;
       }, (err) => {
         console.error(err);
         $("configInfo").textContent = "Config: erro ao carregar (Rules?).";
@@ -539,42 +495,34 @@
     });
 
     // ===============================
-    // GERAR JOGO (usa seu gerador.js)
+    // Gerar Jogo (usa gerador.js + destaca no cartão)
     // ===============================
     $("btnGerar").addEventListener("click", () => {
       try{
-        // valida gerador carregado
-        if(typeof window.gerarJogoValido !== "function"){
-          toast("Erro: gerarJogoValido() não encontrado. Confirme se gerador.js está na raiz.", "error");
-          return;
-        }
-
-        const linhasAtivas = Array.isArray(latestConfig.linhasAtivas) ? latestConfig.linhasAtivas : [];
+        const linhasAtivas = Array.isArray(gConfig.linhasAtivas) ? gConfig.linhasAtivas : [];
         if(linhasAtivas.length === 0){
-          toast("Nenhuma linha ativa no config/global. Ative linhas no admin.", "error");
+          toast("Nenhuma linha ativa. Peça ao admin para ativar linhas.", "error");
           return;
         }
 
-        // excluídas = anteriores + atrasadas
-        const excluidas = new Set(
-          [...(latestConfig.dezenasAnteriores||[]), ...(latestConfig.dezenasAtrasadas||[])]
-            .map(n => Number(n))
-            .filter(n => Number.isFinite(n) && n >= 1 && n <= 60)
-        );
+        // Exclui dezenas anteriores + atrasadas (se você quiser)
+        const excluidas = new Set([
+          ...(gConfig.dezenasAnteriores || []),
+          ...(gConfig.dezenasAtrasadas || [])
+        ]);
 
-        const jogo = window.gerarJogoValido(linhasAtivas, excluidas);
+        const jogo = gerarJogoValido(linhasAtivas, excluidas);
+        lastGame = jogo;
 
-        showResult(
-          jogo,
-          `Linhas ativas: ${linhasAtivas.join(", ")} • Excluídas: ${excluidas.size}`
-        );
-
-        toast("Jogo gerado com sucesso!", "ok");
+        renderBoard(linhasAtivas, jogo);
+        $("lastGameInfo").textContent = `Último jogo: ${jogo.map(n=>String(n).padStart(2,"0")).join(" - ")}`;
+        toast("Jogo gerado: " + jogo.map(n=>String(n).padStart(2,"0")).join(" - "), "ok");
       }catch(err){
         console.error(err);
-        toast(err?.message ? err.message : "Falha ao gerar jogo.", "error");
+        toast(err.message || "Erro ao gerar jogo.", "error");
       }
     });
+
   </script>
 </body>
 </html>
