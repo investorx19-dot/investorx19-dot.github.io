@@ -10,6 +10,7 @@
       --bg1:#061024;
       --bg2:#030712;
       --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
       --line: rgba(255,255,255,.10);
       --text:#eaf0ff;
       --muted: rgba(234,240,255,.72);
@@ -134,6 +135,25 @@
       font-weight:800;
     }
     .ball.off{opacity:.35;filter:grayscale(30%)}
+
+    /* Resultado do jogo */
+    .result{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius:14px;
+      padding:12px;
+    }
+    .resultTitle{font-weight:800;margin:0 0 8px}
+    .resultNums{display:flex;gap:10px;flex-wrap:wrap}
+    .bigBall{
+      width:44px;height:44px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(45,108,255,.20);
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:900;
+      font-size:16px;
+    }
   </style>
 </head>
 
@@ -176,7 +196,7 @@
           </div>
           <div>
             <label for="senha">Senha</label>
-            <input id="senha" type="password" placeholder="Sua senha" autocomplete="current-password" />
+            <input id="senha" type="password" placeholder="Crie sua senha" autocomplete="current-password" />
           </div>
         </div>
 
@@ -189,8 +209,8 @@
         <div class="sep"></div>
         <div class="small" id="statusText">Status: aguardando ação.</div>
         <div class="small" style="margin-top:8px">
-          • Cadastro salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).<br>
-          • O gerador só libera quando o admin marcar <span class="mono">accessGranted = true</span>.
+          • Seu cadastro é salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).<br>
+          • O acesso ao gerador só funciona quando o admin liberar <span class="mono">accessGranted</span>.
         </div>
       </div>
 
@@ -210,11 +230,20 @@
         <h2 style="font-size:16px;margin:0 0 6px">Cartão Virtual</h2>
         <div class="board" id="board"></div>
 
+        <div class="result" id="resultBox" style="display:none">
+          <div class="resultTitle">Jogo gerado</div>
+          <div class="resultNums" id="resultNums"></div>
+          <div class="small" id="resultMeta" style="margin-top:8px"></div>
+        </div>
+
         <div class="sep"></div>
         <div class="small" id="configInfo">Config: aguardando carregar…</div>
       </div>
     </div>
   </div>
+
+  <!-- ✅ Carrega seu gerador (deixa na raiz do repo) -->
+  <script src="gerador.js"></script>
 
   <script type="module">
     // ===============================
@@ -232,7 +261,6 @@
     import {
       getFirestore,
       doc,
-      getDoc,
       setDoc,
       onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
@@ -263,7 +291,9 @@
     }
 
     function normalizePhone(raw){
-      return String(raw||"").replace(/\D/g,""); // só dígitos
+      const d = String(raw||"").replace(/\D/g,"");
+      if(!d) return "";
+      return d;
     }
 
     function setAuthPill(logged){
@@ -273,39 +303,36 @@
         : '<span class="dot red"></span> Deslogado';
     }
 
-    function safeStr(v){ return (v === undefined || v === null) ? "" : String(v); }
-
     // ===============================
-    // Card ranges (Mega-Sena)
+    // Board usando o LINE_RANGES do gerador.js (fonte única)
     // ===============================
-    const LINE_RANGES = {
-      1: Array.from({length:10}, (_,i)=> i+1),
-      2: Array.from({length:10}, (_,i)=> i+11),
-      3: Array.from({length:10}, (_,i)=> i+21),
-      4: Array.from({length:10}, (_,i)=> i+31),
-      5: Array.from({length:10}, (_,i)=> i+41),
-      6: Array.from({length:10}, (_,i)=> i+51),
-    };
-
     function renderBoard(linhasAtivas = []){
       const board = $("board");
       board.innerHTML = "";
 
+      const ranges = window.LINE_RANGES; // vem do gerador.js
+      if(!ranges){
+        board.innerHTML = `<div class="small">Erro: LINE_RANGES não carregou (verifique se gerador.js está na raiz).</div>`;
+        return;
+      }
+
       for(let l=1; l<=6; l++){
+        const numsRange = ranges[l] || [];
+        const from = numsRange[0];
+        const to = numsRange[numsRange.length - 1];
+
         const line = document.createElement("div");
         line.className = "lineBox";
 
         const title = document.createElement("div");
         title.className = "lineTitle";
-        const from = LINE_RANGES[l][0];
-        const to   = LINE_RANGES[l][9];
         title.textContent = `Linha ${l} (${String(from).padStart(2,"0")}-${String(to).padStart(2,"0")}):`;
 
         const nums = document.createElement("div");
         nums.className = "nums";
         const active = linhasAtivas.includes(l);
 
-        for(const n of LINE_RANGES[l]){
+        for(const n of numsRange){
           const b = document.createElement("div");
           b.className = "ball" + (active ? "" : " off");
           b.textContent = String(n).padStart(2,"0");
@@ -318,7 +345,23 @@
       }
     }
 
-    renderBoard([]);
+    function showResult(jogo, metaText){
+      const box = $("resultBox");
+      const nums = $("resultNums");
+      const meta = $("resultMeta");
+
+      nums.innerHTML = "";
+      for(const n of jogo){
+        const d = document.createElement("div");
+        d.className = "bigBall";
+        d.textContent = String(n).padStart(2,"0");
+        nums.appendChild(d);
+      }
+      meta.textContent = metaText || "";
+      box.style.display = "block";
+    }
+
+    renderBoard([]); // inicial
 
     // ===============================
     // Live listeners
@@ -326,47 +369,25 @@
     let unsubUser = null;
     let unsubConfig = null;
 
+    let latestConfig = {
+      linhasAtivas: [],
+      dezenasAnteriores: [],
+      dezenasAtrasadas: []
+    };
+
     function stopListeners(){
       if(unsubUser){ unsubUser(); unsubUser=null; }
       if(unsubConfig){ unsubConfig(); unsubConfig=null; }
     }
 
-    async function ensureUserDocExists(user){
-      // Garante que exista users/{uid}. Se não existir, cria.
+    async function ensureUserDoc(user, extraData){
       const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-
-      if(!snap.exists()){
-        const nome = $("nome").value.trim() || "(sem nome)";
-        const telefone = normalizePhone($("telefone").value);
-
-        await setDoc(ref, {
-          uid: user.uid,
-          email: user.email || "",
-          nome,
-          telefone,
-          accessGranted: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }, { merge: true });
-
-        return { created: true };
-      }
-
-      // Se existe, atualiza nome/telefone se o usuário preencheu (sem sobrescrever com vazio)
-      const nomeInput = $("nome").value.trim();
-      const telInput  = normalizePhone($("telefone").value);
-
-      const patch = {
+      await setDoc(ref, {
         uid: user.uid,
-        email: user.email || "",
+        email: user.email,
+        ...extraData,
         updatedAt: Date.now()
-      };
-      if(nomeInput) patch.nome = nomeInput;
-      if(telInput) patch.telefone = telInput;
-
-      await setDoc(ref, patch, { merge: true });
-      return { created: false };
+      }, { merge: true });
     }
 
     // ===============================
@@ -388,32 +409,23 @@
       }
 
       try{
-        // 1) tenta criar
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
 
-        // 2) cria doc users/{uid}
-        await ensureUserDocExists(cred.user);
+        await ensureUserDoc(cred.user, {
+          nome: nome || "(sem nome)",
+          telefone: telefone || "",
+          accessGranted: false,
+          createdAt: Date.now()
+        });
 
         toast("Cadastro realizado. Aguarde liberação do admin.", "ok");
       }catch(err){
         console.error(err);
-
-        const code = String(err?.code || "");
-
-        // ✅ Se o usuário já existe no AUTH, isso NÃO é erro do sistema.
-        // Ele deve entrar (login). Aqui a gente tenta logar automaticamente.
-        if(code.includes("email-already-in-use")){
-          try{
-            await signInWithEmailAndPassword(auth, email, senha);
-            toast("Este e-mail já existe. Entrando na conta...", "ok");
-          }catch(e2){
-            console.error(e2);
-            toast("Este e-mail já existe. Clique em Entrar e use a senha correta.", "error");
-          }
-          return;
+        if(String(err?.code||"").includes("email-already-in-use")){
+          toast("Este e-mail já está cadastrado (Authentication). Clique em Entrar.", "error");
+        }else{
+          toast("Erro ao cadastrar. Verifique email/senha.", "error");
         }
-
-        toast("Erro ao cadastrar. Verifique email/senha.", "error");
       }
     });
 
@@ -443,6 +455,9 @@
     onAuthStateChanged(auth, async (user) => {
       stopListeners();
 
+      // limpa resultado
+      $("resultBox").style.display = "none";
+
       if(!user){
         setAuthPill(false);
         $("btnSair").style.display = "none";
@@ -450,6 +465,7 @@
         $("userInfo").textContent = "Usuário: — • Acesso: —";
         $("statusText").textContent = "Status: aguardando ação.";
         $("configInfo").textContent = "Config: aguardando carregar…";
+        latestConfig = { linhasAtivas: [], dezenasAnteriores: [], dezenasAtrasadas: [] };
         renderBoard([]);
         return;
       }
@@ -458,24 +474,32 @@
       $("btnSair").style.display = "inline-block";
       $("email").value = user.email || "";
 
-      // Garante doc users/{uid}
+      // garante doc no padrão users/{uid}
       try{
-        const r = await ensureUserDocExists(user);
-        if(r.created){
-          $("statusText").textContent = "Status: cadastro criado. Aguarde liberação do administrador.";
-        }
+        const nome = $("nome").value.trim();
+        const telefone = normalizePhone($("telefone").value);
+        await ensureUserDoc(user, {
+          nome: nome || undefined,
+          telefone: telefone || undefined
+        });
       }catch(e){
         console.error(e);
-        toast("Falha ao preparar seu cadastro no Firestore (Rules?).", "error");
       }
 
       // Listener config/global
       const configRef = doc(db, "config", "global");
       unsubConfig = onSnapshot(configRef, (snap) => {
         const data = snap.exists() ? snap.data() : {};
-        const linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [];
-        renderBoard(linhasAtivas);
-        $("configInfo").textContent = `Config: ${linhasAtivas.length} linha(s) ativa(s).`;
+        latestConfig.linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [];
+        latestConfig.dezenasAnteriores = Array.isArray(data.dezenasAnteriores) ? data.dezenasAnteriores : [];
+        latestConfig.dezenasAtrasadas = Array.isArray(data.dezenasAtrasadas) ? data.dezenasAtrasadas : [];
+
+        renderBoard(latestConfig.linhasAtivas);
+
+        const exc = [...latestConfig.dezenasAnteriores, ...latestConfig.dezenasAtrasadas]
+          .filter(n => Number.isFinite(Number(n)));
+        $("configInfo").textContent =
+          `Config: ${latestConfig.linhasAtivas.length} linha(s) ativa(s) • Excluídas: ${exc.length} dezenas`;
       }, (err) => {
         console.error(err);
         $("configInfo").textContent = "Config: erro ao carregar (Rules?).";
@@ -485,7 +509,7 @@
       const userRef = doc(db, "users", user.uid);
       unsubUser = onSnapshot(userRef, (snap) => {
         if(!snap.exists()){
-          $("statusText").textContent = "Status: seu cadastro não existe no Firestore (clique em Cadastrar/Entrar).";
+          $("statusText").textContent = "Status: seu cadastro ainda não foi criado. Clique em Cadastrar.";
           $("btnGerar").disabled = true;
           $("userInfo").textContent = `Usuário: ${user.email} • Acesso: Bloqueado`;
           return;
@@ -494,11 +518,8 @@
         const u = snap.data();
         const granted = !!u.accessGranted;
 
-        // preencher campos, mas sem sobrescrever se usuário está digitando algo
-        const nomeAtual = $("nome").value.trim();
-        const telAtual  = normalizePhone($("telefone").value);
-        if(!nomeAtual) $("nome").value = safeStr(u.nome);
-        if(!telAtual)  $("telefone").value = safeStr(u.telefone);
+        $("nome").value = u.nome || $("nome").value;
+        $("telefone").value = u.telefone || $("telefone").value;
 
         $("userInfo").innerHTML =
           `Usuário: <span class="mono">${user.email}</span> • Acesso: <b style="color:${granted ? '#22c55e' : '#ef4444'}">${granted ? 'Liberado' : 'Bloqueado'}</b>`;
@@ -518,13 +539,42 @@
     });
 
     // ===============================
-    // Gerar Jogo (placeholder)
+    // GERAR JOGO (usa seu gerador.js)
     // ===============================
     $("btnGerar").addEventListener("click", () => {
-      toast("Gerar jogo: conecte aqui sua lógica do gerador.", "ok");
-      // aqui você pluga o seu gerador atual, mantendo a trava por accessGranted
-    });
+      try{
+        // valida gerador carregado
+        if(typeof window.gerarJogoValido !== "function"){
+          toast("Erro: gerarJogoValido() não encontrado. Confirme se gerador.js está na raiz.", "error");
+          return;
+        }
 
+        const linhasAtivas = Array.isArray(latestConfig.linhasAtivas) ? latestConfig.linhasAtivas : [];
+        if(linhasAtivas.length === 0){
+          toast("Nenhuma linha ativa no config/global. Ative linhas no admin.", "error");
+          return;
+        }
+
+        // excluídas = anteriores + atrasadas
+        const excluidas = new Set(
+          [...(latestConfig.dezenasAnteriores||[]), ...(latestConfig.dezenasAtrasadas||[])]
+            .map(n => Number(n))
+            .filter(n => Number.isFinite(n) && n >= 1 && n <= 60)
+        );
+
+        const jogo = window.gerarJogoValido(linhasAtivas, excluidas);
+
+        showResult(
+          jogo,
+          `Linhas ativas: ${linhasAtivas.join(", ")} • Excluídas: ${excluidas.size}`
+        );
+
+        toast("Jogo gerado com sucesso!", "ok");
+      }catch(err){
+        console.error(err);
+        toast(err?.message ? err.message : "Falha ao gerar jogo.", "error");
+      }
+    });
   </script>
 </body>
 </html>
