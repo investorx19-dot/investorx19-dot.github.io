@@ -177,36 +177,41 @@
 
     <div class="grid">
       <!-- LOGIN / CADASTRO -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2>Cadastro / Login</h2>
-          <span id="pillAuth" class="pill"><span class="dot red"></span> Deslogado</span>
-        </div>
+      <<div class="card">
+  <h2>Planos de Assinatura</h2>
+  <div class="sep"></div>
 
-        <div class="sep"></div>
+  <div class="plans">
 
-        <!-- ASSINATURA (links sem JS) -->
-        <div style="margin-top:2px">
-          <div style="font-weight:800; margin-bottom:4px">Assinatura</div>
-          <div class="small">Para liberar o gerador, faça a assinatura e depois clique em <b>“Já paguei”</b>.</div>
+    <!-- MENSAL -->
+    <a class="plan-btn" 
+       href="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX"
+       target="_blank"
+       rel="noopener noreferrer">
+       💳 Plano Mensal
+    </a>
 
-          <div class="btns">
-            <a class="btn" href="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX" target="_blank" rel="noopener noreferrer">
-              Mensal (Pix)
-            </a>
-            <a class="btn" href="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX" target="_blank" rel="noopener noreferrer">
-              Mensal (Cartão)
-            </a>
-            <a class="btn primary" href="https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx" target="_blank" rel="noopener noreferrer">
-              Anual
-            </a>
-            <button id="btnJaPaguei" class="btn success">✅ Já paguei (enviar dados)</button>
-          </div>
+    <!-- SEMESTRAL -->
+    <a class="plan-btn"
+       href="https://link.infinitepay.io/silvia-regina-967/VC1DLUMtSQ-3f3fVJkuyF-149,90"
+       target="_blank"
+       rel="noopener noreferrer">
+       🔥 Plano Semestral
+    </a>
 
-          <div class="small" style="margin-top:8px">
-            Ao clicar em “Já paguei”, vamos abrir seu WhatsApp com uma mensagem pronta para suporte validar.
-          </div>
-        </div>
+    <!-- ANUAL (MAIS POPULAR) -->
+    <div class="plan-wrapper">
+      <span class="badge">⭐ MAIS POPULAR</span>
+      <a class="plan-btn destaque"
+         href="https://link.infinitepay.io/silvia-regina-967/VC1DLUMtSQ-UH1tcjuY7-179,90"
+         target="_blank"
+         rel="noopener noreferrer">
+         🚀 Plano Anual
+      </a>
+    </div>
+
+  </div>
+</div>
 
         <div class="sep"></div>
 
@@ -674,4 +679,5 @@ Data: ${new Date().toLocaleString("pt-BR")}`;
   </script>
 </body>
 </html>
+
 
