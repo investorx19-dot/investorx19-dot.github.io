@@ -181,4 +181,52 @@
     function gerarJogoUsuario() {
       try {
         const linhasAtivas = JSON.parse(localStorage.getItem('linhasAtivas') || '[]');
-        const anteriores = JSON.parse(localStorage.getItem('dezenasAnteriores') || '
+        const anteriores = JSON.parse(localStorage.getItem('dezenasAnteriores') || '[]');
+        const atrasadas = JSON.parse(localStorage.getItem('dezenasAtrasadas') || '[]');
+
+        if (linhasAtivas.length === 0) {
+          alert("O administrador ainda não configurou as linhas ativas.");
+          return;
+        }
+
+        const excluidas = new Set([...anteriores, ...atrasadas]);
+        const jogo = gerarJogoValido(linhasAtivas, excluidas);
+
+        renderCartao(jogo);
+
+        const acertos = jogo.filter(n => anteriores.includes(n)).length;
+        document.getElementById('acertos').textContent = acertos;
+
+      } catch (err) {
+        alert("Erro ao gerar jogo: " + err.message);
+      }
+    }
+
+    function renderCartao(jogo) {
+      const cartao = document.getElementById('cartao');
+      cartao.innerHTML = '';
+
+      for (let l = 1; l <= 6; l++) {
+        const div = document.createElement('div');
+        div.className = 'linha';
+        div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
+
+        LINE_RANGES[l].forEach(n => {
+          const span = document.createElement('span');
+          span.className = 'numero';
+          span.textContent = String(n).padStart(2, '0');
+
+          if (jogo.includes(n)) {
+            span.classList.add('selecionado');
+          }
+
+          div.appendChild(span);
+        });
+
+        cartao.appendChild(div);
+      }
+    }
+  </script>
+
+</body>
+</html>
