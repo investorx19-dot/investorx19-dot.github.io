@@ -1,728 +1,254 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mark6 • Gerador Mega-Sena</title>
+<meta charset="UTF-8" />
+<title>Gerador de Jogos - Usuário</title>
 
-  <style>
-    :root{
-      --bg1:#061024;
-      --bg2:#030712;
-      --card: rgba(255,255,255,.06);
-      --line: rgba(255,255,255,.10);
-      --text:#eaf0ff;
-      --muted: rgba(234,240,255,.72);
-      --blue:#2d6cff;
-      --green:#22c55e;
-      --red:#ef4444;
-      --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --radius: 18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: var(--text);
-      min-height:100vh;
-      background:
-        radial-gradient(900px 500px at 20% 10%, rgba(45,108,255,.25), transparent 60%),
-        radial-gradient(900px 500px at 80% 20%, rgba(245,158,11,.12), transparent 55%),
-        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
-    }
-    .wrap{max-width:1100px;margin:0 auto;padding:26px 18px 70px}
-    .topo{
-      display:flex;flex-direction:column;align-items:center;gap:10px;
-      margin-bottom:18px;text-align:center;
-    }
-    .logo{
-      width:240px;max-width:70vw;height:auto;
-      border-radius:14px;
-      box-shadow: 0 18px 55px rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.10);
-      background:#0f172a;
-    }
-    h1{margin:0;font-size:38px;letter-spacing:.2px}
-    .sub{margin:0;color:var(--muted);font-size:14px}
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 20px;
+}
 
-    .toast{
-      display:none;
-      margin: 0 0 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
-      color: var(--muted);
-    }
-    .toast.show{display:block}
-    .toast.ok{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); color: rgba(255,255,255,.92)}
-    .toast.error{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: rgba(255,255,255,.92)}
+.linha {
+margin: 15px 0;
+padding: 10px;
+background: #fff;
+border: 1px solid #ccc;
+}
 
-    .grid{
-      display:grid;gap:14px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 980px){
-      .grid{grid-template-columns: 1fr 1fr}
-    }
+.numero {
+display: inline-block;
+width: 38px;
+height: 38px;
+line-height: 38px;
+text-align: center;
+margin: 2px;
+font-weight: bold;
+border-radius: 6px;
+}
 
-    .card{
-      background: var(--card);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding:16px;
-    }
-    .card h2{margin:0 0 10px;font-size:18px}
-    .small{font-size:12px;color:var(--muted);line-height:1.4}
-    .sep{height:1px;background: var(--line);margin:12px 0}
+.selecionado {
+background: yellow;
+color: black;
+}
 
-    label{font-size:13px;color:var(--muted)}
-    input{
-      width:100%;padding:11px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color: var(--text);
-      outline:none;
-    }
-    input::placeholder{color: rgba(234,240,255,.45)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width:700px){ .row{grid-template-columns:1fr} }
+button {
+padding: 12px 20px;
+font-size: 16px;
+margin: 5px;
+cursor: pointer;
+}
 
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btn{
-      appearance:none;border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding:10px 14px;border-radius:12px;
-      cursor:pointer;transition:.15s;
-      font-weight:700;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      text-decoration:none;
-      user-select:none;
-    }
-    .btn:hover{transform:translateY(-1px);background: rgba(255,255,255,.09)}
-    .btn.primary{background: var(--blue)}
-    .btn.primary:hover{filter:brightness(1.05)}
-    .btn.danger{background: rgba(239,68,68,.16);border-color: rgba(239,68,68,.35)}
-    .btn.success{background: rgba(34,197,94,.16);border-color: rgba(34,197,94,.35)}
-    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      color: var(--muted);
-      font-size:13px;
-    }
-    .dot{width:10px;height:10px;border-radius:99px;display:inline-block}
-    .dot.green{background: var(--green)}
-    .dot.red{background: var(--red)}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-
-    /* Cartão virtual */
-    .board{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-    .lineBox{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.20);
-      border-radius:14px;
-      padding:12px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-    }
-    .lineTitle{font-weight:800;color: rgba(234,240,255,.9)}
-    .nums{display:flex;gap:8px;flex-wrap:wrap}
-    .ball{
-      width:36px;height:36px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      font-weight:800;
-    }
-    .ball.off{opacity:.35;filter:grayscale(30%)}
-    .ball.pick{
-      border-color: rgba(34,197,94,.85);
-      box-shadow: 0 0 0 2px rgba(34,197,94,.25) inset;
-      background: rgba(34,197,94,.14);
-    }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      font-size:12px;
-      color: rgba(234,240,255,.85);
-      margin-top:10px;
-    }
-
-    /* ===============================
-       PLANOS (CSS embutido)
-       =============================== */
-    .plans{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-top:10px;
-    }
-    .plan-btn{
-      display:block;
-      text-align:center;
-      padding:14px;
-      border-radius:14px;
-      font-weight:800;
-      text-decoration:none;
-      color:#fff;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      transition:.2s;
-    }
-    .plan-btn:hover{
-      transform:translateY(-2px);
-      background:rgba(255,255,255,.12);
-    }
-    .plan-wrapper{ position:relative; }
-    .plan-badge{
-      position:absolute;
-      top:-10px;
-      right:12px;
-      background:#f59e0b;
-      color:#000;
-      font-size:11px;
-      font-weight:900;
-      padding:4px 8px;
-      border-radius:999px;
-    }
-    .plan-btn.destaque{
-      background:linear-gradient(135deg,#2d6cff,#1e40af);
-      border:1px solid rgba(255,255,255,.25);
-      box-shadow:0 10px 30px rgba(45,108,255,.4);
-    }
-  </style>
+#login, #app {
+max-width: 600px;
+margin: 0 auto;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="topo">
-      <img class="logo" src="logo-marck6.jpg" alt="Mark6" onerror="this.style.display='none'">
-      <h1>Gerador de Jogos - Mega-Sena</h1>
-      <p class="sub">Cadastro e liberação pelo administrador • Mark6</p>
-    </div>
-
-    <div id="toast" class="toast"></div>
-
-    <div class="grid">
-      <!-- LOGIN / CADASTRO + PLANOS -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2>Cadastro / Login</h2>
-          <span id="pillAuth" class="pill"><span class="dot red"></span> Deslogado</span>
-        </div>
-
-        <div class="sep"></div>
-
-        <h2 style="font-size:16px;margin:0 0 8px">Planos de Assinatura</h2>
-
-        <div class="plans">
-          <!-- MENSAL -->
-          <a class="plan-btn"
-             href="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX"
-             target="_blank" rel="noopener noreferrer">
-            💳 Plano Mensal . R$ 29,90 / mês
-          </a>
-
-          <!-- SEMESTRAL -->
-          <a class="plan-btn"
-             href="https://link.infinitepay.io/silvia-regina-967/VC1DLUMtSQ-3f3fVJkuyF-149,90"
-             target="_blank" rel="noopener noreferrer">
-            🔥 Plano Semestral . R$ 149,90 / 6 meses
-          </a>
-
-          <!-- ANUAL (MAIS POPULAR) -->
-          <div class="plan-wrapper">
-            <span class="plan-badge">⭐ MAIS POPULAR</span>
-            <a class="plan-btn destaque"
-               href="https://link.infinitepay.io/silvia-regina-967/VC1DLUMtSQ-UH1tcjuY7-179,90"
-               target="_blank" rel="noopener noreferrer">
-              🚀 Plano Anual . R$ 179,90 / um ano
-            </a>
-          </div>
-        </div>
-
-        <div class="btns" style="margin-top:12px">
-          <button id="btnJaPaguei" class="btn success" type="button">✅ Já paguei</button>
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="row">
-          <div>
-            <label for="nome">Nome</label>
-            <input id="nome" placeholder="Seu nome completo" autocomplete="name" />
-          </div>
-          <div>
-            <label for="telefone">Telefone (WhatsApp)</label>
-            <input id="telefone" placeholder="(21) 99813-5451" inputmode="numeric" />
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <div>
-            <label for="email">E-mail</label>
-            <input id="email" type="email" placeholder="seuemail@gmail.com" autocomplete="username" />
-          </div>
-          <div>
-            <label for="senha">Senha</label>
-            <input id="senha" type="password" placeholder="Crie sua senha" autocomplete="current-password" />
-          </div>
-        </div>
-
-        <div class="btns">
-          <button id="btnCadastrar" class="btn primary" type="button">Cadastrar</button>
-          <button id="btnEntrar" class="btn" type="button">Entrar</button>
-          <button id="btnSair" class="btn danger" type="button" style="display:none">Sair</button>
-        </div>
-
-        <div class="sep"></div>
-        <div class="small" id="statusText">Status: aguardando ação.</div>
-        <div class="small" style="margin-top:8px">
-          • Seu cadastro é salvo no Firestore em <span class="mono">users/{uid}</span> (sem duplicação).<br>
-          • O acesso ao gerador só funciona quando o admin liberar <span class="mono">accessGranted</span>.
-        </div>
-      </div>
-
-      <!-- ÁREA DO USUÁRIO -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2>Área do Usuário</h2>
-          <button id="btnGerar" class="btn primary" disabled type="button">GERAR JOGO</button>
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="small" id="userInfo">Usuário: — • Acesso: —</div>
-        <div class="badge" id="lastGameBadge">Último jogo: —</div>
-
-        <div class="sep"></div>
-
-        <h2 style="font-size:16px;margin:0 0 6px">Cartão Virtual</h2>
-        <div class="board" id="board"></div>
-
-        <div class="sep"></div>
-        <div class="small" id="configInfo">Config: aguardando carregar…</div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    // ===============================
-    // FIREBASE (Web SDK modular)
-    // ===============================
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-
-    import {
-      getFirestore,
-      doc,
-      setDoc,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-      authDomain: "painel-megasena.firebaseapp.com",
-      projectId: "painel-megasena",
-      storageBucket: "painel-megasena.firebasestorage.app",
-      messagingSenderId: "924943702876",
-      appId: "1:924943702876:web:77929086c5addb13b37f99"
-    };
-
-    // ✅ WhatsApp do suporte (sem +, sem espaços)
-    const SUPPORT_WA = "5521998135451";
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
-
-    // ===============================
-    // UI helpers
-    // ===============================
-    const $ = (id)=>document.getElementById(id);
-    const toastEl = $("toast");
-
-    function toast(msg, type="ok"){
-      toastEl.className = "toast show " + (type === "error" ? "error" : "ok");
-      toastEl.textContent = msg;
-      setTimeout(()=> toastEl.className = "toast", 4200);
-    }
-
-    function normalizePhone(raw){
-      const d = String(raw||"").replace(/\D/g,"");
-      return d || "";
-    }
-
-    function setAuthPill(logged){
-      const pill = $("pillAuth");
-      pill.innerHTML = logged
-        ? '<span class="dot green"></span> Logado'
-        : '<span class="dot red"></span> Deslogado';
-    }
-
-    function pad2(n){ return String(n).padStart(2,"0"); }
-
-    // ===============================
-    // Gerador (embutido)
-    // ===============================
-    const LINE_RANGES = {
-      1: [1,2,3,4,5,6,7,8,9,10],
-      2: [11,12,13,14,15,16,17,18,19,20],
-      3: [21,22,23,24,25,26,27,28,29,30],
-      4: [31,32,33,34,35,36,37,38,39,40],
-      5: [41,42,43,44,45,46,47,48,49,50],
-      6: [51,52,53,54,55,56,57,58,59,60]
-    };
-
-    const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55];
-    const PRIMOS    = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59];
-    const MULT3     = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60];
-
-    function gerarJogoValido(linhasAtivas, excluidas) {
-      const disponiveisPorLinha = {};
-      linhasAtivas.forEach(l => {
-        disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
-      });
-
-      for (const l of linhasAtivas) {
-        if (disponiveisPorLinha[l].length === 0) {
-          throw new Error(`A Linha ${l} não tem números disponíveis.`);
-        }
-      }
-
-      const jogo = [];
-      const usados = new Set();
-
-      linhasAtivas.forEach(l => {
-        const nums = disponiveisPorLinha[l];
-        const idx = Math.floor(Math.random() * nums.length);
-        const n = nums[idx];
-        jogo.push(n);
-        usados.add(n);
-        disponiveisPorLinha[l].splice(idx, 1);
-      });
-
-      let faltam = 6 - jogo.length;
-
-      if (faltam > 0) {
-        let restantes = [];
-        linhasAtivas.forEach(l => restantes.push(...disponiveisPorLinha[l]));
-        restantes = [...new Set(restantes.filter(n => !usados.has(n)))];
-
-        if (restantes.length < faltam) {
-          throw new Error("Não há números suficientes para completar 6 dezenas.");
-        }
-
-        let f = restantes.filter(n => FIBONACCI.includes(n));
-        let p = restantes.filter(n => PRIMOS.includes(n));
-        let m = restantes.filter(n => MULT3.includes(n));
-        let r = restantes.filter(n => !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n));
-
-        let qFib = Math.random() < 0.6 ? 0 : 1;
-        let qPri = Math.floor(Math.random() * 3);
-        let qMul = 1 + Math.floor(Math.random() * 3);
-        let qRan = 1 + Math.floor(Math.random() * 3);
-
-        let total = qFib + qPri + qMul + qRan;
-        if (total > faltam) {
-          qMul = Math.max(1, qMul - (total - faltam));
-          total = qFib + qPri + qMul + qRan;
-        }
-        if (total < faltam) qMul += (faltam - total);
-
-        const pegar = arr => arr.length ? arr.splice(Math.floor(Math.random() * arr.length), 1)[0] : null;
-
-        for (let i = 0; i < qFib && jogo.length < 6; i++) { let n = pegar(f); if (n) jogo.push(n); }
-        for (let i = 0; i < qPri && jogo.length < 6; i++) { let n = pegar(p); if (n) jogo.push(n); }
-        for (let i = 0; i < qMul && jogo.length < 6; i++) { let n = pegar(m); if (n) jogo.push(n); }
-        for (let i = 0; i < qRan && jogo.length < 6; i++) { let n = pegar(r); if (n) jogo.push(n); }
-
-        restantes = restantes.filter(n => !jogo.includes(n));
-        while (jogo.length < 6 && restantes.length > 0) {
-          let idx = Math.floor(Math.random() * restantes.length);
-          jogo.push(restantes.splice(idx, 1)[0]);
-        }
-      }
-
-      return jogo.sort((a, b) => a - b);
-    }
-
-    // ===============================
-    // Cartão Virtual (render + destaque)
-    // ===============================
-    function renderBoard(linhasAtivas = [], picks = []) {
-      const board = $("board");
-      board.innerHTML = "";
-      const pickSet = new Set(picks);
-
-      for (let l = 1; l <= 6; l++) {
-        const line = document.createElement("div");
-        line.className = "lineBox";
-
-        const title = document.createElement("div");
-        title.className = "lineTitle";
-        title.textContent = `Linha ${l} (${pad2(LINE_RANGES[l][0])}-${pad2(LINE_RANGES[l][9])}):`;
-
-        const nums = document.createElement("div");
-        nums.className = "nums";
-        const active = linhasAtivas.includes(l);
-
-        for (const n of LINE_RANGES[l]) {
-          const b = document.createElement("div");
-          b.className = "ball" + (active ? "" : " off") + (pickSet.has(n) ? " pick" : "");
-          b.textContent = pad2(n);
-          nums.appendChild(b);
-        }
-
-        line.appendChild(title);
-        line.appendChild(nums);
-        board.appendChild(line);
-      }
-    }
-
-    renderBoard([], []);
-
-    // ===============================
-    // Firestore live listeners
-    // ===============================
-    let unsubUser = null;
-    let unsubConfig = null;
-
-    function stopListeners(){
-      if(unsubUser){ unsubUser(); unsubUser=null; }
-      if(unsubConfig){ unsubConfig(); unsubConfig=null; }
-    }
-
-    async function ensureUserDoc(user, extraData){
-      const ref = doc(db, "users", user.uid);
-      await setDoc(ref, {
-        uid: user.uid,
-        email: user.email,
-        ...extraData,
-        updatedAt: Date.now()
-      }, { merge: true });
-    }
-
-    // estado atual
-    let currentLinhasAtivas = [];
-    let currentUserGranted = false;
-    let lastGame = [];
-
-    // ===============================
-    // Actions
-    // ===============================
-    $("btnCadastrar").addEventListener("click", async () => {
-      const nome = $("nome").value.trim();
-      const telefone = normalizePhone($("telefone").value);
-      const email = $("email").value.trim();
-      const senha = $("senha").value;
-
-      if(!email || !senha){
-        toast("Preencha email e senha.", "error");
-        return;
-      }
-      if(senha.length < 6){
-        toast("Senha precisa ter pelo menos 6 caracteres.", "error");
-        return;
-      }
-
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, senha);
-
-        await ensureUserDoc(cred.user, {
-          nome: nome || "(sem nome)",
-          telefone: telefone || "",
-          accessGranted: false,
-          createdAt: Date.now()
-        });
-
-        toast("Cadastro realizado. Aguarde liberação do admin.", "ok");
-      }catch(err){
-        console.error(err);
-        if(String(err?.code||"").includes("email-already-in-use")){
-          toast("Este e-mail já está cadastrado. Clique em Entrar.", "error");
-        }else{
-          toast("Erro ao cadastrar. Verifique email/senha.", "error");
-        }
-      }
-    });
-
-    $("btnEntrar").addEventListener("click", async () => {
-      const email = $("email").value.trim();
-      const senha = $("senha").value;
-      if(!email || !senha){
-        toast("Preencha email e senha.", "error");
-        return;
-      }
-      try{
-        await signInWithEmailAndPassword(auth, email, senha);
-      }catch(err){
-        console.error(err);
-        toast("Credenciais inválidas.", "error");
-      }
-    });
-
-    $("btnSair").addEventListener("click", async () => {
-      await signOut(auth);
-      toast("Você saiu.", "ok");
-    });
-
-    $("btnJaPaguei").addEventListener("click", () => {
-      const nome = $("nome").value.trim() || "(sem nome)";
-      const tel  = normalizePhone($("telefone").value) || "(sem telefone)";
-      const email = $("email").value.trim() || "(sem email)";
-
-      const msg =
-`Olá! Eu já paguei a assinatura do Mark6 e quero liberação.
-Nome: ${nome}
-Telefone: ${tel}
-E-mail: ${email}
-Data: ${new Date().toLocaleString("pt-BR")}`;
-
-      const url = `https://wa.me/${SUPPORT_WA}?text=${encodeURIComponent(msg)}`;
-      window.open(url, "_blank", "noopener,noreferrer");
-    });
-
-    // ===============================
-    // Auth state
-    // ===============================
-    onAuthStateChanged(auth, async (user) => {
-      stopListeners();
-
-      currentLinhasAtivas = [];
-      currentUserGranted = false;
-      lastGame = [];
-      $("lastGameBadge").textContent = "Último jogo: —";
-
-      if(!user){
-        setAuthPill(false);
-        $("btnSair").style.display = "none";
-        $("btnGerar").disabled = true;
-        $("userInfo").textContent = "Usuário: — • Acesso: —";
-        $("statusText").textContent = "Status: aguardando ação.";
-        $("configInfo").textContent = "Config: aguardando carregar…";
-        renderBoard([], []);
-        return;
-      }
-
-      setAuthPill(true);
-      $("btnSair").style.display = "inline-block";
-      $("email").value = user.email || "";
-
-      // garante doc base (merge)
-      try{
-        const nome = $("nome").value.trim();
-        const telefone = normalizePhone($("telefone").value);
-        await ensureUserDoc(user, {
-          nome: nome || undefined,
-          telefone: telefone || undefined
-        });
-      }catch(e){
-        console.error(e);
-      }
-
-      // Listener config/global
-      const configRef = doc(db, "config", "global");
-      unsubConfig = onSnapshot(configRef, (snap) => {
-        const data = snap.exists() ? snap.data() : {};
-        const linhasAtivas = Array.isArray(data.linhasAtivas) ? data.linhasAtivas : [];
-        currentLinhasAtivas = linhasAtivas.map(Number).filter(n => n>=1 && n<=6);
-
-        renderBoard(currentLinhasAtivas, lastGame);
-        $("configInfo").textContent = `Config: ${currentLinhasAtivas.length} linha(s) ativa(s).`;
-      }, (err) => {
-        console.error(err);
-        $("configInfo").textContent = "Config: erro ao carregar (Rules?).";
-      });
-
-      // Listener users/{uid}
-      const userRef = doc(db, "users", user.uid);
-      unsubUser = onSnapshot(userRef, (snap) => {
-        if(!snap.exists()){
-          $("statusText").textContent = "Status: seu cadastro ainda não foi criado. Clique em Cadastrar.";
-          $("btnGerar").disabled = true;
-          $("userInfo").textContent = `Usuário: ${user.email} • Acesso: Bloqueado`;
-          currentUserGranted = false;
-          return;
-        }
-
-        const u = snap.data();
-        const granted = !!u.accessGranted;
-        currentUserGranted = granted;
-
-        $("nome").value = u.nome || $("nome").value;
-        $("telefone").value = u.telefone || $("telefone").value;
-
-        $("userInfo").innerHTML =
-          `Usuário: <span class="mono">${user.email}</span> • Acesso: <b style="color:${granted ? '#22c55e' : '#ef4444'}">${granted ? 'Liberado' : 'Bloqueado'}</b>`;
-
-        if(granted){
-          $("statusText").textContent = "Status: acesso liberado ✅";
-          $("btnGerar").disabled = false;
-        }else{
-          $("statusText").textContent = "Status: aguardando liberação do administrador.";
-          $("btnGerar").disabled = true;
-        }
-      }, (err) => {
-        console.error(err);
-        $("statusText").textContent = "Status: erro ao ler seu cadastro (Rules?).";
-        $("btnGerar").disabled = true;
-      });
-    });
-
-    // ===============================
-    // GERAR JOGO (destacando no cartão)
-    // ===============================
-    $("btnGerar").addEventListener("click", async () => {
-      if(!currentUserGranted){
-        toast("Aguardando liberação do administrador.", "error");
-        return;
-      }
-
-      if(!Array.isArray(currentLinhasAtivas) || currentLinhasAtivas.length === 0){
-        toast("Config sem linhas ativas. Peça ao admin para salvar config.", "error");
-        return;
-      }
-
-      // exclusões (se quiser depois plugar sorteio anterior/atrasadas)
-      const excluidas = new Set();
-
-      try{
-        const jogo = gerarJogoValido(currentLinhasAtivas, excluidas);
-        lastGame = jogo;
-
-        $("lastGameBadge").textContent = `Último jogo: ${jogo.map(pad2).join(" - ")}`;
-        renderBoard(currentLinhasAtivas, lastGame);
-
-        toast("Jogo gerado e destacado no cartão ✅", "ok");
-      }catch(err){
-        console.error(err);
-        toast(String(err?.message || "Erro ao gerar jogo."), "error");
-      }
-    });
-  </script>
+
+<h1>Gerador de Jogos - Mega-Sena</h1>
+
+<div id="login">
+
+<h2>Cadastro / Login</h2>
+
+<input id="nome" placeholder="Nome" /><br><br>
+
+<input id="email" placeholder="E-mail" /><br><br>
+
+<input id="senha" type="password" placeholder="Senha" /><br><br>
+
+<button onclick="cadastrar()">Cadastrar</button>
+
+<button onclick="login()">Entrar</button>
+
+</div>
+
+<div id="app" style="display:none;">
+
+<button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+
+<h2>Cartão Virtual</h2>
+
+<div id="cartao"></div>
+
+<p>
+<strong>Acertos no último sorteio:</strong>
+<span id="acertos">0</span>
+</p>
+
+<h3>Assinatura para liberar o gerador</h3>
+
+<button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX','_blank')">
+Assinatura Mensal - R$ 29,90
+</button>
+
+<button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx','_blank')">
+Assinatura Anual - R$ 238,80
+</button>
+
+</div>
+
+<script src="gerador.js"></script>
+
+<script>
+
+let usuarioAtual = null;
+
+function cadastrar(){
+
+const nome = document.getElementById('nome').value.trim();
+const email = document.getElementById('email').value.trim();
+const senha = document.getElementById('senha').value;
+
+if(!nome || !email || !senha){
+
+alert("Preencha todos os campos");
+
+return;
+
+}
+
+let users = JSON.parse(localStorage.getItem('users') || '[]');
+
+if(users.some(u => u.email === email)){
+
+alert("E-mail já cadastrado");
+
+return;
+
+}
+
+const novoUsuario = {
+
+nome,
+email,
+senha,
+accessGranted: true
+
+};
+
+users.push(novoUsuario);
+
+localStorage.setItem('users', JSON.stringify(users));
+
+usuarioAtual = novoUsuario;
+
+document.getElementById('login').style.display = 'none';
+
+document.getElementById('app').style.display = 'block';
+
+renderCartao([]);
+
+alert("Cadastro realizado! Você já pode gerar seus jogos.");
+
+}
+
+function login(){
+
+const email = document.getElementById('email').value.trim();
+const senha = document.getElementById('senha').value;
+
+const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+const user = users.find(u => u.email === email && u.senha === senha);
+
+if(!user){
+
+alert("Credenciais inválidas");
+
+return;
+
+}
+
+usuarioAtual = user;
+
+document.getElementById('login').style.display = 'none';
+
+document.getElementById('app').style.display = 'block';
+
+renderCartao([]);
+
+}
+
+function gerarJogoUsuario(){
+
+try{
+
+const linhasAtivas = JSON.parse(localStorage.getItem('linhasAtivas') || '[]');
+
+const anteriores = JSON.parse(localStorage.getItem('dezenasAnteriores') || '[]');
+
+const atrasadas = JSON.parse(localStorage.getItem('dezenasAtrasadas') || '[]');
+
+if(linhasAtivas.length === 0){
+
+alert("O administrador ainda não configurou as linhas ativas.");
+
+return;
+
+}
+
+const excluidas = new Set([...anteriores,...atrasadas]);
+
+const jogo = gerarJogoValido(linhasAtivas,excluidas);
+
+renderCartao(jogo);
+
+const acertos = jogo.filter(n => anteriores.includes(n)).length;
+
+document.getElementById('acertos').textContent = acertos;
+
+}catch(err){
+
+alert("Erro ao gerar jogo: " + err.message);
+
+}
+
+}
+
+function renderCartao(jogo){
+
+const cartao = document.getElementById('cartao');
+
+cartao.innerHTML = '';
+
+for(let l=1;l<=6;l++){
+
+const div = document.createElement('div');
+
+div.className = 'linha';
+
+div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
+
+LINE_RANGES[l].forEach(n=>{
+
+const span = document.createElement('span');
+
+span.className = 'numero';
+
+span.textContent = String(n).padStart(2,'0');
+
+if(jogo.includes(n)){
+
+span.classList.add('selecionado');
+
+}
+
+div.appendChild(span);
+
+});
+
+cartao.appendChild(div);
+
+}
+
+}
+
+</script>
+
 </body>
 </html>
-
-
-
-
