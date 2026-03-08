@@ -540,16 +540,15 @@
           .sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
 
         $("dupInfo").textContent =
-          duplicatesHidden > 0
-            ? ⚠️ ${duplicatesHidden} duplicado(s) ocultado(s) por e-mail (mostrando apenas o mais recente).
-            : Sem duplicações detectadas.;
+  duplicatesHidden > 0
+    ? `⚠️ ${duplicatesHidden} duplicado(s) ocultado(s) por e-mail`
+    : "Sem duplicações detectadas.";
 
-        if(uniqueUsers.length === 0){
-          tbody.innerHTML = <tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>;
-          return;
-        }
-
-        tbody.innerHTML = "";
+if (uniqueUsers.length === 0) {
+  tbody.innerHTML = `<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>`;
+  return;
+}
+                  tbody.innerHTML = "";
         for(const u of uniqueUsers){
           const granted = !!u.accessGranted;
           const phone = (u.telefone || u.phone || "").toString();
