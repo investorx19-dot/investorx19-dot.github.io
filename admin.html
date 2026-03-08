@@ -509,7 +509,7 @@
     // ===============================
     async function loadUsers(){
       const tbody = $("usersTbody");
-      tbody.innerHTML = <tr><td colspan="8" class="small">Carregando...</td></tr>;
+      tbody.innerHTML = '<tr><td colspan="8" class="small">Carregando...</td></tr>';
 
       try{
         const snap = await getDocs(collection(db, "users"));
