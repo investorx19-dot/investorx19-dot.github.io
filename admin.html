@@ -419,7 +419,7 @@
       }
 
       const email = normEmail(user.email);
-      $("who").textContent = Logado: ${email};
+      $("who").textContent = "Logado: " + email;
       $("btnLogout").style.display = "inline-block";
 
       if(email !== normEmail(ADMIN_EMAIL)){
