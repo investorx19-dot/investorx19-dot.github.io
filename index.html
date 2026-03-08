@@ -129,7 +129,6 @@
 </head>
 
 <body>
-
   <h1>Gerador de Jogos - Mega-Sena</h1>
 
   <div id="login">
@@ -143,23 +142,22 @@
     <input id="telefone" placeholder="Telefone" />
 
     <div class="acoes-login">
-      <button onclick="cadastrar()">Cadastrar</button>
-      <button onclick="login()">Entrar</button>
+      <button id="btnCadastrar" type="button">Cadastrar</button>
+      <button id="btnEntrar" type="button">Entrar</button>
     </div>
   </div>
 
   <div id="app" style="display:none;">
     <div class="topo-app">
       <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
-      <button onclick="sair()">Sair</button>
+      <button id="btnSair" type="button">Sair</button>
     </div>
 
     <div class="centro">
-      <button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+      <button id="btnGerar" type="button">GERAR JOGO</button>
     </div>
 
     <h2>Cartão Virtual</h2>
-
     <div id="cartao"></div>
 
     <p class="centro">
@@ -170,11 +168,19 @@
     <h3>Assinatura para liberar o gerador</h3>
 
     <div class="botoes-planos">
-      <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX','_blank')">
+      <button
+        id="btnMensal"
+        type="button"
+        data-url="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX"
+      >
         Assinatura Mensal - R$ 29,90
       </button>
 
-      <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx','_blank')">
+      <button
+        id="btnAnual"
+        type="button"
+        data-url="https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx"
+      >
         Assinatura Anual - R$ 238,80
       </button>
     </div>
@@ -207,6 +213,22 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const elNome = document.getElementById("nome");
+    const elEmail = document.getElementById("email");
+    const elTelefone = document.getElementById("telefone");
+    const elLogin = document.getElementById("login");
+    const elApp = document.getElementById("app");
+    const elUsuarioLogado = document.getElementById("usuarioLogado");
+    const elCartao = document.getElementById("cartao");
+    const elAcertos = document.getElementById("acertos");
+
+    const btnCadastrar = document.getElementById("btnCadastrar");
+    const btnEntrar = document.getElementById("btnEntrar");
+    const btnGerar = document.getElementById("btnGerar");
+    const btnSair = document.getElementById("btnSair");
+    const btnMensal = document.getElementById("btnMensal");
+    const btnAnual = document.getElementById("btnAnual");
+
     let usuarioAtual = null;
 
     function normalizarEmail(email) {
@@ -218,37 +240,42 @@
     }
 
     function atualizarUsuarioLogado() {
-      const el = document.getElementById("usuarioLogado");
       if (!usuarioAtual) {
-        el.textContent = "Usuário logado";
+        elUsuarioLogado.textContent = "Usuário logado";
         return;
       }
 
-      el.textContent = Logado: ${usuarioAtual.nome} • ${usuarioAtual.email};
+      elUsuarioLogado.textContent = Logado: ${usuarioAtual.nome} • ${usuarioAtual.email};
     }
 
     function mostrarApp() {
-      document.getElementById("login").style.display = "none";
-      document.getElementById("app").style.display = "block";
+      elLogin.style.display = "none";
+      elApp.style.display = "block";
       atualizarUsuarioLogado();
       renderCartao([]);
-      document.getElementById("acertos").textContent = "0";
+      elAcertos.textContent = "0";
     }
 
     function mostrarLogin() {
-      document.getElementById("login").style.display = "block";
-      document.getElementById("app").style.display = "none";
+      elLogin.style.display = "block";
+      elApp.style.display = "none";
     }
 
     async function buscarUsuarioPorEmail(email) {
-      const q = query(collection(db, "users"), where("email", "==", normalizarEmail(email)));
+      const emailNormalizado = normalizarEmail(email);
+
+      const q = query(
+        collection(db, "users"),
+        where("email", "==", emailNormalizado)
+      );
+
       const snap = await getDocs(q);
 
       if (snap.empty) return null;
 
       let usuarioMaisRecente = null;
 
-      snap.forEach(d => {
+      snap.forEach((d) => {
         const data = { id: d.id, ...d.data() };
 
         if (!usuarioMaisRecente) {
@@ -267,9 +294,9 @@
     }
 
     async function cadastrar() {
-      const nome = document.getElementById("nome").value.trim();
-      const email = normalizarEmail(document.getElementById("email").value);
-      const telefone = normalizarTelefone(document.getElementById("telefone").value);
+      const nome = elNome.value.trim();
+      const email = normalizarEmail(elEmail.value);
+      const telefone = normalizarTelefone(elTelefone.value);
 
       if (!nome || !email || !telefone) {
         alert("Preencha nome, e-mail e telefone.");
@@ -296,19 +323,18 @@
         const ref = await addDoc(collection(db, "users"), novoUsuario);
 
         usuarioAtual = { id: ref.id, ...novoUsuario };
-
         mostrarApp();
 
         alert("Cadastro realizado com sucesso. Acesso liberado automaticamente.");
       } catch (err) {
-        console.error(err);
-        alert("Erro ao cadastrar usuário.");
+        console.error("Erro no cadastro:", err);
+        alert("Erro ao cadastrar usuário: " + err.message);
       }
     }
 
     async function login() {
-      const email = normalizarEmail(document.getElementById("email").value);
-      const telefone = normalizarTelefone(document.getElementById("telefone").value);
+      const email = normalizarEmail(elEmail.value);
+      const telefone = normalizarTelefone(elTelefone.value);
 
       if (!email || !telefone) {
         alert("Informe e-mail e telefone.");
@@ -338,8 +364,8 @@
         usuarioAtual = user;
         mostrarApp();
       } catch (err) {
-        console.error(err);
-        alert("Erro ao fazer login.");
+        console.error("Erro no login:", err);
+        alert("Erro ao fazer login: " + err.message);
       }
     }
 
@@ -354,6 +380,7 @@
 
         if (!userAtualizado) {
           alert("Usuário não encontrado.");
+          usuarioAtual = null;
           mostrarLogin();
           return;
         }
@@ -391,24 +418,26 @@
 
         renderCartao(jogo);
 
-        const acertos = jogo.filter(n => anteriores.includes(n)).length;
-        document.getElementById("acertos").textContent = acertos;
+        const acertos = jogo.filter((n) => anteriores.includes(n)).length;
+        elAcertos.textContent = String(acertos);
       } catch (err) {
-        console.error(err);
+        console.error("Erro ao gerar jogo:", err);
         alert("Erro ao gerar jogo: " + err.message);
       }
     }
 
     function renderCartao(jogo) {
-      const cartao = document.getElementById("cartao");
-      cartao.innerHTML = "";
+      elCartao.innerHTML = "";
 
       for (let l = 1; l <= 6; l++) {
         const div = document.createElement("div");
         div.className = "linha";
-        div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
 
-        LINE_RANGES[l].forEach(n => {
+        const titulo = document.createElement("strong");
+        titulo.textContent = `Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}): `;
+        div.appendChild(titulo);
+
+        LINE_RANGES[l].forEach((n) => {
           const span = document.createElement("span");
           span.className = "numero";
           span.textContent = String(n).padStart(2, "0");
@@ -420,23 +449,30 @@
           div.appendChild(span);
         });
 
-        cartao.appendChild(div);
+        elCartao.appendChild(div);
       }
     }
 
     function sair() {
       usuarioAtual = null;
-      document.getElementById("nome").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("telefone").value = "";
+      elNome.value = "";
+      elEmail.value = "";
+      elTelefone.value = "";
       mostrarLogin();
     }
 
-    window.cadastrar = cadastrar;
-    window.login = login;
-    window.gerarJogoUsuario = gerarJogoUsuario;
-    window.sair = sair;
-  </script>
+    btnCadastrar.addEventListener("click", cadastrar);
+    btnEntrar.addEventListener("click", login);
+    btnGerar.addEventListener("click", gerarJogoUsuario);
+    btnSair.addEventListener("click", sair);
 
+    btnMensal.addEventListener("click", () => {
+      window.open(btnMensal.dataset.url, "_blank");
+    });
+
+    btnAnual.addEventListener("click", () => {
+      window.open(btnAnual.dataset.url, "_blank");
+    });
+  </script>
 </body>
 </html>
