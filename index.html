@@ -233,18 +233,17 @@ max-width: 320px;
   </div>
 
   <script type="module">
-    import { gerarJogoValido, LINE_RANGES } from "./gerador.js";
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
-      getFirestore,
-      doc,
-      getDoc,
-      collection,
-      getDocs,
-      query,
-      where,
-      addDoc
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
