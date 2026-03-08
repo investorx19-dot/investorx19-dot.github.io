@@ -356,11 +356,17 @@
       return "-";
     }
 
-    function formatarData(timestamp) {
-      if (!timestamp) return "-";
-      const data = new Date(Number(timestamp));F
-      return data.toLocaleDateString("pt-BR");
-    }
+    function formatarData(timestamp){
+  if(!timestamp) return "-";
+
+  const data = new Date(timestamp);
+
+  return data.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
 
     // cria inputs de números (com classe)
     function mkNumberInputs(containerId, cssClass, count){
