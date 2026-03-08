@@ -129,6 +129,7 @@
       padding: 10px 10px;
       border-bottom: 1px solid rgba(255,255,255,.08);
       text-align:left;font-size: 13px;
+      vertical-align: top;
     }
     th{color: rgba(234,240,255,.85); font-weight:800; background: rgba(255,255,255,.04)}
     .right{text-align:right}
@@ -246,12 +247,15 @@
                   <th>Nome</th>
                   <th>E-mail</th>
                   <th>Telefone</th>
+                  <th>Plano</th>
+                  <th>Pagamento</th>
+                  <th>Vencimento</th>
                   <th class="right">Acesso</th>
                   <th class="right">Ação</th>
                 </tr>
               </thead>
               <tbody id="usersTbody">
-                <tr><td colspan="5" class="small">Carregando...</td></tr>
+                <tr><td colspan="8" class="small">Carregando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -269,7 +273,7 @@
     // ===============================
     // CONFIGURE AQUI
     // ===============================
-    const ADMIN_EMAIL = "decarvalho01@gmail.com"; // <<<< SEU ADMIN
+    const ADMIN_EMAIL = "decarvalho01@gmail.com";
 
     // ===============================
     // FIREBASE SDK (MODULAR)
@@ -319,7 +323,10 @@
       toastEl.textContent = msg;
       setTimeout(() => { toastEl.className = "toast"; }, 4200);
     }
-    function normEmail(s){ return String(s || "").trim().toLowerCase(); }
+
+    function normEmail(s){ 
+      return String(s || "").trim().toLowerCase(); 
+    }
 
     function escapeHtml(str){
       return String(str ?? "")
@@ -328,6 +335,25 @@
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
+    }
+
+    function formatarPlano(plano) {
+      if (plano === "mensal") return "Mensal";
+      if (plano === "semestral") return "Semestral";
+      if (plano === "anual") return "Anual";
+      return "-";
+    }
+
+    function formatarPagamento(status) {
+      if (status === "paid") return "Pago";
+      if (status === "pending") return "Pendente";
+      return "-";
+    }
+
+    function formatarData(timestamp) {
+      if (!timestamp) return "-";
+      const data = new Date(Number(timestamp));
+      return data.toLocaleDateString("pt-BR");
     }
 
     // cria inputs de números (com classe)
@@ -349,11 +375,11 @@
     mkNumberInputs("lateBox", "atrasada", 5);
 
     function parseNumsFromInputs(selector){
-      // mantém ordem digitada, remove vazios, valida range
       return [...document.querySelectorAll(selector)]
         .map(i => Number(i.value))
         .filter(n => Number.isFinite(n) && n >= 1 && n <= 60);
     }
+
     function setInputsFromArray(selector, arr){
       const inputs = [...document.querySelectorAll(selector)];
       for(let i=0;i<inputs.length;i++){
@@ -393,17 +419,15 @@
       }
 
       const email = normEmail(user.email);
-      $("who").textContent = `Logado: ${email}`;
+      $("who").textContent = Logado: ${email};
       $("btnLogout").style.display = "inline-block";
 
-      // trava se não for admin
       if(email !== normEmail(ADMIN_EMAIL)){
         toast("Este usuário não é admin. Saindo...", "error");
         await signOut(auth);
         return;
       }
 
-      // admin OK
       $("loginCard").style.display = "none";
       $("app").style.display = "block";
 
@@ -485,7 +509,7 @@
     // ===============================
     async function loadUsers(){
       const tbody = $("usersTbody");
-      tbody.innerHTML = `<tr><td colspan="5" class="small">Carregando...</td></tr>`;
+      tbody.innerHTML = <tr><td colspan="8" class="small">Carregando...</td></tr>;
 
       try{
         const snap = await getDocs(collection(db, "users"));
@@ -493,7 +517,6 @@
         const docs = [];
         snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
 
-        // de-dupe por email (mantém mais recente)
         const map = new Map();
         let duplicatesHidden = 0;
 
@@ -518,11 +541,11 @@
 
         $("dupInfo").textContent =
           duplicatesHidden > 0
-            ? `⚠️ ${duplicatesHidden} duplicado(s) ocultado(s) por e-mail (mostrando apenas o mais recente).`
-            : `Sem duplicações detectadas.`;
+            ? ⚠️ ${duplicatesHidden} duplicado(s) ocultado(s) por e-mail (mostrando apenas o mais recente).
+            : Sem duplicações detectadas.;
 
         if(uniqueUsers.length === 0){
-          tbody.innerHTML = `<tr><td colspan="5" class="small">Nenhum usuário encontrado.</td></tr>`;
+          tbody.innerHTML = <tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>;
           return;
         }
 
@@ -530,12 +553,18 @@
         for(const u of uniqueUsers){
           const granted = !!u.accessGranted;
           const phone = (u.telefone || u.phone || "").toString();
+          const plano = formatarPlano(u.plan || "");
+          const pagamento = formatarPagamento(u.paymentStatus || "");
+          const vencimento = formatarData(u.expiresAt || null);
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
             <td class="mono">${escapeHtml(u.email || "")}</td>
             <td class="mono">${escapeHtml(phone || "-")}</td>
+            <td>${escapeHtml(plano)}</td>
+            <td>${escapeHtml(pagamento)}</td>
+            <td class="mono">${escapeHtml(vencimento)}</td>
             <td class="right">
               <span class="status">
                 <span class="dot ${granted ? "green" : "red"}"></span>
@@ -543,17 +572,37 @@
               </span>
             </td>
             <td class="right">
-              <button class="btn ${granted ? "danger" : "success"}"
-                      data-userid="${escapeHtml(u.id)}"
-                      data-granted="${granted}">
-                ${granted ? "Bloquear" : "Liberar"}
-              </button>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
+                <button class="btn ${granted ? "danger" : "success"}"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-granted="${granted}">
+                  ${granted ? "Bloquear" : "Liberar"}
+                </button>
+
+                <button class="btn"
+                        data-liberar="30"
+                        data-userid="${escapeHtml(u.id)}">
+                  30d
+                </button>
+
+                <button class="btn"
+                        data-liberar="180"
+                        data-userid="${escapeHtml(u.id)}">
+                  180d
+                </button>
+
+                <button class="btn"
+                        data-liberar="365"
+                        data-userid="${escapeHtml(u.id)}">
+                  365d
+                </button>
+              </div>
             </td>
           `;
           tbody.appendChild(tr);
         }
 
-        tbody.querySelectorAll("button[data-userid]").forEach(btn => {
+        tbody.querySelectorAll("button[data-granted]").forEach(btn => {
           btn.addEventListener("click", async () => {
             const userId = btn.getAttribute("data-userid");
             const currentlyGranted = btn.getAttribute("data-granted") === "true";
@@ -561,9 +610,17 @@
           });
         });
 
+        tbody.querySelectorAll("button[data-liberar]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const dias = Number(btn.getAttribute("data-liberar"));
+            await liberarPlano(userId, dias);
+          });
+        });
+
       }catch(err){
         console.error(err);
-        tbody.innerHTML = `<tr><td colspan="5" class="small">Erro ao carregar usuários.</td></tr>`;
+        tbody.innerHTML = <tr><td colspan="8" class="small">Erro ao carregar usuários.</td></tr>;
         toast("Erro ao carregar usuários (Rules?).", "error");
       }
     }
@@ -579,6 +636,32 @@
       }catch(err){
         console.error(err);
         toast("Falha ao alterar acesso (Rules?).", "error");
+      }
+    }
+
+    async function liberarPlano(userDocId, dias){
+      try{
+        const agora = Date.now();
+        const expiraEm = agora + (dias * 24 * 60 * 60 * 1000);
+
+        let nomePlano = "mensal";
+        if (dias === 180) nomePlano = "semestral";
+        if (dias === 365) nomePlano = "anual";
+
+        await updateDoc(doc(db, "users", userDocId), {
+          accessGranted: true,
+          paymentStatus: "paid",
+          plan: nomePlano,
+          paidAt: agora,
+          expiresAt: expiraEm,
+          updatedAt: agora
+        });
+
+        toast("Plano liberado por " + dias + " dias.", "ok");
+        await loadUsers();
+      }catch(err){
+        console.error(err);
+        toast("Erro ao liberar plano.", "error");
       }
     }
 
