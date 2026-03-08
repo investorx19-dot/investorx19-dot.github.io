@@ -168,21 +168,8 @@
     <h3>Assinatura para liberar o gerador</h3>
 
     <div class="botoes-planos">
-      <button
-        id="btnMensal"
-        type="button"
-        data-url="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX"
-      >
-        Assinatura Mensal - R$ 29,90
-      </button>
-
-      <button
-        id="btnAnual"
-        type="button"
-        data-url="https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx"
-      >
-        Assinatura Anual - R$ 238,80
-      </button>
+      <button id="btnMensal" type="button">Assinatura Mensal - R$ 29,90</button>
+      <button id="btnAnual" type="button">Assinatura Anual - R$ 238,80</button>
     </div>
   </div>
 
@@ -210,8 +197,8 @@
       appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const appFirebase = initializeApp(firebaseConfig);
+    const db = getFirestore(appFirebase);
 
     const elNome = document.getElementById("nome");
     const elEmail = document.getElementById("email");
@@ -245,7 +232,7 @@
         return;
       }
 
-      elUsuarioLogado.textContent = Logado: ${usuarioAtual.nome} • ${usuarioAtual.email};
+      elUsuarioLogado.textContent = "Logado: " + usuarioAtual.nome + " - " + usuarioAtual.email;
     }
 
     function mostrarApp() {
@@ -264,28 +251,39 @@
     async function buscarUsuarioPorEmail(email) {
       const emailNormalizado = normalizarEmail(email);
 
-      const q = query(
+      const consulta = query(
         collection(db, "users"),
         where("email", "==", emailNormalizado)
       );
 
-      const snap = await getDocs(q);
+      const snap = await getDocs(consulta);
 
-      if (snap.empty) return null;
+      if (snap.empty) {
+        return null;
+      }
 
       let usuarioMaisRecente = null;
 
-      snap.forEach((d) => {
-        const data = { id: d.id, ...d.data() };
+      snap.forEach(function(item) {
+        const dados = item.data();
+        const usuario = {
+          id: item.id,
+          nome: dados.nome || "",
+          email: dados.email || "",
+          telefone: dados.telefone || dados.phone || "",
+          accessGranted: !!dados.accessGranted,
+          createdAt: Number(dados.createdAt || 0),
+          updatedAt: Number(dados.updatedAt || 0)
+        };
 
         if (!usuarioMaisRecente) {
-          usuarioMaisRecente = data;
+          usuarioMaisRecente = usuario;
         } else {
-          const atual = Number(data.updatedAt || data.createdAt || 0);
-          const salvo = Number(usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0);
+          const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
+          const tempoSalvo = Number(usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0);
 
-          if (atual >= salvo) {
-            usuarioMaisRecente = data;
+          if (tempoAtual >= tempoSalvo) {
+            usuarioMaisRecente = usuario;
           }
         }
       });
@@ -312,23 +310,31 @@
         }
 
         const novoUsuario = {
-          nome,
-          email,
-          telefone,
+          nome: nome,
+          email: email,
+          telefone: telefone,
           accessGranted: true,
           createdAt: Date.now(),
           updatedAt: Date.now()
         };
 
-        const ref = await addDoc(collection(db, "users"), novoUsuario);
+        const referencia = await addDoc(collection(db, "users"), novoUsuario);
 
-        usuarioAtual = { id: ref.id, ...novoUsuario };
+        usuarioAtual = {
+          id: referencia.id,
+          nome: nome,
+          email: email,
+          telefone: telefone,
+          accessGranted: true,
+          createdAt: novoUsuario.createdAt,
+          updatedAt: novoUsuario.updatedAt
+        };
+
         mostrarApp();
-
         alert("Cadastro realizado com sucesso. Acesso liberado automaticamente.");
-      } catch (err) {
-        console.error("Erro no cadastro:", err);
-        alert("Erro ao cadastrar usuário: " + err.message);
+      } catch (erro) {
+        console.error("Erro no cadastro:", erro);
+        alert("Erro ao cadastrar usuário: " + erro.message);
       }
     }
 
@@ -349,7 +355,7 @@
           return;
         }
 
-        const telefoneSalvo = normalizarTelefone(user.telefone || user.phone || "");
+        const telefoneSalvo = normalizarTelefone(user.telefone);
 
         if (telefoneSalvo !== telefone) {
           alert("Telefone inválido.");
@@ -363,9 +369,9 @@
 
         usuarioAtual = user;
         mostrarApp();
-      } catch (err) {
-        console.error("Erro no login:", err);
-        alert("Erro ao fazer login: " + err.message);
+      } catch (erro) {
+        console.error("Erro no login:", erro);
+        alert("Erro ao fazer login: " + erro.message);
       }
     }
 
@@ -376,23 +382,23 @@
           return;
         }
 
-        const userAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
+        const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
 
-        if (!userAtualizado) {
+        if (!usuarioAtualizado) {
           alert("Usuário não encontrado.");
           usuarioAtual = null;
           mostrarLogin();
           return;
         }
 
-        if (!userAtualizado.accessGranted) {
+        if (!usuarioAtualizado.accessGranted) {
           alert("Seu acesso foi bloqueado pelo administrador.");
           usuarioAtual = null;
           mostrarLogin();
           return;
         }
 
-        usuarioAtual = userAtualizado;
+        usuarioAtual = usuarioAtualizado;
         atualizarUsuarioLogado();
 
         const configRef = doc(db, "config", "global");
@@ -413,16 +419,29 @@
           return;
         }
 
-        const excluidas = new Set([...anteriores, ...atrasadas]);
+        const excluidas = new Set();
+        anteriores.forEach(function(numero) {
+          excluidas.add(numero);
+        });
+        atrasadas.forEach(function(numero) {
+          excluidas.add(numero);
+        });
+
         const jogo = gerarJogoValido(linhasAtivas, excluidas);
 
         renderCartao(jogo);
 
-        const acertos = jogo.filter((n) => anteriores.includes(n)).length;
+        let acertos = 0;
+        jogo.forEach(function(numero) {
+          if (anteriores.includes(numero)) {
+            acertos++;
+          }
+        });
+
         elAcertos.textContent = String(acertos);
-      } catch (err) {
-        console.error("Erro ao gerar jogo:", err);
-        alert("Erro ao gerar jogo: " + err.message);
+      } catch (erro) {
+        console.error("Erro ao gerar jogo:", erro);
+        alert("Erro ao gerar jogo: " + erro.message);
       }
     }
 
@@ -434,10 +453,10 @@
         div.className = "linha";
 
         const titulo = document.createElement("strong");
-        titulo.textContent = `Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}): `;
+        titulo.textContent = "Linha " + l + " (" + LINE_RANGES[l][0] + "-" + LINE_RANGES[l][9] + "): ";
         div.appendChild(titulo);
 
-        LINE_RANGES[l].forEach((n) => {
+        LINE_RANGES[l].forEach(function(n) {
           const span = document.createElement("span");
           span.className = "numero";
           span.textContent = String(n).padStart(2, "0");
@@ -466,12 +485,12 @@
     btnGerar.addEventListener("click", gerarJogoUsuario);
     btnSair.addEventListener("click", sair);
 
-    btnMensal.addEventListener("click", () => {
-      window.open(btnMensal.dataset.url, "_blank");
+    btnMensal.addEventListener("click", function() {
+      window.open("https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX", "_blank");
     });
 
-    btnAnual.addEventListener("click", () => {
-      window.open(btnAnual.dataset.url, "_blank");
+    btnAnual.addEventListener("click", function() {
+      window.open("https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx", "_blank");
     });
   </script>
 </body>
