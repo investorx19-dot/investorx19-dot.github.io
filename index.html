@@ -33,9 +33,11 @@
 }
 
 .logo-topo {
-  width: 140px;
+  width: 110px;
+  max-width: 80%;
   display: block;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 8px auto;
+  border-radius: 14px;
 }
     input {
       width: 100%;
@@ -130,7 +132,37 @@
       <button id="btnEntrar" type="button">Entrar</button>
     </div>
   </div>
+<div class="planos">
 
+<h2>Planos de Acesso</h2>
+
+<div class="cards-planos">
+
+<div class="plano">
+<h3>Plano Mensal</h3>
+<p>Acesso completo ao gerador</p>
+<button onclick="window.open('LINK_MENSAL')">
+Assinar Mensal
+</button>
+</div>
+
+<div class="plano">
+<h3>Plano Semestral</h3>
+<p>6 meses com desconto</p>
+<button onclick="window.open('LINK_SEMESTRAL')">
+Assinar Semestral
+</button>
+</div>
+
+<div class="plano">
+<h3>Plano Anual</h3>
+<p>12 meses com maior economia</p>
+<button onclick="window.open('LINK_ANUAL')">
+Assinar Anual
+</button>
+</div>
+
+</div>
   <div id="app" style="display:none;">
     <div class="topo-app">
       <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
