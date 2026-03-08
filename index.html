@@ -168,11 +168,19 @@
     <h3>Assinatura para liberar o gerador</h3>
 
     <div class="botoes-planos">
-      <button id="btnMensal" type="button">
+      <button
+        id="btnMensal"
+        type="button"
+        data-url="https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX"
+      >
         Assinatura Mensal - R$ 29,90
       </button>
 
-      <button id="btnAnual" type="button">
+      <button
+        id="btnAnual"
+        type="button"
+        data-url="https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx"
+      >
         Assinatura Anual - R$ 238,80
       </button>
     </div>
@@ -236,7 +244,8 @@
         elUsuarioLogado.textContent = "Usuário logado";
         return;
       }
-      elUsuarioLogado.textContent = Logado: ${usuarioAtual.nome} • ${usuarioAtual.email};
+
+      elUsuarioLogado.textContent = Logado: elUsuarioLogado.textContent = "Logado: " + usuarioAtual.nome + " • " + usuarioAtual.email;
     }
 
     function mostrarApp() {
@@ -253,9 +262,11 @@
     }
 
     async function buscarUsuarioPorEmail(email) {
+      const emailNormalizado = normalizarEmail(email);
+
       const q = query(
         collection(db, "users"),
-        where("email", "==", normalizarEmail(email))
+        where("email", "==", emailNormalizado)
       );
 
       const snap = await getDocs(q);
@@ -272,6 +283,7 @@
         } else {
           const atual = Number(data.updatedAt || data.createdAt || 0);
           const salvo = Number(usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0);
+
           if (atual >= salvo) {
             usuarioMaisRecente = data;
           }
@@ -309,6 +321,7 @@
         };
 
         const ref = await addDoc(collection(db, "users"), novoUsuario);
+
         usuarioAtual = { id: ref.id, ...novoUsuario };
         mostrarApp();
 
@@ -382,7 +395,8 @@
         usuarioAtual = userAtualizado;
         atualizarUsuarioLogado();
 
-        const configSnap = await getDoc(doc(db, "config", "global"));
+        const configRef = doc(db, "config", "global");
+        const configSnap = await getDoc(configRef);
 
         if (!configSnap.exists()) {
           alert("Configuração global não encontrada.");
@@ -420,7 +434,7 @@
         div.className = "linha";
 
         const titulo = document.createElement("strong");
-        titulo.textContent = `Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}): `;
+        titulo.textContent = "Linha " + l + " (" + LINE_RANGES[l][0] + "-" + LINE_RANGES[l][9] + "): ";
         div.appendChild(titulo);
 
         LINE_RANGES[l].forEach((n) => {
@@ -453,11 +467,11 @@
     btnSair.addEventListener("click", sair);
 
     btnMensal.addEventListener("click", () => {
-      window.open("https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX", "_blank");
+      window.open(btnMensal.dataset.url, "_blank");
     });
 
     btnAnual.addEventListener("click", () => {
-      window.open("https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx", "_blank");
+      window.open(btnAnual.dataset.url, "_blank");
     });
   </script>
 </body>
