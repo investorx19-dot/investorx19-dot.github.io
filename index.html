@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Jogos - Mega-Sena</title>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,17 +11,14 @@
       background: #f5f7fb;
       color: #111827;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 24px;
       font-size: 28px;
     }
-
     h2, h3 {
       text-align: center;
     }
-
     #login, #app {
       max-width: 700px;
       margin: 0 auto;
@@ -31,7 +27,6 @@
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
-
     input {
       width: 100%;
       padding: 14px;
@@ -41,7 +36,6 @@
       border-radius: 10px;
       box-sizing: border-box;
     }
-
     button {
       padding: 12px 20px;
       font-size: 16px;
@@ -53,19 +47,13 @@
       color: white;
       font-weight: bold;
     }
-
-    button:hover {
-      opacity: 0.95;
-    }
-
-    .acoes-login {
+    .acoes-login, .botoes-planos {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
       margin-top: 10px;
     }
-
     .linha {
       margin: 15px 0;
       padding: 12px;
@@ -73,7 +61,6 @@
       border: 1px solid #d1d5db;
       border-radius: 10px;
     }
-
     .numero {
       display: inline-block;
       width: 38px;
@@ -85,12 +72,10 @@
       border-radius: 6px;
       background: #e5e7eb;
     }
-
     .selecionado {
       background: yellow;
       color: black;
     }
-
     .topo-app {
       display: flex;
       justify-content: space-between;
@@ -99,7 +84,6 @@
       flex-wrap: wrap;
       margin-bottom: 20px;
     }
-
     .usuario-logado {
       font-size: 14px;
       color: #374151;
@@ -107,35 +91,22 @@
       padding: 8px 12px;
       border-radius: 999px;
     }
-
-    .centro {
+    .centro, .mensagem {
       text-align: center;
     }
-
-    .botoes-planos {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
     .mensagem {
-      text-align: center;
       margin-bottom: 18px;
       color: #4b5563;
       font-size: 14px;
     }
   </style>
 </head>
-
 <body>
   <h1>Gerador de Jogos - Mega-Sena</h1>
 
   <div id="login">
     <h2>Cadastro / Login</h2>
-    <p class="mensagem">
-      Cadastre-se com nome, e-mail e telefone. Seu acesso será liberado automaticamente.
-    </p>
+    <p class="mensagem">Cadastre-se com nome, e-mail e telefone. Seu acesso será liberado automaticamente.</p>
 
     <input id="nome" placeholder="Nome" />
     <input id="email" type="email" placeholder="E-mail" />
@@ -166,7 +137,6 @@
     </p>
 
     <h3>Assinatura para liberar o gerador</h3>
-
     <div class="botoes-planos">
       <button id="btnMensal" type="button">Assinatura Mensal - R$ 29,90</button>
       <button id="btnAnual" type="button">Assinatura Anual - R$ 238,80</button>
@@ -175,7 +145,6 @@
 
   <script type="module">
     import { gerarJogoValido, LINE_RANGES } from "./gerador.js";
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
       getFirestore,
@@ -231,8 +200,7 @@
         elUsuarioLogado.textContent = "Usuário logado";
         return;
       }
-      elUsuarioLogado.textContent = Logado: elUsuarioLogado.textContent = "Logado: " + usuarioAtual.nome + " • " + usuarioAtual.email;
-
+      elUsuarioLogado.textContent = "Logado: " + usuarioAtual.nome + " - " + usuarioAtual.email;
     }
 
     function mostrarApp() {
@@ -249,18 +217,13 @@
     }
 
     async function buscarUsuarioPorEmail(email) {
-      const emailNormalizado = normalizarEmail(email);
-
       const consulta = query(
         collection(db, "users"),
-        where("email", "==", emailNormalizado)
+        where("email", "==", normalizarEmail(email))
       );
 
       const snap = await getDocs(consulta);
-
-      if (snap.empty) {
-        return null;
-      }
+      if (snap.empty) return null;
 
       let usuarioMaisRecente = null;
 
@@ -281,7 +244,6 @@
         } else {
           const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
           const tempoSalvo = Number(usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0);
-
           if (tempoAtual >= tempoSalvo) {
             usuarioMaisRecente = usuario;
           }
@@ -303,7 +265,6 @@
 
       try {
         const existente = await buscarUsuarioPorEmail(email);
-
         if (existente) {
           alert("Este e-mail já está cadastrado. Use o botão Entrar.");
           return;
@@ -356,7 +317,6 @@
         }
 
         const telefoneSalvo = normalizarTelefone(user.telefone);
-
         if (telefoneSalvo !== telefone) {
           alert("Telefone inválido.");
           return;
@@ -420,22 +380,15 @@
         }
 
         const excluidas = new Set();
-        anteriores.forEach(function(numero) {
-          excluidas.add(numero);
-        });
-        atrasadas.forEach(function(numero) {
-          excluidas.add(numero);
-        });
+        anteriores.forEach(function(numero) { excluidas.add(numero); });
+        atrasadas.forEach(function(numero) { excluidas.add(numero); });
 
         const jogo = gerarJogoValido(linhasAtivas, excluidas);
-
         renderCartao(jogo);
 
         let acertos = 0;
         jogo.forEach(function(numero) {
-          if (anteriores.includes(numero)) {
-            acertos++;
-          }
+          if (anteriores.includes(numero)) acertos++;
         });
 
         elAcertos.textContent = String(acertos);
