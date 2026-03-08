@@ -2,21 +2,76 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Gerador de Jogos - Usuário</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerador de Jogos - Mega-Sena</title>
 
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      background: #f7f7f7;
+      background: #f5f7fb;
+      color: #111827;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 28px;
+    }
+
+    h2, h3 {
+      text-align: center;
+    }
+
+    #login, #app {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 6px 4px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    .acoes-login {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
     }
 
     .linha {
       margin: 15px 0;
-      padding: 10px;
+      padding: 12px;
       background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
     }
 
     .numero {
@@ -28,7 +83,7 @@
       margin: 2px;
       font-weight: bold;
       border-radius: 6px;
-      background: #eee;
+      background: #e5e7eb;
     }
 
     .selecionado {
@@ -36,43 +91,39 @@
       color: black;
     }
 
-    button {
-      padding: 12px 20px;
-      font-size: 16px;
-      margin: 5px;
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      background: #1f6feb;
-      color: white;
+    .topo-app {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .usuario-logado {
+      font-size: 14px;
+      color: #374151;
+      background: #eef2ff;
+      padding: 8px 12px;
+      border-radius: 999px;
     }
 
-    input {
-      width: 100%;
-      max-width: 400px;
-      padding: 12px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-
-    #login, #app {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    h1, h2, h3 {
+    .centro {
       text-align: center;
+    }
+
+    .botoes-planos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .mensagem {
+      text-align: center;
+      margin-bottom: 18px;
+      color: #4b5563;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -83,106 +134,252 @@
 
   <div id="login">
     <h2>Cadastro / Login</h2>
+    <p class="mensagem">
+      Cadastre-se com nome, e-mail e telefone. Seu acesso será liberado automaticamente.
+    </p>
 
     <input id="nome" placeholder="Nome" />
     <input id="email" type="email" placeholder="E-mail" />
     <input id="telefone" placeholder="Telefone" />
 
-    <button onclick="cadastrar()">Cadastrar</button>
-    <button onclick="login()">Entrar</button>
+    <div class="acoes-login">
+      <button onclick="cadastrar()">Cadastrar</button>
+      <button onclick="login()">Entrar</button>
+    </div>
   </div>
 
   <div id="app" style="display:none;">
-    <button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+    <div class="topo-app">
+      <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
+      <button onclick="sair()">Sair</button>
+    </div>
+
+    <div class="centro">
+      <button onclick="gerarJogoUsuario()">GERAR JOGO</button>
+    </div>
 
     <h2>Cartão Virtual</h2>
 
     <div id="cartao"></div>
 
-    <p>
+    <p class="centro">
       <strong>Acertos no último sorteio:</strong>
       <span id="acertos">0</span>
     </p>
 
     <h3>Assinatura para liberar o gerador</h3>
 
-    <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX','_blank')">
-      Assinatura Mensal - R$ 29,90
-    </button>
+    <div class="botoes-planos">
+      <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/ito0zFDGX','_blank')">
+        Assinatura Mensal - R$ 29,90
+      </button>
 
-    <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx','_blank')">
-      Assinatura Anual - R$ 238,80
-    </button>
+      <button onclick="window.open('https://invoice.infinitepay.io/plans/silvia-regina-967/1Cpgone7Tx','_blank')">
+        Assinatura Anual - R$ 238,80
+      </button>
+    </div>
   </div>
 
-  <script src="gerador.js"></script>
+  <script type="module">
+    import { gerarJogoValido, LINE_RANGES } from "./gerador.js";
 
-  <script>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      getDocs,
+      query,
+      where,
+      addDoc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+      authDomain: "painel-megasena.firebaseapp.com",
+      projectId: "painel-megasena",
+      storageBucket: "painel-megasena.firebasestorage.app",
+      messagingSenderId: "924943702876",
+      appId: "1:924943702876:web:77929086c5addb13b37f99"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     let usuarioAtual = null;
 
-    function cadastrar() {
-      const nome = document.getElementById('nome').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const telefone = document.getElementById('telefone').value.trim();
+    function normalizarEmail(email) {
+      return String(email || "").trim().toLowerCase();
+    }
+
+    function normalizarTelefone(telefone) {
+      return String(telefone || "").replace(/\D/g, "");
+    }
+
+    function atualizarUsuarioLogado() {
+      const el = document.getElementById("usuarioLogado");
+      if (!usuarioAtual) {
+        el.textContent = "Usuário logado";
+        return;
+      }
+
+      el.textContent = Logado: ${usuarioAtual.nome} • ${usuarioAtual.email};
+    }
+
+    function mostrarApp() {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("app").style.display = "block";
+      atualizarUsuarioLogado();
+      renderCartao([]);
+      document.getElementById("acertos").textContent = "0";
+    }
+
+    function mostrarLogin() {
+      document.getElementById("login").style.display = "block";
+      document.getElementById("app").style.display = "none";
+    }
+
+    async function buscarUsuarioPorEmail(email) {
+      const q = query(collection(db, "users"), where("email", "==", normalizarEmail(email)));
+      const snap = await getDocs(q);
+
+      if (snap.empty) return null;
+
+      let usuarioMaisRecente = null;
+
+      snap.forEach(d => {
+        const data = { id: d.id, ...d.data() };
+
+        if (!usuarioMaisRecente) {
+          usuarioMaisRecente = data;
+        } else {
+          const atual = Number(data.updatedAt || data.createdAt || 0);
+          const salvo = Number(usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0);
+
+          if (atual >= salvo) {
+            usuarioMaisRecente = data;
+          }
+        }
+      });
+
+      return usuarioMaisRecente;
+    }
+
+    async function cadastrar() {
+      const nome = document.getElementById("nome").value.trim();
+      const email = normalizarEmail(document.getElementById("email").value);
+      const telefone = normalizarTelefone(document.getElementById("telefone").value);
 
       if (!nome || !email || !telefone) {
-        alert("Preencha nome, e-mail e telefone");
+        alert("Preencha nome, e-mail e telefone.");
         return;
       }
 
-      let users = JSON.parse(localStorage.getItem('users') || '[]');
-
-      if (users.some(u => u.email === email)) {
-        alert("E-mail já cadastrado");
-        return;
-      }
-
-      const novoUsuario = {
-        nome,
-        email,
-        telefone,
-        accessGranted: true
-      };
-
-      users.push(novoUsuario);
-      localStorage.setItem('users', JSON.stringify(users));
-
-      usuarioAtual = novoUsuario;
-
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-
-      renderCartao([]);
-
-      alert("Cadastro realizado! Você já pode gerar seus jogos.");
-    }
-
-    function login() {
-      const email = document.getElementById('email').value.trim();
-      const telefone = document.getElementById('telefone').value.trim();
-
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-      const user = users.find(u => u.email === email && u.telefone === telefone);
-
-      if (!user) {
-        alert("E-mail ou telefone inválidos");
-        return;
-      }
-
-      usuarioAtual = user;
-
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-
-      renderCartao([]);
-    }
-
-    function gerarJogoUsuario() {
       try {
-        const linhasAtivas = JSON.parse(localStorage.getItem('linhasAtivas') || '[]');
-        const anteriores = JSON.parse(localStorage.getItem('dezenasAnteriores') || '[]');
-        const atrasadas = JSON.parse(localStorage.getItem('dezenasAtrasadas') || '[]');
+        const existente = await buscarUsuarioPorEmail(email);
+
+        if (existente) {
+          alert("Este e-mail já está cadastrado. Use o botão Entrar.");
+          return;
+        }
+
+        const novoUsuario = {
+          nome,
+          email,
+          telefone,
+          accessGranted: true,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+
+        const ref = await addDoc(collection(db, "users"), novoUsuario);
+
+        usuarioAtual = { id: ref.id, ...novoUsuario };
+
+        mostrarApp();
+
+        alert("Cadastro realizado com sucesso. Acesso liberado automaticamente.");
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao cadastrar usuário.");
+      }
+    }
+
+    async function login() {
+      const email = normalizarEmail(document.getElementById("email").value);
+      const telefone = normalizarTelefone(document.getElementById("telefone").value);
+
+      if (!email || !telefone) {
+        alert("Informe e-mail e telefone.");
+        return;
+      }
+
+      try {
+        const user = await buscarUsuarioPorEmail(email);
+
+        if (!user) {
+          alert("Usuário não encontrado.");
+          return;
+        }
+
+        const telefoneSalvo = normalizarTelefone(user.telefone || user.phone || "");
+
+        if (telefoneSalvo !== telefone) {
+          alert("Telefone inválido.");
+          return;
+        }
+
+        if (!user.accessGranted) {
+          alert("Seu acesso foi bloqueado pelo administrador.");
+          return;
+        }
+
+        usuarioAtual = user;
+        mostrarApp();
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao fazer login.");
+      }
+    }
+
+    async function gerarJogoUsuario() {
+      try {
+        if (!usuarioAtual) {
+          alert("Faça login para gerar seu jogo.");
+          return;
+        }
+
+        const userAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
+
+        if (!userAtualizado) {
+          alert("Usuário não encontrado.");
+          mostrarLogin();
+          return;
+        }
+
+        if (!userAtualizado.accessGranted) {
+          alert("Seu acesso foi bloqueado pelo administrador.");
+          usuarioAtual = null;
+          mostrarLogin();
+          return;
+        }
+
+        usuarioAtual = userAtualizado;
+        atualizarUsuarioLogado();
+
+        const configRef = doc(db, "config", "global");
+        const configSnap = await getDoc(configRef);
+
+        if (!configSnap.exists()) {
+          alert("Configuração global não encontrada.");
+          return;
+        }
+
+        const config = configSnap.data();
+        const linhasAtivas = config.linhasAtivas || [];
+        const anteriores = config.dezenasAnteriores || [];
+        const atrasadas = config.dezenasAtrasadas || [];
 
         if (linhasAtivas.length === 0) {
           alert("O administrador ainda não configurou as linhas ativas.");
@@ -195,29 +392,29 @@
         renderCartao(jogo);
 
         const acertos = jogo.filter(n => anteriores.includes(n)).length;
-        document.getElementById('acertos').textContent = acertos;
-
+        document.getElementById("acertos").textContent = acertos;
       } catch (err) {
+        console.error(err);
         alert("Erro ao gerar jogo: " + err.message);
       }
     }
 
     function renderCartao(jogo) {
-      const cartao = document.getElementById('cartao');
-      cartao.innerHTML = '';
+      const cartao = document.getElementById("cartao");
+      cartao.innerHTML = "";
 
       for (let l = 1; l <= 6; l++) {
-        const div = document.createElement('div');
-        div.className = 'linha';
+        const div = document.createElement("div");
+        div.className = "linha";
         div.innerHTML = `<strong>Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}):</strong> `;
 
         LINE_RANGES[l].forEach(n => {
-          const span = document.createElement('span');
-          span.className = 'numero';
-          span.textContent = String(n).padStart(2, '0');
+          const span = document.createElement("span");
+          span.className = "numero";
+          span.textContent = String(n).padStart(2, "0");
 
           if (jogo.includes(n)) {
-            span.classList.add('selecionado');
+            span.classList.add("selecionado");
           }
 
           div.appendChild(span);
@@ -226,6 +423,19 @@
         cartao.appendChild(div);
       }
     }
+
+    function sair() {
+      usuarioAtual = null;
+      document.getElementById("nome").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("telefone").value = "";
+      mostrarLogin();
+    }
+
+    window.cadastrar = cadastrar;
+    window.login = login;
+    window.gerarJogoUsuario = gerarJogoUsuario;
+    window.sair = sair;
   </script>
 
 </body>
