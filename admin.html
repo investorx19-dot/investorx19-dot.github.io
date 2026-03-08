@@ -88,14 +88,20 @@
     .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     @media (max-width: 700px){ .two{grid-template-columns:1fr} }
     .nums{
-      display:grid;gap:10px;
-      grid-template-columns: repeat(6, 1fr);
-    }
-    .nums.five{grid-template-columns: repeat(5, 1fr)}
-    @media (max-width: 700px){
-      .nums{grid-template-columns: repeat(3, 1fr)}
-      .nums.five{grid-template-columns: repeat(3, 1fr)}
-    }
+  display:grid;
+  gap:12px;
+  grid-template-columns: repeat(6, minmax(60px,1fr));
+}
+
+.nums.five{
+  grid-template-columns: repeat(5, minmax(60px,1fr));
+}
+
+.nums input{
+  text-align:center;
+  font-size:16px;
+  height:48px;
+}
     .checkboxes{
       display:grid;gap:10px;
       grid-template-columns: 1fr;
@@ -352,7 +358,7 @@
 
     function formatarData(timestamp) {
       if (!timestamp) return "-";
-      const data = new Date(Number(timestamp));
+      const data = new Date(Number(timestamp));F
       return data.toLocaleDateString("pt-BR");
     }
 
