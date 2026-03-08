@@ -111,6 +111,49 @@
       color: #4b5563;
       font-size: 14px;
     }
+    .logo-topo {
+width: 140px;
+display: block;
+margin: 0 auto 10px auto;
+}
+
+/* COLE O CSS DOS PLANOS AQUI */
+
+.planos {
+margin-top: 30px;
+text-align: center;
+}
+
+.cards-planos {
+display: flex;
+gap: 20px;
+justify-content: center;
+flex-wrap: wrap;
+}
+
+.plano {
+background: white;
+padding: 20px;
+border-radius: 14px;
+box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+width: 220px;
+}
+
+.plano button {
+margin-top: 10px;
+width: 100%;
+}
+
+@media (max-width: 600px) {
+.cards-planos {
+flex-direction: column;
+align-items: center;
+}
+
+.plano {
+width: 100%;
+max-width: 320px;
+}
   </style>
 </head>
 <body>
@@ -136,30 +179,34 @@
 
 <h2>Planos de Acesso</h2>
 
-<div class="cards-planos">
+<div class="planos">
+  <h2>Planos de Acesso</h2>
 
-<div class="plano">
-<h3>Plano Mensal</h3>
-<p>Acesso completo ao gerador</p>
-<button onclick="window.open('https://checkout.infinitepay.io/price_1T4hh62WGvasnCYLtrB5fodv', '_blank')">
-Assinar Mensal
-</button>
-</div>
+  <div class="cards-planos">
+    <div class="plano">
+      <h3>Plano Mensal</h3>
+      <p>Acesso completo ao gerador</p>
+      <button onclick="window.open('https://invoice.infinitepay.io/silvia-regina-967/ENO4gtBh3/', '_blank')">
+        Assinar Mensal
+      </button>
+    </div>
 
-<div class="plano">
-<h3>Plano Semestral</h3>
-<p>6 meses com desconto</p>
-<button onclick="window.open('https://checkout.infinitepay.io/price_1T4hiJ2WGvasnCYLEiY0Zd9Y', '_blank')">
-Assinar Semestral
-</button>
-</div>
+    <div class="plano">
+      <h3>Plano Semestral</h3>
+      <p>6 meses com desconto</p>
+      <button onclick="window.open('https://invoice.infinitepay.io/silvia-regina-967/1X53UGgbv/', '_blank')">
+        Assinar Semestral
+      </button>
+    </div>
 
-<div class="plano">
-<h3>Plano Anual</h3>
-<p>12 meses com maior economia</p>
-<button onclick="window.open('https://checkout.infinitepay.io/price_1T4hjA2WGvasnCYLmh28hNuZ', '_blank')">
-Assinar Anual
-</button>
+    <div class="plano">
+      <h3>Plano Anual</h3>
+      <p>12 meses com maior economia</p>
+      <button onclick="window.open('https://invoice.infinitepay.io/silvia-regina-967/2TMA4nTn49/', '_blank')">
+        Assinar Anual
+      </button>
+    </div>
+  </div>
 </div>
 
 </div>
