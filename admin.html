@@ -625,10 +625,10 @@ if (uniqueUsers.length === 0) {
                 </button>
 
                 <div class="acoes-dias">
-  <button data-liberar="30">30d</button>
-  <button data-liberar="180">180d</button>
-  <button data-liberar="365">365d</button>
-              </div>
+  <button data-liberar="30" data-userid="${escapeHtml(u.id)}">30d</button>
+  <button data-liberar="180" data-userid="${escapeHtml(u.id)}">180d</button>
+  <button data-liberar="365" data-userid="${escapeHtml(u.id)}">365d</button>
+</div>
             </td>
           `;
           tbody.appendChild(tr);
