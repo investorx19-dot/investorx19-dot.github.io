@@ -160,6 +160,27 @@
   text-align:center;
   padding:8px 10px;
 }
+.acoes-dias{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+
+.acoes-dias button{
+  padding:6px 10px;
+  font-size:12px;
+  border-radius:8px;
+}
+.acoes-dias button{
+  padding:4px 8px;
+  font-size:12px;
+  background:#1f2937;
+  border:1px solid #374151;
+}
+
+.acoes-dias button:hover{
+  background:#2563eb;
+}
   </style>
 </head>
 <body>
@@ -603,23 +624,10 @@ if (uniqueUsers.length === 0) {
                   ${granted ? "Bloquear" : "Liberar"}
                 </button>
 
-                <button class="btn"
-                        data-liberar="30"
-                        data-userid="${escapeHtml(u.id)}">
-                  30d
-                </button>
-
-                <button class="btn"
-                        data-liberar="180"
-                        data-userid="${escapeHtml(u.id)}">
-                  180d
-                </button>
-
-                <button class="btn"
-                        data-liberar="365"
-                        data-userid="${escapeHtml(u.id)}">
-                  365d
-                </button>
+                <div class="acoes-dias">
+  <button data-liberar="30">30d</button>
+  <button data-liberar="180">180d</button>
+  <button data-liberar="365">365d</button>
               </div>
             </td>
           `;
