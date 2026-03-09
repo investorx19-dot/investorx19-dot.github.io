@@ -463,6 +463,25 @@ import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
     const btnSemestral = document.getElementById("btnSemestral");
     const btnAnual = document.getElementById("btnAnual");
 async function carregarTotalGlobal(){
+
+  try{
+
+    const ref = doc(db, "stats", "global");
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()) return;
+
+    const dados = snap.data();
+    const total = dados.totalAcertos || 1826;
+
+    elTotalAcertosGlobal.textContent =
+      Number(total).toLocaleString("pt-BR");
+
+  }catch(e){
+    console.error("Erro contador:", e);
+  }
+
+}
 async function somarAcertosGlobal(qtdAcertos){
   try{
     if (!qtdAcertos || qtdAcertos <= 0) return;
