@@ -462,6 +462,7 @@ import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
     const btnMensal = document.getElementById("btnMensal");
     const btnSemestral = document.getElementById("btnSemestral");
     const btnAnual = document.getElementById("btnAnual");
+
 async function carregarTotalGlobal(){
 
   try{
@@ -469,7 +470,10 @@ async function carregarTotalGlobal(){
     const ref = doc(db, "stats", "global");
     const snap = await getDoc(ref);
 
-    if(!snap.exists()) return;
+    if(!snap.exists()){
+      elTotalAcertosGlobal.textContent = "1.826";
+      return;
+    }
 
     const dados = snap.data();
     const total = dados.totalAcertos || 1826;
@@ -482,20 +486,19 @@ async function carregarTotalGlobal(){
   }
 
 }
-async function somarAcertosGlobal(qtdAcertos){
-  try{
+async function somarAcertosGlobal(qtdAcertos) {
+  try {
     if (!qtdAcertos || qtdAcertos <= 0) return;
 
     const ref = doc(db, "stats", "global");
 
-    await setDoc(ref, { totalAcertos: 1826 }, { merge: true });
     await updateDoc(ref, {
       totalAcertos: increment(qtdAcertos)
     });
 
     await carregarTotalGlobal();
-  }catch(e){
-    console.error("Erro ao somar total global:", e);
+  } catch (e) {
+    console.error("Erro ao somar acertos:", e);
   }
 }
   try{
