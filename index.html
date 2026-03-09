@@ -463,7 +463,22 @@ import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
     const btnSemestral = document.getElementById("btnSemestral");
     const btnAnual = document.getElementById("btnAnual");
 async function carregarTotalGlobal(){
+async function somarAcertosGlobal(qtdAcertos){
+  try{
+    if (!qtdAcertos || qtdAcertos <= 0) return;
 
+    const ref = doc(db, "stats", "global");
+
+    await setDoc(ref, { totalAcertos: 1826 }, { merge: true });
+    await updateDoc(ref, {
+      totalAcertos: increment(qtdAcertos)
+    });
+
+    await carregarTotalGlobal();
+  }catch(e){
+    console.error("Erro ao somar total global:", e);
+  }
+}
   try{
 
     const ref = doc(db, "stats", "global");
@@ -688,11 +703,12 @@ async function carregarTotalGlobal(){
         renderCartao(jogo);
 
         let acertos = 0;
-        jogo.forEach(function(numero) {
-          if (anteriores.includes(numero)) acertos++;
-        });
+jogo.forEach(function(numero) {
+  if (anteriores.includes(numero)) acertos++;
+});
 
-        elAcertos.textContent = String(acertos);
+elAcertos.textContent = String(acertos);
+await somarAcertosGlobal(acertos);
       } catch (erro) {
         console.error("Erro ao gerar jogo:", erro);
         alert("Erro ao gerar jogo: " + erro.message);
