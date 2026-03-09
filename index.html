@@ -293,6 +293,33 @@
         width:100%;
       }
     }
+    .contador-global{
+margin:20px auto;
+padding:20px;
+max-width:420px;
+text-align:center;
+background:rgba(255,255,255,0.05);
+border-radius:16px;
+border:1px solid rgba(255,255,255,0.1);
+}
+
+.contador-titulo{
+font-size:14px;
+color:#9ca3af;
+margin-bottom:5px;
+}
+
+.contador-numero{
+font-size:42px;
+font-weight:bold;
+color:#ffffff;
+}
+
+.contador-texto{
+font-size:13px;
+color:#9ca3af;
+margin-top:5px;
+}
   </style>
 </head>
 <body>
@@ -357,7 +384,19 @@
       <div class="centro">
         <button id="btnGerar" type="button">GERAR JOGO</button>
       </div>
+<div class="contador-global">
+  <div class="contador-titulo">
+    Prova de funcionamento
+  </div>
 
+  <div id="totalAcertosGlobal" class="contador-numero">
+    1.826
+  </div>
+
+  <div class="contador-texto">
+    Total acumulado de dezenas acertadas pela comunidade Mark6
+  </div>
+</div>
       <h2>Cartão Virtual</h2>
       <div id="cartao"></div>
 
@@ -381,17 +420,19 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      collection,
-      getDocs,
-      query,
-      where,
-      addDoc
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-    import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
+   import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  updateDoc,
+  setDoc,
+  increment
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
@@ -413,7 +454,7 @@
     const elUsuarioLogado = document.getElementById("usuarioLogado");
     const elCartao = document.getElementById("cartao");
     const elAcertos = document.getElementById("acertos");
-
+    const elTotalAcertosGlobal = document.getElementById("totalAcertosGlobal");
     const btnCadastrar = document.getElementById("btnCadastrar");
     const btnEntrar = document.getElementById("btnEntrar");
     const btnGerar = document.getElementById("btnGerar");
@@ -421,7 +462,29 @@
     const btnMensal = document.getElementById("btnMensal");
     const btnSemestral = document.getElementById("btnSemestral");
     const btnAnual = document.getElementById("btnAnual");
+async function carregarTotalGlobal(){
 
+  try{
+
+    const ref = doc(db, "stats", "global");
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      elTotalAcertosGlobal.textContent = "1.826";
+      return;
+    }
+
+    const dados = snap.data();
+    const total = dados.totalAcertos || 1826;
+
+    elTotalAcertosGlobal.textContent =
+      Number(total).toLocaleString("pt-BR");
+
+  }catch(e){
+    console.error("Erro contador:", e);
+  }
+
+}
     let usuarioAtual = null;
 
     function normalizarEmail(email) {
@@ -676,7 +739,7 @@
     btnEntrar.addEventListener("click", login);
     btnGerar.addEventListener("click", gerarJogoUsuario);
     btnSair.addEventListener("click", sair);
-
+carregarTotalGlobal();
     btnMensal.addEventListener("click", function() {
       window.open("https://invoice.infinitepay.io/silvia-regina-967/ENO4gtBh3/", "_blank");
     });
