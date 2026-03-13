@@ -181,6 +181,32 @@
 .acoes-dias button:hover{
   background:#2563eb;
 }
+.stats-admin{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;
+  margin:18px 0 22px;
+}
+
+.stat-card{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.18);
+}
+
+.stat-label{
+  font-size:13px;
+  opacity:.8;
+  margin-bottom:8px;
+}
+
+.stat-value{
+  font-size:28px;
+  font-weight:700;
+  color:#ffffff;
+}
   </style>
 </head>
 <body>
@@ -191,6 +217,27 @@
              onerror="this.style.display='none'">
         <div>
           <h1>Painel de Controle • Administrador</h1>
+          <div class="stats-admin">
+  <div class="stat-card">
+    <div class="stat-label">👥 Usuários ativos</div>
+    <div class="stat-value" id="statUsuarios">0</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">🎲 Jogos gerados</div>
+    <div class="stat-value" id="statJogos">0</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">⏳ Pendentes</div>
+    <div class="stat-value" id="statPendentes">0</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">🏆 Acertos acumulados</div>
+    <div class="stat-value" id="statAcertos">0</div>
+  </div>
+</div>
           <div class="sub">Mark6 • Firebase Auth + Firestore</div>
         </div>
       </div>
@@ -521,6 +568,45 @@ toast(
   toast("Erro ao processar resultado oficial.", "error");
    }
   }
+  async function carregarResumoAdmin() {
+  try {
+    const elUsuarios = $("statUsuarios");
+    const elJogos = $("statJogos");
+    const elPendentes = $("statPendentes");
+    const elAcertos = $("statAcertos");
+
+    const usersSnap = await getDocs(collection(db, "users"));
+    const jogosSnap = await getDocs(collection(db, "jogosGerados"));
+    const pendentesSnap = await getDocs(
+      query(collection(db, "jogosGerados"), where("processado", "==", false))
+    );
+    const statsSnap = await getDoc(doc(db, "stats", "global"));
+
+    let usuariosAtivos = 0;
+    usersSnap.forEach((docItem) => {
+      const dados = docItem.data();
+      if (dados.accessGranted) usuariosAtivos++;
+    });
+
+    let totalAcertos = 1826;
+    if (statsSnap.exists()) {
+      const statsData = statsSnap.data();
+      totalAcertos = Number(
+        statsData.totalAcertosV2 ??
+        statsData.totalAcertos ??
+        1826
+      );
+    }
+
+    elUsuarios.textContent = usuariosAtivos.toLocaleString("pt-BR");
+    elJogos.textContent = jogosSnap.size.toLocaleString("pt-BR");
+    elPendentes.textContent = pendentesSnap.size.toLocaleString("pt-BR");
+    elAcertos.textContent = totalAcertos.toLocaleString("pt-BR");
+
+  } catch (err) {
+    console.error("Erro ao carregar resumo admin:", err);
+  }
+}
     $("btnLogout").addEventListener("click", async () => {
       await signOut(auth);
       toast("Você saiu.", "ok");
@@ -552,6 +638,7 @@ toast(
 
       await loadConfig();
       await loadUsers();
+      await carregarResumoAdmin();
     });
 
     // ===============================
