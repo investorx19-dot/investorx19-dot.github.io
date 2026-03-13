@@ -483,16 +483,25 @@ async function carregarTotalGlobal() {
 }
 async function somarAcertosGlobal(qtdAcertos) {
   try {
-    if (!qtdAcertos || qtdAcertos <= 0) return;
+    alert("Entrou em somarAcertosGlobal com: " + qtdAcertos);
+
+    if (!qtdAcertos || qtdAcertos <= 0) {
+      alert("Não somou porque os acertos foram 0");
+      return;
+    }
 
     const ref = doc(db, "stats", "global");
 
+    await setDoc(ref, { totalAcertos: 1826 }, { merge: true });
     await updateDoc(ref, {
       totalAcertos: increment(qtdAcertos)
     });
 
+    alert("Somou +" + qtdAcertos + " no total global");
+
     await carregarTotalGlobal();
   } catch (e) {
+    alert("Erro ao somar acertos: " + e.message);
     console.error("Erro ao somar acertos:", e);
   }
 }
