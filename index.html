@@ -483,11 +483,9 @@ async function carregarTotalGlobal() {
 }
 async function somarAcertosGlobal(qtdAcertos) {
   try {
-    alert("Entrou em somarAcertosGlobal com: " + qtdAcertos);
-
+    
     if (!qtdAcertos || qtdAcertos <= 0) {
-      alert("Não somou porque os acertos foram 0");
-      return;
+            return;
     }
 
     const ref = doc(db, "stats", "global");
@@ -497,9 +495,7 @@ async function somarAcertosGlobal(qtdAcertos) {
       totalAcertos: increment(qtdAcertos)
     });
 
-    alert("Somou +" + qtdAcertos + " no total global");
-
-    await carregarTotalGlobal();
+       await carregarTotalGlobal();
   } catch (e) {
     alert("Erro ao somar acertos: " + e.message);
     console.error("Erro ao somar acertos:", e);
@@ -713,7 +709,7 @@ async function somarAcertosGlobal(qtdAcertos) {
         });
 
 elAcertos.textContent = String(acertos);
-alert("Acertos encontrados neste jogo: " + acertos);
+
 await somarAcertosGlobal(acertos);
 alert("Depois da soma, o total global foi atualizado");
       } catch (erro) {
