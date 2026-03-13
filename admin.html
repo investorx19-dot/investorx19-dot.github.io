@@ -261,7 +261,10 @@
 
           <h2>3) 5 Dezenas Mais Atrasadas</h2>
           <div class="nums five" id="lateBox"></div>
+<div class="sep"></div>
 
+<h2>4) Resultado Oficial (6)</h2>
+<div class="nums" id="resultadoBox"></div>
           <div class="row" style="margin-top:12px;justify-content:flex-end">
             <button id="btnLoadConfig" class="btn">Recarregar config</button>
             <button id="btnSaveConfig" class="btn primary">Salvar config</button>
@@ -419,7 +422,7 @@
     }
     mkNumberInputs("prevBox", "anterior", 6);
     mkNumberInputs("lateBox", "atrasada", 5);
-
+    mkNumberInputs("resultadoBox", "resultado", 6);
     function parseNumsFromInputs(selector){
       return [...document.querySelectorAll(selector)]
         .map(i => Number(i.value))
@@ -492,12 +495,14 @@
         let linhasAtivas = [];
         let dezenasAnteriores = [];
         let dezenasAtrasadas = [];
+        let resultadoOficial = [];
 
         if(snap.exists()){
           const data = snap.data();
           linhasAtivas = data.linhasAtivas || [];
-          dezenasAnteriores = data.dezenasAnteriores || [];
-          dezenasAtrasadas = data.dezenasAtrasadas || [];
+dezenasAnteriores = data.dezenasAnteriores || [];
+dezenasAtrasadas = data.dezenasAtrasadas || [];
+resultadoOficial = data.resultadoOficial || [];
         }
 
         document.querySelectorAll(".linha").forEach(cb => {
@@ -506,7 +511,7 @@
 
         setInputsFromArray(".anterior", dezenasAnteriores);
         setInputsFromArray(".atrasada", dezenasAtrasadas);
-
+        setInputsFromArray(".resultado", resultadoOficial);
         toast("Config carregada.", "ok");
       }catch(err){
         console.error(err);
@@ -519,7 +524,7 @@
         const linhasAtivas = [...document.querySelectorAll(".linha:checked")].map(el => Number(el.value));
         const anterior = parseNumsFromInputs(".anterior");
         const atrasadas = parseNumsFromInputs(".atrasada");
-
+        const resultado = parseNumsFromInputs(".resultado");
         if(linhasAtivas.length === 0){
           toast("Selecione pelo menos 1 linha ativa.", "error");
           return;
@@ -532,13 +537,17 @@
           toast("Preencha as 5 dezenas mais atrasadas.", "error");
           return;
         }
-
+        if(resultado.length !== 6){
+          toast("Preencha as 6 dezenas do resultado oficial.", "error");
+          return;
+      }
         await setDoc(doc(db, "config", "global"), {
-          linhasAtivas,
-          dezenasAnteriores: anterior,
-          dezenasAtrasadas: atrasadas,
-          updatedAt: Date.now()
-        }, { merge: true });
+  linhasAtivas,
+  dezenasAnteriores: anterior,
+  dezenasAtrasadas: atrasadas,
+  resultadoOficial: resultado,
+  updatedAt: Date.now()
+}, { merge: true });
 
         toast("Config salva com sucesso.", "ok");
       }catch(err){
