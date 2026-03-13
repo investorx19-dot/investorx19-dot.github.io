@@ -484,6 +484,27 @@ import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
     console.error("Erro contador:", e);
   }
 }
+async function somarAcertosGlobal(qtdAcertos) {
+
+  if (!qtdAcertos || qtdAcertos <= 0) {
+    return;
+  }
+
+  try {
+
+    const ref = doc(db, "stats", "global");
+
+    await updateDoc(ref, {
+      totalAcertosV2: increment(qtdAcertos)
+    });
+
+    await carregarTotalGlobal();
+
+  } catch (e) {
+    console.error("Erro ao somar acertos:", e);
+  }
+
+}
       let usuarioAtual = null;
 
     function normalizarEmail(email) {
