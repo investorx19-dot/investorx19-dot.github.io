@@ -507,16 +507,16 @@
 
     const novoTotal = totalAtual + totalAcertosSomados;
 
-    await setDoc(statsRef, {
-      totalAcertosV2: novoTotal,
-      updatedAt: Date.now()
-    }, { merge: true });
+await setDoc(statsRef, {
+  totalAcertosV2: novoTotal,
+  updatedAt: Date.now()
+}, { merge: true });
 
-    toast(
+toast(
   Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s) somado(s).,
   "ok"
 );
-    
+
 } catch (err) {
   console.error(err);
   toast("Erro ao processar resultado oficial.", "error");
