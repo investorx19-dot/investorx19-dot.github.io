@@ -513,8 +513,7 @@ await setDoc(statsRef, {
 }, { merge: true });
 
 toast(
-  Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s) somado(s).,
-  "ok"
+  'Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s)',
 );
 
 } catch (err) {
