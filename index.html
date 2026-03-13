@@ -428,10 +428,7 @@ margin-top:5px;
   getDocs,
   query,
   where,
-  addDoc,
-  updateDoc,
-  setDoc,
-  increment
+  addDoc
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
     const firebaseConfig = {
@@ -445,7 +442,24 @@ import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
-
+async function salvarJogoGerado(usuario, jogo) {
+  try {
+    await addDoc(collection(db, "jogosGerados"), {
+      userId: usuario.id || "",
+      nome: usuario.nome || "",
+      email: usuario.email || "",
+      telefone: usuario.telefone || "",
+      jogo: jogo,
+      createdAt: Date.now(),
+      processado: false,
+      resultadoReferencia: "",
+      acertos: 0
+    });
+  } catch (e) {
+    console.error("Erro ao salvar jogo gerado:", e);
+    throw e;
+  }
+}
     const elNome = document.getElementById("nome");
     const elEmail = document.getElementById("email");
     const elTelefone = document.getElementById("telefone");
@@ -708,13 +722,13 @@ async function somarAcertosGlobal(qtdAcertos) {
         renderCartao(jogo);
 
         let acertos = 0;
-        jogo.forEach(function(numero) {
-        if (resultadoOficial.includes(numero)) acertos++;
-        });
+jogo.forEach(function(numero) {
+  if (resultadoOficial.includes(numero)) acertos++;
+});
 
 elAcertos.textContent = String(acertos);
 
-await somarAcertosGlobal(acertos);
+await salvarJogoGerado(usuarioAtual, jogo);
 
       } catch (erro) {
         console.error("Erro ao gerar jogo:", erro);
