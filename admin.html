@@ -620,6 +620,23 @@ toast(
     console.error("Erro ao carregar resumo admin:", err);
   }
 }
+$("btnLogin").addEventListener("click", async () => {
+
+  const email = $("adminEmail").value.trim();
+  const pass = $("adminPass").value;
+
+  try {
+
+    await signInWithEmailAndPassword(auth, email, pass);
+
+  } catch (err) {
+
+    console.error(err);
+    toast("Falha no login (email ou senha).", "error");
+
+  }
+
+});
     $("btnLogout").addEventListener("click", async () => {
       await signOut(auth);
       toast("Você saiu.", "ok");
