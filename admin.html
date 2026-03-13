@@ -266,9 +266,10 @@
 <h2>4) Resultado Oficial (6)</h2>
 <div class="nums" id="resultadoBox"></div>
           <div class="row" style="margin-top:12px;justify-content:flex-end">
-            <button id="btnLoadConfig" class="btn">Recarregar config</button>
-            <button id="btnSaveConfig" class="btn primary">Salvar config</button>
-          </div>
+  <button id="btnLoadConfig" class="btn">Recarregar config</button>
+  <button id="btnProcessarResultado" class="btn success">Processar Resultado Oficial</button>
+  <button id="btnSaveConfig" class="btn primary">Salvar config</button>
+</div>
 
           <div class="small" style="margin-top:10px">
             Dica: depois de salvar, teste o usuário pra ver se o cartão virtual muda.
@@ -330,15 +331,16 @@
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
     import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc,
-      collection,
-      getDocs,
-      updateDoc
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  updateDoc,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -439,6 +441,87 @@
     // ===============================
     // AUTH
     // ===============================
+    async function processarResultadoOficial(){
+  try{
+    const configRef = doc(db, "config", "global");
+    const configSnap = await getDoc(configRef);
+
+    if(!configSnap.exists()){
+      toast("Configuração global não encontrada.", "error");
+      return;
+    }
+
+    const config = configSnap.data();
+    const resultadoOficial = config.resultadoOficial || [];
+
+    if(resultadoOficial.length !== 6){
+      toast("Preencha as 6 dezenas do resultado oficial antes de processar.", "error");
+      return;
+    }
+
+    const jogosRef = collection(db, "jogosGerados");
+    const jogosQuery = query(jogosRef, where("processado", "==", false));
+    const jogosSnap = await getDocs(jogosQuery);
+
+    if(jogosSnap.empty){
+      toast("Nenhum jogo pendente para processar.", "ok");
+      return;
+    }
+
+    let totalAcertosSomados = 0;
+    let totalJogosProcessados = 0;
+
+    for(const jogoDoc of jogosSnap.docs){
+      const dados = jogoDoc.data();
+      const jogo = Array.isArray(dados.jogo) ? dados.jogo : [];
+
+      let acertos = 0;
+      jogo.forEach(numero => {
+        if(resultadoOficial.includes(numero)) acertos++;
+      });
+
+      totalAcertosSomados += acertos;
+      totalJogosProcessados++;
+
+      await updateDoc(doc(db, "jogosGerados", jogoDoc.id), {
+        processado: true,
+        acertos: acertos,
+        resultadoReferencia: resultadoOficial.join("-"),
+        processadoEm: Date.now()
+      });
+    }
+
+    const statsRef = doc(db, "stats", "global");
+    const statsSnap = await getDoc(statsRef);
+
+    let totalAtual = 1826;
+
+    if(statsSnap.exists()){
+      const statsData = statsSnap.data();
+      totalAtual = Number(
+        statsData.totalAcertosV2 ??
+        statsData.totalAcertos ??
+        1826
+      );
+    }
+
+    const novoTotal = totalAtual + totalAcertosSomados;
+
+    await setDoc(statsRef, {
+      totalAcertosV2: novoTotal,
+      updatedAt: Date.now()
+    }, { merge: true });
+
+    toast(
+      Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s) somado(s).,
+      "ok"
+    );
+
+  }catch(err){
+    console.error(err);
+    toast("Erro ao processar resultado oficial.", "error");
+  }
+}
     $("btnLogin").addEventListener("click", async () => {
       const email = $("adminEmail").value.trim();
       const pass  = $("adminPass").value;
@@ -557,8 +640,9 @@ resultadoOficial = data.resultadoOficial || [];
     }
 
     $("btnLoadConfig").addEventListener("click", loadConfig);
+    $("btnProcessarResultado").addEventListener("click", processarResultadoOficial);
     $("btnSaveConfig").addEventListener("click", saveConfig);
-
+    $("btnReloadUsers").addEventListener("click", loadUsers);
     // ===============================
     // USERS LIST (users/{uid})
     // ===============================
