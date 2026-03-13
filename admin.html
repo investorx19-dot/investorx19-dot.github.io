@@ -513,8 +513,10 @@
     }, { merge: true });
 
     toast(
-      Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s) somado(s).,
-      "ok"
+      toast(
+  Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s) somado(s).,
+  "ok"
+);
     );
 
   }catch(err){
