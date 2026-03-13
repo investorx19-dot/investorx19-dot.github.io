@@ -516,21 +516,11 @@
   Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s) somado(s).,
   "ok"
 );
-    console.error(err);
-    toast("Erro ao processar resultado oficial.", "error");
-  }
+    
+} catch (err) {
+  console.error(err);
+  toast("Erro ao processar resultado oficial.", "error");
 }
-    $("btnLogin").addEventListener("click", async () => {
-      const email = $("adminEmail").value.trim();
-      const pass  = $("adminPass").value;
-
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-      }catch(err){
-        console.error(err);
-        toast("Falha no login (email/senha).", "error");
-      }
-    });
 
     $("btnLogout").addEventListener("click", async () => {
       await signOut(auth);
