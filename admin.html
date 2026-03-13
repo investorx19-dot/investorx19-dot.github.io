@@ -238,6 +238,12 @@
     <div class="stat-value" id="statAcertos">0</div>
   </div>
 </div>
+<div class="card" style="margin-top:18px;">
+  <h3>Histórico de Processamentos</h3>
+  <div id="historicoProcessamentosLista" class="historico-lista">
+    <div class="muted">Nenhum processamento ainda.</div>
+  </div>
+</div>
           <div class="sub">Mark6 • Firebase Auth + Firestore</div>
         </div>
       </div>
@@ -386,7 +392,8 @@
   getDocs,
   updateDoc,
   query,
-  where
+  where,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
@@ -558,7 +565,13 @@ await setDoc(statsRef, {
   totalAcertosV2: novoTotal,
   updatedAt: Date.now()
 }, { merge: true });
-
+await addDoc(collection(db, "historicoProcessamentos"), {
+  resultado: resultadoOficial,
+  resultadoTexto: resultadoOficial.join(" - "),
+  jogosProcessados: totalJogosProcessados,
+  acertosSomados: totalAcertosSomados,
+  createdAt: Date.now()
+});
 toast(
   `Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s)`,
 );
@@ -639,6 +652,7 @@ toast(
       await loadConfig();
       await loadUsers();
       await carregarResumoAdmin();
+      await carregarHistoricoProcessamentos();
     });
 
     // ===============================
