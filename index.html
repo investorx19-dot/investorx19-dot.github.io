@@ -453,8 +453,24 @@ margin-top:5px;
     <option value="14">14 dezenas</option>
     <option value="15">15 dezenas</option>
   </select>
-  <div id="valorAposta" style="margin-top:10px; font-weight:bold;">
-  Valor da aposta: R$ 6,00
+  <div class="centro" style="margin-bottom:14px;">
+  <label for="qtdDezenas"><strong>Quantidade de dezenas:</strong></label>
+  <select id="qtdDezenas" style="margin-left:8px; padding:8px 10px; border-radius:10px;">
+    <option value="6">6 dezenas</option>
+    <option value="7">7 dezenas</option>
+    <option value="8">8 dezenas</option>
+    <option value="9">9 dezenas</option>
+    <option value="10">10 dezenas</option>
+    <option value="11">11 dezenas</option>
+    <option value="12">12 dezenas</option>
+    <option value="13">13 dezenas</option>
+    <option value="14">14 dezenas</option>
+    <option value="15">15 dezenas</option>
+  </select>
+  <div id="valorAposta" class="valor-aposta">
+    Valor da aposta: R$ 6,00
+  </div>
+</div>
 </div>
 </div>
       <div class="centro">
@@ -573,11 +589,34 @@ async function salvarJogoGerado(usuario, jogo) {
     const btnGerar = document.getElementById("btnGerar");
     const elQtdDezenas = document.getElementById("qtdDezenas");
     const elValorAposta = document.getElementById("valorAposta");
+    const elValorAposta = document.getElementById("valorAposta");
     const btnSair = document.getElementById("btnSair");
     const btnMensal = document.getElementById("btnMensal");
     const btnSemestral = document.getElementById("btnSemestral");
     const btnAnual = document.getElementById("btnAnual");
+const TABELA_VALORES = {
+  6: 6,
+  7: 42,
+  8: 168,
+  9: 504,
+  10: 1260,
+  11: 2772,
+  12: 5544,
+  13: 10296,
+  14: 18018,
+  15: 30030
+};
 
+function atualizarValorAposta() {
+  const quantidade = parseInt(elQtdDezenas.value || "6");
+  const valor = TABELA_VALORES[quantidade] || 6;
+
+  elValorAposta.textContent =
+    "Valor da aposta: R$ " + valor.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+}
  async function carregarTotalGlobal() {
   try {
     const ref = doc(db, "stats", "global");
@@ -877,6 +916,8 @@ await salvarJogoGerado(usuarioAtual, jogo);
     btnCadastrar.addEventListener("click", cadastrar);
     btnEntrar.addEventListener("click", login);
     btnGerar.addEventListener("click", gerarJogoUsuario);
+    elQtdDezenas.addEventListener("change", atualizarValorAposta);
+atualizarValorAposta();
     btnSair.addEventListener("click", sair);
 carregarTotalGlobal();
     btnMensal.addEventListener("click", function() {

@@ -27,7 +27,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
 
   if (quantidade < linhasAtivas.length) {
     throw new Error(
-      Não é possível gerar ${quantidade} dezenas com ${linhasAtivas.length} linhas ativas, pois o sistema garante pelo menos 1 dezena por linha ativa.
+      `Não é possível gerar ${quantidade} dezenas com ${linhasAtivas.length} linhas ativas, pois o sistema garante pelo menos 1 dezena por linha ativa.`
     );
   }
 
@@ -40,7 +40,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
   for (const l of linhasAtivas) {
     if (disponiveisPorLinha[l].length === 0) {
       throw new Error(
-        A Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}) não tem números disponíveis (todos excluídos).
+        `A Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}) não tem números disponíveis (todos excluídos).`
       );
     }
   }
