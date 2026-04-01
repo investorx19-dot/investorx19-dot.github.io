@@ -27,20 +27,32 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
 
   if (quantidade < linhasAtivas.length) {
     throw new Error(
-      `Não é possível gerar ${quantidade} dezenas com ${linhasAtivas.length} linhas ativas, pois o sistema garante pelo menos 1 dezena por linha ativa.`
+      "Não é possível gerar " +
+        quantidade +
+        " dezenas com " +
+        linhasAtivas.length +
+        " linhas ativas, pois o sistema garante pelo menos 1 dezena por linha ativa."
     );
   }
 
   const disponiveisPorLinha = {};
 
-  linhasAtivas.forEach((l) => {
-    disponiveisPorLinha[l] = LINE_RANGES[l].filter((n) => !excluidas.has(n));
+  linhasAtivas.forEach(function (l) {
+    disponiveisPorLinha[l] = LINE_RANGES[l].filter(function (n) {
+      return !excluidas.has(n);
+    });
   });
 
   for (const l of linhasAtivas) {
     if (disponiveisPorLinha[l].length === 0) {
       throw new Error(
-        `A Linha ${l} (${LINE_RANGES[l][0]}-${LINE_RANGES[l][9]}) não tem números disponíveis (todos excluídos).`
+        "A Linha " +
+          l +
+          " (" +
+          LINE_RANGES[l][0] +
+          "-" +
+          LINE_RANGES[l][9] +
+          ") não tem números disponíveis (todos excluídos)."
       );
     }
   }
@@ -49,7 +61,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
   const usados = new Set();
 
   // Garante pelo menos 1 número por linha ativa
-  linhasAtivas.forEach((l) => {
+  linhasAtivas.forEach(function (l) {
     const nums = disponiveisPorLinha[l];
     const idx = Math.floor(Math.random() * nums.length);
     const n = nums[idx];
@@ -64,24 +76,41 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
   if (faltam > 0) {
     let restantes = [];
 
-    linhasAtivas.forEach((l) => {
-      restantes.push(...disponiveisPorLinha[l]);
+    linhasAtivas.forEach(function (l) {
+      restantes.push.apply(restantes, disponiveisPorLinha[l]);
     });
 
-    restantes = [...new Set(restantes.filter((n) => !usados.has(n)))];
+    restantes = [
+      ...new Set(
+        restantes.filter(function (n) {
+          return !usados.has(n);
+        })
+      )
+    ];
 
     if (restantes.length < faltam) {
       throw new Error(
-        Não há números suficientes para completar ${quantidade} dezenas após garantir 1 por linha.
+        "Não há números suficientes para completar " +
+          quantidade +
+          " dezenas após garantir 1 por linha."
       );
     }
 
-    let f = restantes.filter((n) => FIBONACCI.includes(n));
-    let p = restantes.filter((n) => PRIMOS.includes(n));
-    let m = restantes.filter((n) => MULT3.includes(n));
-    let r = restantes.filter(
-      (n) => !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n)
-    );
+    let f = restantes.filter(function (n) {
+      return FIBONACCI.includes(n);
+    });
+
+    let p = restantes.filter(function (n) {
+      return PRIMOS.includes(n);
+    });
+
+    let m = restantes.filter(function (n) {
+      return MULT3.includes(n);
+    });
+
+    let r = restantes.filter(function (n) {
+      return !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n);
+    });
 
     let qFib = Math.random() < 0.6 ? 0 : 1;
     let qPri = Math.floor(Math.random() * 3);
@@ -96,13 +125,13 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
     }
 
     if (total < faltam) {
-      qMul += (faltam - total);
+      qMul += faltam - total;
     }
 
-    const pegar = (arr) =>
-      arr.length
-        ? arr.splice(Math.floor(Math.random() * arr.length), 1)[0]
-        : null;
+    const pegar = function (arr) {
+      if (!arr.length) return null;
+      return arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
+    };
 
     for (let i = 0; i < qFib && jogo.length < quantidade; i++) {
       const n = pegar(f);
@@ -124,7 +153,9 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
       if (n && !jogo.includes(n)) jogo.push(n);
     }
 
-    restantes = restantes.filter((n) => !jogo.includes(n));
+    restantes = restantes.filter(function (n) {
+      return !jogo.includes(n);
+    });
 
     while (jogo.length < quantidade && restantes.length > 0) {
       const idx = Math.floor(Math.random() * restantes.length);
@@ -132,5 +163,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
     }
   }
 
-  return jogo.sort((a, b) => a - b);
+  return jogo.sort(function (a, b) {
+    return a - b;
+  });
 }
