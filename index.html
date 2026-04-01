@@ -453,6 +453,9 @@ margin-top:5px;
     <option value="14">14 dezenas</option>
     <option value="15">15 dezenas</option>
   </select>
+  <div id="valorAposta" style="margin-top:10px; font-weight:bold;">
+  Valor da aposta: R$ 6,00
+</div>
 </div>
       <div class="centro">
         <button id="btnGerar" type="button">GERAR JOGO</button>
@@ -569,6 +572,7 @@ async function salvarJogoGerado(usuario, jogo) {
     const btnEntrar = document.getElementById("btnEntrar");
     const btnGerar = document.getElementById("btnGerar");
     const elQtdDezenas = document.getElementById("qtdDezenas");
+    const elValorAposta = document.getElementById("valorAposta");
     const btnSair = document.getElementById("btnSair");
     const btnMensal = document.getElementById("btnMensal");
     const btnSemestral = document.getElementById("btnSemestral");
