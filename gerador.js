@@ -15,7 +15,7 @@ const MULT3     = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 
 
 // Função para gerar um jogo válido de exatamente 6 dezenas
 // com pelo menos 1 dezena em cada linha marcada
-export function gerarJogoValido(linhasAtivas, excluidas) {
+export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6) {
   const disponiveisPorLinha = {};
   linhasAtivas.forEach(l => {
     disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
@@ -75,7 +75,7 @@ export function gerarJogoValido(linhasAtivas, excluidas) {
     for (let i = 0; i < qRan && jogo.length < 6; i++) { let n = pegar(r); if (n) jogo.push(n); }
 
     restantes = restantes.filter(n => !jogo.includes(n));
-    while (jogo.length < 6 && restantes.length > 0) {
+    while (jogo.length < quantidade) {
       let idx = Math.floor(Math.random() * restantes.length);
       jogo.push(restantes.splice(idx, 1)[0]);
     }

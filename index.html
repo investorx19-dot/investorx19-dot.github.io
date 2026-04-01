@@ -439,7 +439,21 @@ margin-top:5px;
         <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
         <button id="btnSair" type="button">Sair</button>
       </div>
-
+<div class="centro" style="margin-bottom:14px;">
+  <label for="qtdDezenas"><strong>Quantidade de dezenas:</strong></label>
+  <select id="qtdDezenas" style="margin-left:8px; padding:8px 10px; border-radius:10px;">
+    <option value="6">6 dezenas</option>
+    <option value="7">7 dezenas</option>
+    <option value="8">8 dezenas</option>
+    <option value="9">9 dezenas</option>
+    <option value="10">10 dezenas</option>
+    <option value="11">11 dezenas</option>
+    <option value="12">12 dezenas</option>
+    <option value="13">13 dezenas</option>
+    <option value="14">14 dezenas</option>
+    <option value="15">15 dezenas</option>
+  </select>
+</div>
       <div class="centro">
         <button id="btnGerar" type="button">GERAR JOGO</button>
       </div>
@@ -554,6 +568,7 @@ async function salvarJogoGerado(usuario, jogo) {
     const btnCadastrar = document.getElementById("btnCadastrar");
     const btnEntrar = document.getElementById("btnEntrar");
     const btnGerar = document.getElementById("btnGerar");
+    const elQtdDezenas = document.getElementById("qtdDezenas");
     const btnSair = document.getElementById("btnSair");
     const btnMensal = document.getElementById("btnMensal");
     const btnSemestral = document.getElementById("btnSemestral");
@@ -800,7 +815,8 @@ async function somarAcertosGlobal(qtdAcertos) {
         anteriores.forEach(function(numero) { excluidas.add(numero); });
         atrasadas.forEach(function(numero) { excluidas.add(numero); });
 
-        const jogo = gerarJogoValido(linhasAtivas, excluidas);
+        const quantidade = parseInt(elQtdDezenas.value || "6");
+        const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
         renderCartao(jogo);
 
         let acertos = 0;
