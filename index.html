@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Jogos - Mega-Sena</title>
-  <!-- FAVICON -->
   <link rel="icon" type="image/png" href="favicon.png?v=10">
+
   <style>
     :root{
       --bg: #0b1220;
@@ -93,7 +93,7 @@
       font-size:14px;
     }
 
-    input{
+    input, select{
       width:100%;
       padding:14px;
       font-size:16px;
@@ -108,6 +108,11 @@
 
     input::placeholder{
       color: rgba(234,240,255,.45);
+    }
+
+    select option{
+      color:#111827;
+      background:#ffffff;
     }
 
     button{
@@ -254,6 +259,126 @@
       margin-bottom:14px;
     }
 
+    .contador-global{
+      margin:20px auto;
+      padding:20px;
+      max-width:420px;
+      text-align:center;
+      background:rgba(255,255,255,0.05);
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+
+    .contador-titulo{
+      font-size:14px;
+      color:#9ca3af;
+      margin-bottom:5px;
+    }
+
+    .contador-numero{
+      font-size:42px;
+      font-weight:bold;
+      color:#ffffff;
+    }
+
+    .contador-texto{
+      font-size:13px;
+      color:#9ca3af;
+      margin-top:5px;
+    }
+
+    .potencial-ganho{
+      margin-top:20px;
+      padding:16px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      text-align:center;
+    }
+
+    .potencial-ganho h3{
+      margin-bottom:12px;
+      font-size:18px;
+    }
+
+    .ganho-linha{
+      margin:6px 0;
+      font-size:16px;
+    }
+
+    .potencial-ganho small{
+      display:block;
+      margin-top:10px;
+      opacity:0.7;
+      font-size:12px;
+    }
+
+    .premio-max{
+      color:#22c55e;
+      font-weight:700;
+      font-size:18px;
+    }
+
+    .chance-msg{
+      margin-top:10px;
+      font-size:14px;
+      opacity:.85;
+    }
+
+    .aviso-urgencia{
+      margin-top:18px;
+      margin-bottom:14px;
+      padding:14px;
+      border-radius:12px;
+      text-align:center;
+      background:rgba(250,204,21,0.10);
+      border:1px solid rgba(250,204,21,0.35);
+    }
+
+    .urgencia-assinatura{
+      margin:0;
+      font-size:16px;
+      font-weight:700;
+      color:#facc15;
+    }
+
+    .urgencia-sub{
+      margin:6px 0 0;
+      font-size:13px;
+      opacity:.85;
+    }
+
+    .painel-aposta{
+      margin: 10px auto 18px;
+      max-width: 620px;
+      padding: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+    }
+
+    .campos-aposta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items:end;
+    }
+
+    .campo-aposta label{
+      display:block;
+      margin-bottom:8px;
+      font-weight:700;
+    }
+
+    .valor-aposta{
+      margin-top:14px;
+      text-align:center;
+      font-size:18px;
+      font-weight:700;
+      color:#facc15;
+      line-height:1.6;
+    }
+
     @media (max-width: 700px){
       .wrap{
         padding:20px 12px 40px;
@@ -294,91 +419,11 @@
       .botoes-planos button{
         width:100%;
       }
+
+      .campos-aposta{
+        grid-template-columns: 1fr;
+      }
     }
-    .contador-global{
-margin:20px auto;
-padding:20px;
-max-width:420px;
-text-align:center;
-background:rgba(255,255,255,0.05);
-border-radius:16px;
-border:1px solid rgba(255,255,255,0.1);
-}
-
-.contador-titulo{
-font-size:14px;
-color:#9ca3af;
-margin-bottom:5px;
-}
-
-.contador-numero{
-font-size:42px;
-font-weight:bold;
-color:#ffffff;
-}
-
-.contador-texto{
-font-size:13px;
-color:#9ca3af;
-margin-top:5px;
-}
-.potencial-ganho{
-  margin-top:20px;
-  padding:16px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.08);
-  text-align:center;
-}
-
-.potencial-ganho h3{
-  margin-bottom:12px;
-  font-size:18px;
-}
-
-.ganho-linha{
-  margin:6px 0;
-  font-size:16px;
-}
-
-.potencial-ganho small{
-  display:block;
-  margin-top:10px;
-  opacity:0.7;
-  font-size:12px;
-}
-.premio-max{
-  color:#22c55e;
-  font-weight:700;
-  font-size:18px;
-}
-.chance-msg{
-  margin-top:10px;
-  font-size:14px;
-  opacity:.85;
-}
-.aviso-urgencia{
-  margin-top:18px;
-  margin-bottom:14px;
-  padding:14px;
-  border-radius:12px;
-  text-align:center;
-  background:rgba(250,204,21,0.10);
-  border:1px solid rgba(250,204,21,0.35);
-}
-
-.urgencia-assinatura{
-  margin:0;
-  font-size:16px;
-  font-weight:700;
-  color:#facc15;
-}
-
-.urgencia-sub{
-  margin:6px 0 0;
-  font-size:13px;
-  opacity:.85;
-}
   </style>
 </head>
 <body>
@@ -439,43 +484,53 @@ margin-top:5px;
         <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
         <button id="btnSair" type="button">Sair</button>
       </div>
-<div class="centro" style="margin-bottom:14px;">
-  <label for="qtdDezenas"><strong>Quantidade de dezenas:</strong></label>
-  <select id="qtdDezenas" style="margin-left:8px; padding:8px 10px; border-radius:10px;">
-    <option value="6">6 dezenas</option>
-    <option value="7">7 dezenas</option>
-    <option value="8">8 dezenas</option>
-    <option value="9">9 dezenas</option>
-    <option value="10">10 dezenas</option>
-    <option value="11">11 dezenas</option>
-    <option value="12">12 dezenas</option>
-    <option value="13">13 dezenas</option>
-    <option value="14">14 dezenas</option>
-    <option value="15">15 dezenas</option>
-  </select>
-  <div class="centro" style="margin-bottom:14px;">
-  <div id="valorAposta" class="valor-aposta">
-    Valor da aposta: R$ 6,00
-  </div>
-</div>
-</div>
-</div>
+
+      <div class="painel-aposta">
+        <div class="campos-aposta">
+          <div class="campo-aposta">
+            <label for="qtdDezenas">Quantidade de dezenas:</label>
+            <select id="qtdDezenas">
+              <option value="6">6 dezenas</option>
+              <option value="7">7 dezenas</option>
+              <option value="8">8 dezenas</option>
+              <option value="9">9 dezenas</option>
+              <option value="10">10 dezenas</option>
+              <option value="11">11 dezenas</option>
+              <option value="12">12 dezenas</option>
+              <option value="13">13 dezenas</option>
+              <option value="14">14 dezenas</option>
+              <option value="15">15 dezenas</option>
+            </select>
+          </div>
+
+          <div class="campo-aposta">
+            <label for="qtdCotas">Bolão:</label>
+            <select id="qtdCotas">
+              <option value="1">Sem bolão</option>
+              <option value="2">2 cotas</option>
+              <option value="3">3 cotas</option>
+              <option value="5">5 cotas</option>
+              <option value="10">10 cotas</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="valorAposta" class="valor-aposta">
+          Valor total: R$ 6,00<br>
+          Por pessoa: R$ 6,00
+        </div>
+      </div>
+
       <div class="centro">
         <button id="btnGerar" type="button">GERAR JOGO</button>
       </div>
-<div class="contador-global">
-  <div class="contador-titulo">
-    Prova de funcionamento
-  </div>
 
-  <div id="totalAcertosGlobal" class="contador-numero">
-    1.826
-  </div>
+      <div class="contador-global">
+        <div class="contador-titulo">Prova de funcionamento</div>
+        <div id="totalAcertosGlobal" class="contador-numero">1.826</div>
+        <div class="contador-texto">Total acumulado de dezenas acertadas pela comunidade Mark6</div>
+      </div>
 
-  <div class="contador-texto">
-    Total acumulado de dezenas acertadas pela comunidade Mark6
-  </div>
-</div>
       <h2>Cartão Virtual</h2>
       <div id="cartao"></div>
 
@@ -483,30 +538,23 @@ margin-top:5px;
         <strong>Acertos no último sorteio:</strong>
         <span id="acertos">0</span>
       </p>
-<div class="potencial-ganho">
-  <p class="chance-msg">
-🔥 Este jogo pode ser o próximo premiado.
-</p>
-  <h3>💰 Potencial de ganho</h3>
 
-  <div class="ganho-linha">
-    🎯 <strong>4 acertos</strong> → ~R$ 1.200
-  </div>
+      <div class="potencial-ganho">
+        <p class="chance-msg">🔥 Este jogo pode ser o próximo premiado.</p>
+        <h3>💰 Potencial de ganho</h3>
 
-  <div class="ganho-linha">
-    🔥 <strong>5 acertos</strong> → ~R$ 45.000
-  </div>
+        <div class="ganho-linha">🎯 <strong>4 acertos</strong> → ~R$ 1.200</div>
+        <div class="ganho-linha">🔥 <strong>5 acertos</strong> → ~R$ 45.000</div>
+        <div class="ganho-linha">🏆 <strong>6 acertos</strong> → <span class="premio-max">R$ 35.000.000+</span></div>
 
-  <div class="ganho-linha">
-    🏆 <strong>6 acertos</strong> → <span class="premio-max">R$ 35.000.000+</span>
-  </div>
+        <small>*Valores médios baseados em concursos anteriores da Mega-Sena</small>
+      </div>
 
-  <small>*Valores médios baseados em concursos anteriores da Mega-Sena</small>
-</div>
-<div class="aviso-urgencia">
-  <p class="urgencia-assinatura">⏳ Garanta seu acesso antes do próximo sorteio.</p>
-  <p class="urgencia-sub">Assine agora para gerar seus jogos com antecedência.</p>
-</div>
+      <div class="aviso-urgencia">
+        <p class="urgencia-assinatura">⏳ Garanta seu acesso antes do próximo sorteio.</p>
+        <p class="urgencia-sub">Assine agora para gerar seus jogos com antecedência.</p>
+      </div>
+
       <div class="bloco-assinaturas">
         <h3>Renovar assinatura</h3>
         <p class="mensagem">Escolha um plano para manter seu acesso ativo.</p>
@@ -522,17 +570,19 @@ margin-top:5px;
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-   import {
-  getFirestore,
-  doc,
-  getDoc,
-  collection,
-  getDocs,
-  query,
-  where,
-  addDoc
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      getDocs,
+      query,
+      where,
+      addDoc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
       authDomain: "painel-megasena.firebaseapp.com",
@@ -544,24 +594,26 @@ import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
 
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
-async function salvarJogoGerado(usuario, jogo) {
-  try {
-    await addDoc(collection(db, "jogosGerados"), {
-      userId: usuario.id || "",
-      nome: usuario.nome || "",
-      email: usuario.email || "",
-      telefone: usuario.telefone || "",
-      jogo: jogo,
-      createdAt: Date.now(),
-      processado: false,
-      resultadoReferencia: "",
-      acertos: 0
-    });
-  } catch (e) {
-    console.error("Erro ao salvar jogo gerado:", e);
-    throw e;
-  }
-}
+
+    async function salvarJogoGerado(usuario, jogo) {
+      try {
+        await addDoc(collection(db, "jogosGerados"), {
+          userId: usuario.id || "",
+          nome: usuario.nome || "",
+          email: usuario.email || "",
+          telefone: usuario.telefone || "",
+          jogo: jogo,
+          createdAt: Date.now(),
+          processado: false,
+          resultadoReferencia: "",
+          acertos: 0
+        });
+      } catch (e) {
+        console.error("Erro ao salvar jogo gerado:", e);
+        throw e;
+      }
+    }
+
     const elNome = document.getElementById("nome");
     const elEmail = document.getElementById("email");
     const elTelefone = document.getElementById("telefone");
@@ -574,78 +626,46 @@ async function salvarJogoGerado(usuario, jogo) {
     const btnCadastrar = document.getElementById("btnCadastrar");
     const btnEntrar = document.getElementById("btnEntrar");
     const btnGerar = document.getElementById("btnGerar");
-    const elQtdDezenas = document.getElementById("qtdDezenas");
-    const elValorAposta = document.getElementById("valorAposta");
     const btnSair = document.getElementById("btnSair");
     const btnMensal = document.getElementById("btnMensal");
     const btnSemestral = document.getElementById("btnSemestral");
     const btnAnual = document.getElementById("btnAnual");
-const TABELA_VALORES = {
-  6: 6,
-  7: 42,
-  8: 168,
-  9: 504,
-  10: 1260,
-  11: 2772,
-  12: 5544,
-  13: 10296,
-  14: 18018,
-  15: 30030
-};
+    const elQtdDezenas = document.getElementById("qtdDezenas");
+    const elQtdCotas = document.getElementById("qtdCotas");
+    const elValorAposta = document.getElementById("valorAposta");
 
-function atualizarValorAposta() {
-  const quantidade = parseInt(elQtdDezenas.value || "6");
-  const valor = TABELA_VALORES[quantidade] || 6;
+    const TABELA_VALORES = {
+      6: 6,
+      7: 42,
+      8: 168,
+      9: 504,
+      10: 1260,
+      11: 2772,
+      12: 5544,
+      13: 10296,
+      14: 18018,
+      15: 30030
+    };
 
-  elValorAposta.textContent =
-    "Valor da aposta: R$ " + valor.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-}
- async function carregarTotalGlobal() {
-  try {
-    const ref = doc(db, "stats", "global");
-    const snap = await getDoc(ref);
+    async function carregarTotalGlobal() {
+      try {
+        const ref = doc(db, "stats", "global");
+        const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      elTotalAcertosGlobal.textContent = "1.826";
-      return;
+        if (!snap.exists()) {
+          elTotalAcertosGlobal.textContent = "1.826";
+          return;
+        }
+
+        const dados = snap.data();
+        const total = Number(dados.totalAcertosV2 ?? dados.totalAcertos ?? 1826);
+        elTotalAcertosGlobal.textContent = total.toLocaleString("pt-BR");
+      } catch (e) {
+        console.error("Erro contador:", e);
+      }
     }
 
-    const dados = snap.data();
-
-    const total = Number(dados.totalAcertosV2 ?? dados.totalAcertos ?? 1826);
-
-    elTotalAcertosGlobal.textContent =
-      total.toLocaleString("pt-BR");
-
-  } catch (e) {
-    console.error("Erro contador:", e);
-  }
-}
-async function somarAcertosGlobal(qtdAcertos) {
-
-  if (!qtdAcertos || qtdAcertos <= 0) {
-    return;
-  }
-
-  try {
-
-    const ref = doc(db, "stats", "global");
-
-    await updateDoc(ref, {
-      totalAcertosV2: increment(qtdAcertos)
-    });
-
-    await carregarTotalGlobal();
-
-  } catch (e) {
-    console.error("Erro ao somar acertos:", e);
-  }
-
-}
-      let usuarioAtual = null;
+    let usuarioAtual = null;
 
     function normalizarEmail(email) {
       return String(email || "").trim().toLowerCase();
@@ -663,10 +683,31 @@ async function somarAcertosGlobal(qtdAcertos) {
       elUsuarioLogado.textContent = "Logado: " + usuarioAtual.nome + " - " + usuarioAtual.email;
     }
 
+    function atualizarValorAposta() {
+      const quantidade = Number(elQtdDezenas.value || 6);
+      const cotas = Number(elQtdCotas.value || 1);
+
+      const valorTotal = TABELA_VALORES[quantidade] || 6;
+      const valorPorPessoa = valorTotal / cotas;
+
+      elValorAposta.innerHTML =
+        "Valor total: R$ " +
+        valorTotal.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }) +
+        "<br>Por pessoa: R$ " +
+        valorPorPessoa.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+    }
+
     function mostrarApp() {
       elLogin.style.display = "none";
       elApp.style.display = "block";
       atualizarUsuarioLogado();
+      atualizarValorAposta();
       renderCartao([]);
       elAcertos.textContent = "0";
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -835,6 +876,7 @@ async function somarAcertosGlobal(qtdAcertos) {
         const anteriores = config.dezenasAnteriores || [];
         const atrasadas = config.dezenasAtrasadas || [];
         const resultadoOficial = config.resultadoOficial || [];
+
         if (linhasAtivas.length === 0) {
           alert("O administrador ainda não configurou as linhas ativas.");
           return;
@@ -849,14 +891,12 @@ async function somarAcertosGlobal(qtdAcertos) {
         renderCartao(jogo);
 
         let acertos = 0;
-jogo.forEach(function(numero) {
-  if (resultadoOficial.includes(numero)) acertos++;
-});
+        jogo.forEach(function(numero) {
+          if (resultadoOficial.includes(numero)) acertos++;
+        });
 
-elAcertos.textContent = String(acertos);
-
-await salvarJogoGerado(usuarioAtual, jogo);
-
+        elAcertos.textContent = String(acertos);
+        await salvarJogoGerado(usuarioAtual, jogo);
       } catch (erro) {
         console.error("Erro ao gerar jogo:", erro);
         alert("Erro ao gerar jogo: " + erro.message);
@@ -902,10 +942,14 @@ await salvarJogoGerado(usuarioAtual, jogo);
     btnCadastrar.addEventListener("click", cadastrar);
     btnEntrar.addEventListener("click", login);
     btnGerar.addEventListener("click", gerarJogoUsuario);
-    elQtdDezenas.addEventListener("change", atualizarValorAposta);
-atualizarValorAposta();
     btnSair.addEventListener("click", sair);
-carregarTotalGlobal();
+
+    elQtdDezenas.addEventListener("change", atualizarValorAposta);
+    elQtdCotas.addEventListener("change", atualizarValorAposta);
+
+    atualizarValorAposta();
+    carregarTotalGlobal();
+
     btnMensal.addEventListener("click", function() {
       window.open("https://invoice.infinitepay.io/silvia-regina-967/ENO4gtBh3/", "_blank");
     });
