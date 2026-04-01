@@ -595,19 +595,29 @@
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
 
-    async function salvarJogoGerado(usuario, jogo) {
-      try {
-        await addDoc(collection(db, "jogosGerados"), {
-          userId: usuario.id || "",
-          nome: usuario.nome || "",
-          email: usuario.email || "",
-          telefone: usuario.telefone || "",
-          jogo: jogo,
-          createdAt: Date.now(),
-          processado: false,
-          resultadoReferencia: "",
-          acertos: 0
-        });
+     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
+  try {
+    await addDoc(collection(db, "jogosGerados"), {
+      userId: usuario.id || "",
+      nome: usuario.nome || "",
+      email: usuario.email || "",
+      telefone: usuario.telefone || "",
+      jogo: jogo,
+      qtdDezenas: qtdDezenas,
+      qtdCotas: qtdCotas,
+      valorTotal: valorTotal,
+      valorPorPessoa: valorPorPessoa,
+      tipoAposta: qtdCotas > 1 ? "bolao" : "simples",
+      createdAt: Date.now(),
+      processado: false,
+      resultadoReferencia: "",
+      acertos: 0
+    });
+  } catch (e) {
+    console.error("Erro ao salvar jogo gerado:", e);
+    throw e;
+  }
+}
       } catch (e) {
         console.error("Erro ao salvar jogo gerado:", e);
         throw e;
@@ -887,16 +897,28 @@
         atrasadas.forEach(function(numero) { excluidas.add(numero); });
 
         const quantidade = parseInt(elQtdDezenas.value || "6");
-        const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
-        renderCartao(jogo);
+const cotas = parseInt(elQtdCotas.value || "1");
+const valorTotal = TABELA_VALORES[quantidade] || 6;
+const valorPorPessoa = valorTotal / cotas;
 
-        let acertos = 0;
-        jogo.forEach(function(numero) {
-          if (resultadoOficial.includes(numero)) acertos++;
-        });
+const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
+renderCartao(jogo);
 
-        elAcertos.textContent = String(acertos);
-        await salvarJogoGerado(usuarioAtual, jogo);
+let acertos = 0;
+jogo.forEach(function(numero) {
+  if (resultadoOficial.includes(numero)) acertos++;
+});
+
+elAcertos.textContent = String(acertos);
+
+await salvarJogoGerado(
+  usuarioAtual,
+  jogo,
+  quantidade,
+  cotas,
+  valorTotal,
+  valorPorPessoa
+);
       } catch (erro) {
         console.error("Erro ao gerar jogo:", erro);
         alert("Erro ao gerar jogo: " + erro.message);
