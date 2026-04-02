@@ -687,36 +687,35 @@
     }
 
     function atualizarValorAposta() {
-    
-      const cotas = Number(elQtdCotas.value || 1);
+  const quantidade = parseInt(elQtdDezenas.value || "6");
+  const cotas = parseInt(elQtdCotas.value || "1");
 
-      const valorTotal = TABELA_VALORES[quantidade] || 6;
-      const valorPorPessoa = valorTotal / cotas;
+  const valorTotal = TABELA_VALORES[quantidade] || 6;
+  const valorPorPessoa = valorTotal / cotas;
 
-      elValorAposta.innerHTML =
-        "Valor total: R$ " +
-        valorTotal.toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        }) +
-        "<br>Por pessoa: R$ " +
-        valorPorPessoa.toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-    }
+  elValorAposta.innerHTML =
+    "Valor total: R$ " +
+    valorTotal.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) +
+    "<br>Por pessoa: R$ " +
+    valorPorPessoa.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+}
 function aplicarLimitesDoPlano() {
   if (!usuarioAtual) return;
-console.log("usuarioAtual:", usuarioAtual);
-console.log("maxDezenas:", usuarioAtual.maxDezenas, "maxCotas:", usuarioAtual.maxCotas);
+
   const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
   const maxCotas = Number(usuarioAtual.maxCotas || 1);
 
-  [...elQtdDezenas.options].forEach((opt) => {
+  [...elQtdDezenas.options].forEach(function(opt) {
     opt.disabled = Number(opt.value) > maxDezenas;
   });
 
-  [...elQtdCotas.options].forEach((opt) => {
+  [...elQtdCotas.options].forEach(function(opt) {
     opt.disabled = Number(opt.value) > maxCotas;
   });
 
@@ -1013,11 +1012,9 @@ async function gerarJogoUsuario() {
 
     btnCadastrar.addEventListener("click", cadastrar);
     btnEntrar.addEventListener("click", login);
-    btnGerar.addEventListener("click", function () {
-  alert("cliquei no botão");
-  console.log("cliquei no botão");
+    btnGerar.addEventListener("click", gerarJogoUsuario);
   gerarJogoUsuario();
-});
+
     btnSair.addEventListener("click", sair);
 
     elQtdDezenas.addEventListener("change", atualizarValorAposta);
