@@ -725,9 +725,13 @@
         });
 
         toast(
-          Processamento concluído. ${totalJogosProcessados} jogo(s) processado(s) e ${totalAcertosSomados} acerto(s).,
-          "ok"
-        );
+  "Processamento concluído. " +
+  totalJogosProcessados +
+  " jogo(s) processado(s) e " +
+  totalAcertosSomados +
+  " acerto(s).",
+  "ok"
+);
 
         await carregarResumoAdmin();
         await carregarHistoricoProcessamentos();
