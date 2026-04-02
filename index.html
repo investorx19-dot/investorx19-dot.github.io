@@ -594,8 +594,14 @@
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
 
-     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
+    async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
   try {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoje.getDate()).padStart(2, "0");
+    const dataRef = ano + "-" + mes + "-" + dia;
+
     await addDoc(collection(db, "jogosGerados"), {
       userId: usuario.id || "",
       nome: usuario.nome || "",
@@ -608,6 +614,7 @@
       valorPorPessoa: valorPorPessoa,
       tipoAposta: qtdCotas > 1 ? "bolao" : "simples",
       createdAt: Date.now(),
+      dataRef: dataRef,
       processado: false,
       resultadoReferencia: "",
       acertos: 0
@@ -649,7 +656,27 @@
       14: 18018,
       15: 30030
     };
+async function contarJogosHoje(userId) {
+  try {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoje.getDate()).padStart(2, "0");
+    const dataRef = ano + "-" + mes + "-" + dia;
 
+    const consulta = query(
+      collection(db, "jogosGerados"),
+      where("userId", "==", userId),
+      where("dataRef", "==", dataRef)
+    );
+
+    const snap = await getDocs(consulta);
+    return snap.size;
+  } catch (e) {
+    console.error("Erro ao contar jogos do dia:", e);
+    return 0;
+  }
+}
     async function carregarTotalGlobal() {
       try {
         const ref = doc(db, "stats", "global");
@@ -679,12 +706,23 @@
     }
 
     function atualizarUsuarioLogado() {
-      if (!usuarioAtual) {
-        elUsuarioLogado.textContent = "Usuário logado";
-        return;
-      }
-      elUsuarioLogado.textContent = "Logado: " + usuarioAtual.nome + " - " + usuarioAtual.email;
-    }
+  if (!usuarioAtual) {
+    elUsuarioLogado.textContent = "Usuário logado";
+    return;
+  }
+
+  let nomePlano = "Básico";
+  if (usuarioAtual.plan === "intermediario") nomePlano = "Intermediário";
+  if (usuarioAtual.plan === "premium") nomePlano = "Premium";
+
+  elUsuarioLogado.textContent =
+    "Logado: " +
+    usuarioAtual.nome +
+    " - " +
+    usuarioAtual.email +
+    " • Plano: " +
+    nomePlano;
+}
 
     function atualizarValorAposta() {
   const quantidade = parseInt(elQtdDezenas.value || "6");
@@ -748,27 +786,16 @@ function aplicarLimitesDoPlano() {
     }
 
     async function buscarUsuarioPorEmail(email) {
-      const consulta = query(
-        collection(db, "users"),
-        where("email", "==", normalizarEmail(email))
-      );
-
-      const snap = await getDocs(consulta);
-      if (snap.empty) return null;
-
-      let usuarioMaisRecente = null;
-
-      snap.forEach(function(item) {
-        const dados = item.data();
-        const usuario = {
+      , const usuario = {
   id: item.id,
   nome: dados.nome || "",
   email: dados.email || "",
   telefone: dados.telefone || dados.phone || "",
   accessGranted: !!dados.accessGranted,
-  plan: dados.plan || "mensal",
+  plan: dados.plan || "basico",
   maxDezenas: Number(dados.maxDezenas || 6),
   maxCotas: Number(dados.maxCotas || 1),
+  limiteJogosDia: Number(dados.limiteJogosDia || 10),
   createdAt: Number(dados.createdAt || 0),
   updatedAt: Number(dados.updatedAt || 0)
 };
@@ -928,7 +955,17 @@ async function gerarJogoUsuario() {
 
     const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
     const maxCotas = Number(usuarioAtual.maxCotas || 1);
+const limiteJogosDia = Number(usuarioAtual.limiteJogosDia || 10);
+const jogosHoje = await contarJogosHoje(usuarioAtual.id);
 
+if (jogosHoje >= limiteJogosDia) {
+  alert(
+    "Seu plano permite até " +
+    limiteJogosDia +
+    " jogo(s) por dia. Atualize seu plano para liberar mais."
+  );
+  return;
+}
     if (quantidade > maxDezenas) {
       alert(
         "Seu plano permite gerar até " +

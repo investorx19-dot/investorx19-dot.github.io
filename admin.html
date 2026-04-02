@@ -578,11 +578,11 @@
     }
 
     function formatarPlano(plano) {
-      if (plano === "mensal") return "Mensal";
-      if (plano === "semestral") return "Semestral";
-      if (plano === "anual") return "Anual";
-      return "-";
-    }
+  if (plano === "basico") return "Básico";
+  if (plano === "intermediario") return "Intermediário";
+  if (plano === "premium") return "Premium";
+  return "-";
+}
 
     function formatarPagamento(status) {
       if (status === "paid") return "Pago";
@@ -1018,10 +1018,10 @@ if (uniqueUsers.length === 0) {
       </button>
 
       <div class="acoes-dias">
-        <button data-liberar="30" data-userid="${escapeHtml(u.id)}">30d</button>
-        <button data-liberar="180" data-userid="${escapeHtml(u.id)}">180d</button>
-        <button data-liberar="365" data-userid="${escapeHtml(u.id)}">365d</button>
-      </div>
+  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
+  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
+  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
+</div>
     </div>
   </td>
 `;
@@ -1036,13 +1036,13 @@ if (uniqueUsers.length === 0) {
           });
         });
 
-        tbody.querySelectorAll("button[data-liberar]").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const userId = btn.getAttribute("data-userid");
-            const dias = Number(btn.getAttribute("data-liberar"));
-            await liberarPlano(userId, dias);
-          });
-        });
+        tbody.querySelectorAll("button[data-plano]").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const userId = btn.getAttribute("data-userid");
+    const plano = btn.getAttribute("data-plano");
+    await liberarPlano(userId, plano);
+  });
+});
 
       } catch(err){
         console.error(err);
@@ -1066,41 +1066,48 @@ if (uniqueUsers.length === 0) {
       }
     }
 
-    async function liberarPlano(userDocId, dias){
+    async function liberarPlano(userDocId, planoNome){
   try{
     const agora = Date.now();
-    const expiraEm = agora + (dias * 24 * 60 * 60 * 1000);
 
-    let nomePlano = "mensal";
+    let plan = "basico";
     let maxDezenas = 6;
     let maxCotas = 1;
+    let limiteJogosDia = 10;
+    let preco = 19.90;
 
-    if (dias === 180) {
-      nomePlano = "semestral";
+    if (planoNome === "intermediario") {
+      plan = "intermediario";
       maxDezenas = 10;
       maxCotas = 10;
+      limiteJogosDia = 30;
+      preco = 39.90;
     }
 
-    if (dias === 365) {
-      nomePlano = "anual";
+    if (planoNome === "premium") {
+      plan = "premium";
       maxDezenas = 15;
-      maxCotas = 100;
+      maxCotas = 9999;
+      limiteJogosDia = 9999;
+      preco = 79.90;
     }
 
     await updateDoc(doc(db, "users", userDocId), {
       accessGranted: true,
       paymentStatus: "paid",
-      plan: nomePlano,
+      plan: plan,
       maxDezenas: maxDezenas,
       maxCotas: maxCotas,
+      limiteJogosDia: limiteJogosDia,
+      valorPlano: preco,
       paidAt: agora,
-      expiresAt: expiraEm,
       updatedAt: agora
     });
 
-    toast("Plano liberado com limites aplicados.", "ok");
+    toast("Plano atualizado com sucesso.", "ok");
     await loadUsers();
     await carregarResumoAdmin();
+
   } catch(err){
     console.error(err);
     toast("Erro ao liberar plano.", "error");
