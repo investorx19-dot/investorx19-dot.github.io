@@ -977,14 +977,14 @@
           .sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
 
         $("dupInfo").textContent =
-          duplicatesHidden > 0
-            ? ⚠️ ${duplicatesHidden} duplicado(s) ocultado(s) por e-mail
-            : "Sem duplicações detectadas.";
+  duplicatesHidden > 0
+    ? "Aviso: " + duplicatesHidden + " duplicado(s) ocultado(s) por e-mail"
+    : "Sem duplicações detectadas.";
 
-        if (uniqueUsers.length === 0) {
-          tbody.innerHTML = <tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>;
-          return;
-        }
+if (uniqueUsers.length === 0) {
+  tbody.innerHTML = '<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>';
+  return;
+}
 
         tbody.innerHTML = "";
 
@@ -997,34 +997,34 @@
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
-            <td class="mono">${escapeHtml(u.email || "")}</td>
-            <td class="mono">${escapeHtml(phone || "-")}</td>
-            <td>${escapeHtml(plano)}</td>
-            <td>${escapeHtml(pagamento)}</td>
-            <td class="mono">${escapeHtml(vencimento)}</td>
-            <td class="right">
-              <span class="status">
-                <span class="dot ${granted ? "green" : "red"}"></span>
-                ${granted ? "Liberado" : "Bloqueado"}
-              </span>
-            </td>
-            <td class="right">
-              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
-                <button class="btn ${granted ? "danger" : "success"}"
-                        data-userid="${escapeHtml(u.id)}"
-                        data-granted="${granted}">
-                  ${granted ? "Bloquear" : "Liberar"}
-                </button>
+  <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
+  <td class="mono">${escapeHtml(u.email || "")}</td>
+  <td class="mono">${escapeHtml(phone || "-")}</td>
+  <td>${escapeHtml(plano)}</td>
+  <td>${escapeHtml(pagamento)}</td>
+  <td class="mono">${escapeHtml(vencimento)}</td>
+  <td class="right">
+    <span class="status">
+      <span class="dot ${granted ? "green" : "red"}"></span>
+      ${granted ? "Liberado" : "Bloqueado"}
+    </span>
+  </td>
+  <td class="right">
+    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
+      <button class="btn ${granted ? "danger" : "success"}"
+              data-userid="${escapeHtml(u.id)}"
+              data-granted="${granted}">
+        ${granted ? "Bloquear" : "Liberar"}
+      </button>
 
-                <div class="acoes-dias">
-                  <button data-liberar="30" data-userid="${escapeHtml(u.id)}">30d</button>
-                  <button data-liberar="180" data-userid="${escapeHtml(u.id)}">180d</button>
-                  <button data-liberar="365" data-userid="${escapeHtml(u.id)}">365d</button>
-                </div>
-              </div>
-            </td>
-          `;
+      <div class="acoes-dias">
+        <button data-liberar="30" data-userid="${escapeHtml(u.id)}">30d</button>
+        <button data-liberar="180" data-userid="${escapeHtml(u.id)}">180d</button>
+        <button data-liberar="365" data-userid="${escapeHtml(u.id)}">365d</button>
+      </div>
+    </div>
+  </td>
+`;
           tbody.appendChild(tr);
         }
 
