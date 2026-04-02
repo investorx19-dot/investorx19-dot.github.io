@@ -975,43 +975,6 @@ async function gerarJogoUsuario() {
   }
 }
 
-if (quantidade > maxDezenas) {
-  alert(
-    "Seu plano permite gerar até " +
-    maxDezenas +
-    " dezenas. Atualize seu plano para liberar mais."
-  );
-  return;
-}
-
-if (cotas > maxCotas) {
-  alert(
-    "Seu plano permite bolão de até " +
-    maxCotas +
-    " cota(s). Atualize seu plano para liberar mais."
-  );
-  return;
-}
-
-const jogo = [3, 8, 11, 24, 28, 43, 50, 57].slice(0, quantidade);
-console.log("jogo teste:", jogo);
-renderCartao(jogo);
-elAcertos.textContent = String(acertos);
-
-await salvarJogoGerado(
-  usuarioAtual,
-  jogo,
-  quantidade,
-  cotas,
-  valorTotal,
-  valorPorPessoa
-);
-      } catch (erro) {
-        console.error("Erro ao gerar jogo:", erro);
-        alert("Erro ao gerar jogo: " + erro.message);
-      }
-    }
-
     function renderCartao(jogo) {
       elCartao.innerHTML = "";
 
