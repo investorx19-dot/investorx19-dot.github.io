@@ -796,21 +796,23 @@
         itens.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
         if (!itens.length) {
-          box.innerHTML = <div class="muted">Nenhum processamento ainda.</div>;
+          box.innerHTML = '<div class="muted">Nenhum processamento ainda.</div>';
           return;
         }
 
-        itens.slice(0, 10).forEach((item) => {
-          const div = document.createElement("div");
-          div.className = "historico-item";
-          div.innerHTML = `
-            <div><strong>Resultado:</strong> ${escapeHtml((item.resultadoTexto || "").trim() || "-")}</div>
-            <div class="small">Jogos processados: ${Number(item.jogosProcessados || 0).toLocaleString("pt-BR")}</div>
-            <div class="small">Acertos somados: ${Number(item.acertosSomados || 0).toLocaleString("pt-BR")}</div>
-            <div class="small">Data: ${escapeHtml(formatarDataHora(item.createdAt))}</div>
-          `;
-          box.appendChild(div);
-        });
+        items.slice(0, 10).forEach((item) => {
+  const div = document.createElement("div");
+  div.className = "historico-item";
+
+  div.innerHTML = `
+    <div><strong>Resultado:</strong> ${escapeHtml((item.resultadoTexto || "").trim() || "-")}</div>
+    <div class="small">Jogos processados: ${Number(item.jogosProcessados || 0).toLocaleString("pt-BR")}</div>
+    <div class="small">Acertos somados: ${Number(item.acertosSomados || 0).toLocaleString("pt-BR")}</div>
+    <div class="small">Data: ${escapeHtml(formatarDataHora(item.createdAt))}</div>
+  `;
+
+  box.appendChild(div);
+});
       } catch (err) {
         console.error("Erro ao carregar histórico:", err);
       }
