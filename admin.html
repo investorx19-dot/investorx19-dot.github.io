@@ -1067,31 +1067,45 @@ if (uniqueUsers.length === 0) {
     }
 
     async function liberarPlano(userDocId, dias){
-      try{
-        const agora = Date.now();
-        const expiraEm = agora + (dias * 24 * 60 * 60 * 1000);
+  try{
+    const agora = Date.now();
+    const expiraEm = agora + (dias * 24 * 60 * 60 * 1000);
 
-        let nomePlano = "mensal";
-        if (dias === 180) nomePlano = "semestral";
-        if (dias === 365) nomePlano = "anual";
+    let nomePlano = "mensal";
+    let maxDezenas = 6;
+    let maxCotas = 1;
 
-        await updateDoc(doc(db, "users", userDocId), {
-          accessGranted: true,
-          paymentStatus: "paid",
-          plan: nomePlano,
-          paidAt: agora,
-          expiresAt: expiraEm,
-          updatedAt: agora
-        });
-
-        toast("Plano liberado por " + dias + " dias.", "ok");
-        await loadUsers();
-        await carregarResumoAdmin();
-      }catch(err){
-        console.error(err);
-        toast("Erro ao liberar plano.", "error");
-      }
+    if (dias === 180) {
+      nomePlano = "semestral";
+      maxDezenas = 10;
+      maxCotas = 10;
     }
+
+    if (dias === 365) {
+      nomePlano = "anual";
+      maxDezenas = 15;
+      maxCotas = 100;
+    }
+
+    await updateDoc(doc(db, "users", userDocId), {
+      accessGranted: true,
+      paymentStatus: "paid",
+      plan: nomePlano,
+      maxDezenas: maxDezenas,
+      maxCotas: maxCotas,
+      paidAt: agora,
+      expiresAt: expiraEm,
+      updatedAt: agora
+    });
+
+    toast("Plano liberado com limites aplicados.", "ok");
+    await loadUsers();
+    await carregarResumoAdmin();
+  } catch(err){
+    console.error(err);
+    toast("Erro ao liberar plano.", "error");
+  }
+}
 
      async function carregarJogosGerados() {
   const tbody = $("jogosTbody");
