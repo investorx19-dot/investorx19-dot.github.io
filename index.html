@@ -869,65 +869,111 @@ console.log("maxDezenas:", usuarioAtual.maxDezenas, "maxCotas:", usuarioAtual.ma
         alert("Erro ao fazer login: " + erro.message);
       }
     }
-
-    async function gerarJogoUsuario() {
-  alert("entrou em gerarJogoUsuario");
-
+async function gerarJogoUsuario() {
   try {
-        if (!usuarioAtual) {
-          alert("Faça login para gerar seu jogo.");
-          return;
-        }
+    if (!usuarioAtual) {
+      alert("Faça login para gerar seu jogo.");
+      return;
+    }
 
-        const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
+    const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
 
-        if (!usuarioAtualizado) {
-          alert("Usuário não encontrado.");
-          usuarioAtual = null;
-          mostrarLogin();
-          return;
-        }
+    if (!usuarioAtualizado) {
+      alert("Usuário não encontrado.");
+      usuarioAtual = null;
+      mostrarLogin();
+      return;
+    }
 
-        if (!usuarioAtualizado.accessGranted) {
-          alert("Seu acesso foi bloqueado pelo administrador.");
-          usuarioAtual = null;
-          mostrarLogin();
-          return;
-        }
+    if (!usuarioAtualizado.accessGranted) {
+      alert("Seu acesso foi bloqueado pelo administrador.");
+      usuarioAtual = null;
+      mostrarLogin();
+      return;
+    }
 
-        usuarioAtual = usuarioAtualizado;
-        atualizarUsuarioLogado();
+    usuarioAtual = usuarioAtualizado;
+    atualizarUsuarioLogado();
 
-        const configRef = doc(db, "config", "global");
-        const configSnap = await getDoc(configRef);
+    const configRef = doc(db, "config", "global");
+    const configSnap = await getDoc(configRef);
 
-        if (!configSnap.exists()) {
-          alert("Configuração global não encontrada.");
-          return;
-        }
+    if (!configSnap.exists()) {
+      alert("Configuração global não encontrada.");
+      return;
+    }
 
-        const config = configSnap.data();
-        const linhasAtivas = config.linhasAtivas || [];
-        const anteriores = config.dezenasAnteriores || [];
-        const atrasadas = config.dezenasAtrasadas || [];
-        const resultadoOficial = config.resultadoOficial || [];
+    const config = configSnap.data();
+    const linhasAtivas = config.linhasAtivas || [];
+    const anteriores = config.dezenasAnteriores || [];
+    const atrasadas = config.dezenasAtrasadas || [];
+    const resultadoOficial = config.resultadoOficial || [];
 
-        if (linhasAtivas.length === 0) {
-          alert("O administrador ainda não configurou as linhas ativas.");
-          return;
-        }
+    if (linhasAtivas.length === 0) {
+      alert("O administrador ainda não configurou as linhas ativas.");
+      return;
+    }
 
-        const excluidas = new Set();
-        anteriores.forEach(function(numero) { excluidas.add(numero); });
-        atrasadas.forEach(function(numero) { excluidas.add(numero); });
+    const excluidas = new Set();
+    anteriores.forEach(function(numero) {
+      excluidas.add(numero);
+    });
+    atrasadas.forEach(function(numero) {
+      excluidas.add(numero);
+    });
 
-        const quantidade = parseInt(elQtdDezenas.value || "6");
-const cotas = parseInt(elQtdCotas.value || "1");
-const valorTotal = TABELA_VALORES[quantidade] || 6;
-const valorPorPessoa = valorTotal / cotas;
+    const quantidade = parseInt(elQtdDezenas.value || "6");
+    const cotas = parseInt(elQtdCotas.value || "1");
+    const valorTotal = TABELA_VALORES[quantidade] || 6;
+    const valorPorPessoa = valorTotal / cotas;
 
-const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
-const maxCotas = Number(usuarioAtual.maxCotas || 1);
+    const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
+    const maxCotas = Number(usuarioAtual.maxCotas || 1);
+
+    if (quantidade > maxDezenas) {
+      alert(
+        "Seu plano permite gerar até " +
+        maxDezenas +
+        " dezenas. Atualize seu plano para liberar mais."
+      );
+      return;
+    }
+
+    if (cotas > maxCotas) {
+      alert(
+        "Seu plano permite bolão de até " +
+        maxCotas +
+        " cota(s). Atualize seu plano para liberar mais."
+      );
+      return;
+    }
+
+    const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
+    renderCartao(jogo);
+
+    let acertos = 0;
+    jogo.forEach(function(numero) {
+      if (resultadoOficial.includes(numero)) {
+        acertos++;
+      }
+    });
+
+    elAcertos.textContent = String(acertos);
+
+    await salvarJogoGerado(
+      usuarioAtual,
+      jogo,
+      quantidade,
+      cotas,
+      valorTotal,
+      valorPorPessoa
+    );
+
+  } catch (erro) {
+    console.error("Erro ao gerar jogo:", erro);
+    alert("Erro ao gerar jogo: " + erro.message);
+  }
+}
 
 if (quantidade > maxDezenas) {
   alert(
