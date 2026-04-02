@@ -708,7 +708,9 @@
     }
 function aplicarLimitesDoPlano() {
   if (!usuarioAtual) return;
-
+console.log("usuarioAtual:", usuarioAtual);
+console.log("quantidade:", quantidade, "cotas:", cotas);
+console.log("maxDezenas:", usuarioAtual.maxDezenas, "maxCotas:", usuarioAtual.maxCotas);
   const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
   const maxCotas = Number(usuarioAtual.maxCotas || 1);
 
@@ -871,7 +873,9 @@ function aplicarLimitesDoPlano() {
     }
 
     async function gerarJogoUsuario() {
-      try {
+  alert("entrou em gerarJogoUsuario");
+
+  try {
         if (!usuarioAtual) {
           alert("Faça login para gerar seu jogo.");
           return;
@@ -945,8 +949,9 @@ if (cotas > maxCotas) {
   return;
 }
 
-const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
-
+const jogo = [3, 8, 11, 24, 28, 43, 50, 57].slice(0, quantidade);
+console.log("jogo teste:", jogo);
+renderCartao(jogo);
 elAcertos.textContent = String(acertos);
 
 await salvarJogoGerado(
@@ -1001,7 +1006,11 @@ await salvarJogoGerado(
 
     btnCadastrar.addEventListener("click", cadastrar);
     btnEntrar.addEventListener("click", login);
-    btnGerar.addEventListener("click", gerarJogoUsuario);
+    btnGerar.addEventListener("click", function () {
+  alert("cliquei no botão");
+  console.log("cliquei no botão");
+  gerarJogoUsuario();
+});
     btnSair.addEventListener("click", sair);
 
     elQtdDezenas.addEventListener("change", atualizarValorAposta);
