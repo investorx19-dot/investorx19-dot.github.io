@@ -1087,59 +1087,63 @@
       }
     }
 
-    async function carregarJogosGerados() {
-      const tbody = $("jogosTbody");
-      tbody.innerHTML = <tr><td colspan="10" class="small">Carregando...</td></tr>;
+     async function carregarJogosGerados() {
+  const tbody = $("jogosTbody");
+  tbody.innerHTML = '<tr><td colspan="10" class="small">Carregando...</td></tr>';
 
-      try {
-        const snap = await getDocs(collection(db, "jogosGerados"));
-        const jogos = [];
+  try {
+    const snap = await getDocs(collection(db, "jogosGerados"));
+    const jogos = [];
 
-        snap.forEach((docItem) => {
-          jogos.push(docItem.data());
-        });
+    snap.forEach((docItem) => {
+      jogos.push(docItem.data());
+    });
 
-        jogos.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    jogos.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
-        if (!jogos.length) {
-          tbody.innerHTML = <tr><td colspan="10" class="small">Nenhum jogo encontrado.</td></tr>;
-          return;
-        }
-
-        tbody.innerHTML = "";
-
-        jogos.forEach((dados) => {
-          const nome = dados.nome || "";
-          const email = dados.email || "";
-          const jogo = Array.isArray(dados.jogo) ? dados.jogo.join(" - ") : "";
-          const tipoAposta = dados.tipoAposta || "simples";
-          const qtdDezenas = dados.qtdDezenas || 6;
-          const qtdCotas = dados.qtdCotas || 1;
-          const valorTotal = Number(dados.valorTotal || 0);
-          const valorPorPessoa = Number(dados.valorPorPessoa || 0);
-          const acertos = Number(dados.acertos || 0);
-          const data = formatarDataHora(dados.createdAt);
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${escapeHtml(nome)}</td>
-            <td class="mono">${escapeHtml(email)}</td>
-            <td class="mono">${escapeHtml(jogo)}</td>
-            <td>${tipoAposta === "bolao" ? '<span class="tag-bolao">Bolão</span>' : '<span class="tag-simples">Simples</span>'}</td>
-            <td>${escapeHtml(String(qtdDezenas))}</td>
-            <td>${escapeHtml(String(qtdCotas))}</td>
-            <td>${escapeHtml(formatarMoeda(valorTotal))}</td>
-            <td>${escapeHtml(formatarMoeda(valorPorPessoa))}</td>
-            <td>${escapeHtml(String(acertos))}</td>
-            <td>${escapeHtml(data)}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error("Erro ao carregar jogos gerados:", err);
-        tbody.innerHTML = <tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>;
-      }
+    if (!jogos.length) {
+      tbody.innerHTML = '<tr><td colspan="10" class="small">Nenhum jogo encontrado.</td></tr>';
+      return;
     }
+
+    tbody.innerHTML = "";
+
+    jogos.forEach((dados) => {
+      const nome = dados.nome || "";
+      const email = dados.email || "";
+      const jogo = Array.isArray(dados.jogo) ? dados.jogo.join(" - ") : "";
+      const tipoAposta = dados.tipoAposta || "simples";
+      const qtdDezenas = dados.qtdDezenas || 6;
+      const qtdCotas = dados.qtdCotas || 1;
+      const valorTotal = Number(dados.valorTotal || 0);
+      const valorPorPessoa = Number(dados.valorPorPessoa || 0);
+      const acertos = Number(dados.acertos || 0);
+      const data = formatarDataHora(dados.createdAt);
+
+      const tr = document.createElement("tr");
+      const tipoHtml = tipoAposta === "bolao"
+        ? '<span class="tag-bolao">Bolão</span>'
+        : '<span class="tag-simples">Simples</span>';
+
+      tr.innerHTML =
+        "<td>" + escapeHtml(nome) + "</td>" +
+        '<td class="mono">' + escapeHtml(email) + "</td>" +
+        '<td class="mono">' + escapeHtml(jogo) + "</td>" +
+        "<td>" + tipoHtml + "</td>" +
+        "<td>" + escapeHtml(String(qtdDezenas)) + "</td>" +
+        "<td>" + escapeHtml(String(qtdCotas)) + "</td>" +
+        "<td>" + escapeHtml(formatarMoeda(valorTotal)) + "</td>" +
+        "<td>" + escapeHtml(formatarMoeda(valorPorPessoa)) + "</td>" +
+        "<td>" + escapeHtml(String(acertos)) + "</td>" +
+        "<td>" + escapeHtml(data) + "</td>";
+
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Erro ao carregar jogos gerados:", err);
+    tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
+  }
+}
   </script>
 </body>
 </html>
