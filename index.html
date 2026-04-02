@@ -786,33 +786,49 @@ function aplicarLimitesDoPlano() {
     }
 
     async function buscarUsuarioPorEmail(email) {
-      const usuario = {
-  id: item.id,
-  nome: dados.nome || "",
-  email: dados.email || "",
-  telefone: dados.telefone || dados.phone || "",
-  accessGranted: !!dados.accessGranted,
-  plan: dados.plan || "basico",
-  maxDezenas: Number(dados.maxDezenas || 6),
-  maxCotas: Number(dados.maxCotas || 1),
-  limiteJogosDia: Number(dados.limiteJogosDia || 10),
-  createdAt: Number(dados.createdAt || 0),
-  updatedAt: Number(dados.updatedAt || 0)
-};
+  const consulta = query(
+    collection(db, "users"),
+    where("email", "==", normalizarEmail(email))
+  );
 
-        if (!usuarioMaisRecente) {
-          usuarioMaisRecente = usuario;
-        } else {
-          const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
-          const tempoSalvo = Number(usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0);
-          if (tempoAtual >= tempoSalvo) {
-            usuarioMaisRecente = usuario;
-          }
-        }
-      });
+  const snap = await getDocs(consulta);
+  if (snap.empty) return null;
 
-      return usuarioMaisRecente;
+  let usuarioMaisRecente = null;
+
+  snap.forEach(function(item) {
+    const dados = item.data();
+
+    const usuario = {
+      id: item.id,
+      nome: dados.nome || "",
+      email: dados.email || "",
+      telefone: dados.telefone || dados.phone || "",
+      accessGranted: !!dados.accessGranted,
+      plan: dados.plan || "basico",
+      maxDezenas: Number(dados.maxDezenas || 6),
+      maxCotas: Number(dados.maxCotas || 1),
+      limiteJogosDia: Number(dados.limiteJogosDia || 10),
+      createdAt: Number(dados.createdAt || 0),
+      updatedAt: Number(dados.updatedAt || 0)
+    };
+
+    if (!usuarioMaisRecente) {
+      usuarioMaisRecente = usuario;
+    } else {
+      const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
+      const tempoSalvo = Number(
+        usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0
+      );
+
+      if (tempoAtual >= tempoSalvo) {
+        usuarioMaisRecente = usuario;
+      }
     }
+  });
+
+  return usuarioMaisRecente;
+}
 
     async function cadastrar() {
       const nome = elNome.value.trim();
