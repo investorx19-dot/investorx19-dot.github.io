@@ -452,27 +452,27 @@
 
       <div class="cards-planos">
         <div class="plano">
-          <h3>Plano Mensal</h3>
-          <p>Acesso completo ao gerador por 30 dias.</p>
-          <button onclick="window.open('https://invoice.infinitepay.io/silvia-regina-967/ENO4gtBh3/', '_blank')">
-            Assinar Mensal
+          <h3>🟢 Plano Básico</h3>
+          <p>Até 6 dezenas, sem bolão e até 10 jogos por dia.</p>
+          <button id="btnBasicoPlano">
+            Assinar Básico • R$ 19,90
           </button>
         </div>
 
         <div class="plano destaque">
           <span class="badge">Mais vendido</span>
-          <h3>Plano Semestral</h3>
-          <p>6 meses com desconto e melhor custo-benefício.</p>
-          <button onclick="window.open('https://invoice.infinitepay.io/silvia-regina-967/1X53UGgbv/', '_blank')">
-            Assinar Semestral
+          <h3>🔵 Plano Intermediário</h3>
+          <p>Até 10 dezenas, bolão até 10 cotas e até 30 jogos por dia.</p>
+          <button id="btnIntermediarioPlano">
+            Assinar Intermediário • R$ 39,90
           </button>
         </div>
 
         <div class="plano">
-          <h3>Plano Anual</h3>
-          <p>12 meses com maior economia.</p>
-          <button onclick="window.open('https://invoice.infinitepay.io/silvia-regina-967/2TMA4nTn49/', '_blank')">
-            Assinar Anual
+          <h3>🟣 Plano Premium</h3>
+          <p>Até 15 dezenas, bolão ilimitado e jogos ilimitados.</p>
+          <button id="btnPremiumPlano">
+            Assinar Premium • R$ 79,90
           </button>
         </div>
       </div>
@@ -559,9 +559,9 @@
         <p class="mensagem">Escolha um plano para manter seu acesso ativo.</p>
 
         <div class="botoes-planos">
-          <button id="btnMensal" type="button">Mensal</button>
-          <button id="btnSemestral" type="button">Semestral</button>
-          <button id="btnAnual" type="button">Anual</button>
+          <button id="btnBasico" type="button">Básico</button>
+          <button id="btnIntermediario" type="button">Intermediário</button>
+          <button id="btnPremium" type="button">Premium</button>
         </div>
       </div>
     </div>
@@ -591,39 +591,44 @@
       appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
 
+    const LINK_BASICO = "https://invoice.infinitepay.io/silvia-regina-967/NVISgX6N1/";
+    const LINK_INTERMEDIARIO = "https://invoice.infinitepay.io/silvia-regina-967/1dCVrf20d/";
+    const LINK_PREMIUM = "https://invoice.infinitepay.io/silvia-regina-967/4Ls4qs4kL/";
+
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
 
     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
-  try {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-    const dia = String(hoje.getDate()).padStart(2, "0");
-    const dataRef = ano + "-" + mes + "-" + dia;
+      try {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        const dataRef = ano + "-" + mes + "-" + dia;
 
-    await addDoc(collection(db, "jogosGerados"), {
-      userId: usuario.id || "",
-      nome: usuario.nome || "",
-      email: usuario.email || "",
-      telefone: usuario.telefone || "",
-      jogo: jogo,
-      qtdDezenas: qtdDezenas,
-      qtdCotas: qtdCotas,
-      valorTotal: valorTotal,
-      valorPorPessoa: valorPorPessoa,
-      tipoAposta: qtdCotas > 1 ? "bolao" : "simples",
-      createdAt: Date.now(),
-      dataRef: dataRef,
-      processado: false,
-      resultadoReferencia: "",
-      acertos: 0
-    });
-  } catch (e) {
-    console.error("Erro ao salvar jogo gerado:", e);
-    throw e;
-  }
-}
+        await addDoc(collection(db, "jogosGerados"), {
+          userId: usuario.id || "",
+          nome: usuario.nome || "",
+          email: usuario.email || "",
+          telefone: usuario.telefone || "",
+          jogo: jogo,
+          qtdDezenas: qtdDezenas,
+          qtdCotas: qtdCotas,
+          valorTotal: valorTotal,
+          valorPorPessoa: valorPorPessoa,
+          tipoAposta: qtdCotas > 1 ? "bolao" : "simples",
+          createdAt: Date.now(),
+          dataRef: dataRef,
+          processado: false,
+          resultadoReferencia: "",
+          acertos: 0
+        });
+      } catch (e) {
+        console.error("Erro ao salvar jogo gerado:", e);
+        throw e;
+      }
+    }
+
     const elNome = document.getElementById("nome");
     const elEmail = document.getElementById("email");
     const elTelefone = document.getElementById("telefone");
@@ -633,13 +638,20 @@
     const elCartao = document.getElementById("cartao");
     const elAcertos = document.getElementById("acertos");
     const elTotalAcertosGlobal = document.getElementById("totalAcertosGlobal");
+
     const btnCadastrar = document.getElementById("btnCadastrar");
     const btnEntrar = document.getElementById("btnEntrar");
     const btnGerar = document.getElementById("btnGerar");
     const btnSair = document.getElementById("btnSair");
-    const btnMensal = document.getElementById("btnMensal");
-    const btnSemestral = document.getElementById("btnSemestral");
-    const btnAnual = document.getElementById("btnAnual");
+
+    const btnBasico = document.getElementById("btnBasico");
+    const btnIntermediario = document.getElementById("btnIntermediario");
+    const btnPremium = document.getElementById("btnPremium");
+
+    const btnBasicoPlano = document.getElementById("btnBasicoPlano");
+    const btnIntermediarioPlano = document.getElementById("btnIntermediarioPlano");
+    const btnPremiumPlano = document.getElementById("btnPremiumPlano");
+
     const elQtdDezenas = document.getElementById("qtdDezenas");
     const elQtdCotas = document.getElementById("qtdCotas");
     const elValorAposta = document.getElementById("valorAposta");
@@ -656,27 +668,29 @@
       14: 18018,
       15: 30030
     };
-async function contarJogosHoje(userId) {
-  try {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-    const dia = String(hoje.getDate()).padStart(2, "0");
-    const dataRef = ano + "-" + mes + "-" + dia;
 
-    const consulta = query(
-      collection(db, "jogosGerados"),
-      where("userId", "==", userId),
-      where("dataRef", "==", dataRef)
-    );
+    async function contarJogosHoje(userId) {
+      try {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        const dataRef = ano + "-" + mes + "-" + dia;
 
-    const snap = await getDocs(consulta);
-    return snap.size;
-  } catch (e) {
-    console.error("Erro ao contar jogos do dia:", e);
-    return 0;
-  }
-}
+        const consulta = query(
+          collection(db, "jogosGerados"),
+          where("userId", "==", userId),
+          where("dataRef", "==", dataRef)
+        );
+
+        const snap = await getDocs(consulta);
+        return snap.size;
+      } catch (e) {
+        console.error("Erro ao contar jogos do dia:", e);
+        return 0;
+      }
+    }
+
     async function carregarTotalGlobal() {
       try {
         const ref = doc(db, "stats", "global");
@@ -706,79 +720,80 @@ async function contarJogosHoje(userId) {
     }
 
     function atualizarUsuarioLogado() {
-  if (!usuarioAtual) {
-    elUsuarioLogado.textContent = "Usuário logado";
-    return;
-  }
+      if (!usuarioAtual) {
+        elUsuarioLogado.textContent = "Usuário logado";
+        return;
+      }
 
-  let nomePlano = "Básico";
-  if (usuarioAtual.plan === "intermediario") nomePlano = "Intermediário";
-  if (usuarioAtual.plan === "premium") nomePlano = "Premium";
+      let nomePlano = "Básico";
+      if (usuarioAtual.plan === "intermediario") nomePlano = "Intermediário";
+      if (usuarioAtual.plan === "premium") nomePlano = "Premium";
 
-  elUsuarioLogado.textContent =
-    "Logado: " +
-    usuarioAtual.nome +
-    " - " +
-    usuarioAtual.email +
-    " • Plano: " +
-    nomePlano;
-}
+      elUsuarioLogado.textContent =
+        "Logado: " +
+        usuarioAtual.nome +
+        " - " +
+        usuarioAtual.email +
+        " • Plano: " +
+        nomePlano;
+    }
 
     function atualizarValorAposta() {
-  const quantidade = parseInt(elQtdDezenas.value || "6");
-  const cotas = parseInt(elQtdCotas.value || "1");
+      const quantidade = parseInt(elQtdDezenas.value || "6");
+      const cotas = parseInt(elQtdCotas.value || "1");
 
-  const valorTotal = TABELA_VALORES[quantidade] || 6;
-  const valorPorPessoa = valorTotal / cotas;
+      const valorTotal = TABELA_VALORES[quantidade] || 6;
+      const valorPorPessoa = valorTotal / cotas;
 
-  elValorAposta.innerHTML =
-    "Valor total: R$ " +
-    valorTotal.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }) +
-    "<br>Por pessoa: R$ " +
-    valorPorPessoa.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-}
-function aplicarLimitesDoPlano() {
-  if (!usuarioAtual) return;
+      elValorAposta.innerHTML =
+        "Valor total: R$ " +
+        valorTotal.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }) +
+        "<br>Por pessoa: R$ " +
+        valorPorPessoa.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+    }
 
-  const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
-  const maxCotas = Number(usuarioAtual.maxCotas || 1);
+    function aplicarLimitesDoPlano() {
+      if (!usuarioAtual) return;
 
-  [...elQtdDezenas.options].forEach(function(opt) {
-    opt.disabled = Number(opt.value) > maxDezenas;
-  });
+      const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
+      const maxCotas = Number(usuarioAtual.maxCotas || 1);
 
-  [...elQtdCotas.options].forEach(function(opt) {
-    opt.disabled = Number(opt.value) > maxCotas;
-  });
+      [...elQtdDezenas.options].forEach(function(opt) {
+        opt.disabled = Number(opt.value) > maxDezenas;
+      });
 
-  if (Number(elQtdDezenas.value) > maxDezenas) {
-    elQtdDezenas.value = String(maxDezenas);
-  }
+      [...elQtdCotas.options].forEach(function(opt) {
+        opt.disabled = Number(opt.value) > maxCotas;
+      });
 
-  if (Number(elQtdCotas.value) > maxCotas) {
-    elQtdCotas.value = String(maxCotas);
-  }
+      if (Number(elQtdDezenas.value) > maxDezenas) {
+        elQtdDezenas.value = String(maxDezenas);
+      }
 
-  atualizarValorAposta();
-}
+      if (Number(elQtdCotas.value) > maxCotas) {
+        elQtdCotas.value = String(maxCotas);
+      }
+
+      atualizarValorAposta();
+    }
+
     function mostrarApp() {
-  elLogin.style.display = "none";
-  elApp.style.display = "block";
+      elLogin.style.display = "none";
+      elApp.style.display = "block";
 
-  atualizarUsuarioLogado();
-  aplicarLimitesDoPlano(); // 👈 ESSA LINHA NOVA
+      atualizarUsuarioLogado();
+      aplicarLimitesDoPlano();
+      renderCartao([]);
+      elAcertos.textContent = "0";
 
-  renderCartao([]);
-  elAcertos.textContent = "0";
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     function mostrarLogin() {
       elLogin.style.display = "block";
@@ -786,49 +801,49 @@ function aplicarLimitesDoPlano() {
     }
 
     async function buscarUsuarioPorEmail(email) {
-  const consulta = query(
-    collection(db, "users"),
-    where("email", "==", normalizarEmail(email))
-  );
-
-  const snap = await getDocs(consulta);
-  if (snap.empty) return null;
-
-  let usuarioMaisRecente = null;
-
-  snap.forEach(function(item) {
-    const dados = item.data();
-
-    const usuario = {
-      id: item.id,
-      nome: dados.nome || "",
-      email: dados.email || "",
-      telefone: dados.telefone || dados.phone || "",
-      accessGranted: !!dados.accessGranted,
-      plan: dados.plan || "basico",
-      maxDezenas: Number(dados.maxDezenas || 6),
-      maxCotas: Number(dados.maxCotas || 1),
-      limiteJogosDia: Number(dados.limiteJogosDia || 10),
-      createdAt: Number(dados.createdAt || 0),
-      updatedAt: Number(dados.updatedAt || 0)
-    };
-
-    if (!usuarioMaisRecente) {
-      usuarioMaisRecente = usuario;
-    } else {
-      const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
-      const tempoSalvo = Number(
-        usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0
+      const consulta = query(
+        collection(db, "users"),
+        where("email", "==", normalizarEmail(email))
       );
 
-      if (tempoAtual >= tempoSalvo) {
-        usuarioMaisRecente = usuario;
-      }
-    }
-  });
+      const snap = await getDocs(consulta);
+      if (snap.empty) return null;
 
-  return usuarioMaisRecente;
-}
+      let usuarioMaisRecente = null;
+
+      snap.forEach(function(item) {
+        const dados = item.data();
+
+        const usuario = {
+          id: item.id,
+          nome: dados.nome || "",
+          email: dados.email || "",
+          telefone: dados.telefone || dados.phone || "",
+          accessGranted: !!dados.accessGranted,
+          plan: dados.plan || "basico",
+          maxDezenas: Number(dados.maxDezenas || 6),
+          maxCotas: Number(dados.maxCotas || 1),
+          limiteJogosDia: Number(dados.limiteJogosDia || 10),
+          createdAt: Number(dados.createdAt || 0),
+          updatedAt: Number(dados.updatedAt || 0)
+        };
+
+        if (!usuarioMaisRecente) {
+          usuarioMaisRecente = usuario;
+        } else {
+          const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
+          const tempoSalvo = Number(
+            usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0
+          );
+
+          if (tempoAtual >= tempoSalvo) {
+            usuarioMaisRecente = usuario;
+          }
+        }
+      });
+
+      return usuarioMaisRecente;
+    }
 
     async function cadastrar() {
       const nome = elNome.value.trim();
@@ -852,6 +867,10 @@ function aplicarLimitesDoPlano() {
           email: email,
           telefone: telefone,
           accessGranted: true,
+          plan: "basico",
+          maxDezenas: 6,
+          maxCotas: 1,
+          limiteJogosDia: 10,
           createdAt: Date.now(),
           updatedAt: Date.now()
         };
@@ -864,6 +883,10 @@ function aplicarLimitesDoPlano() {
           email: email,
           telefone: telefone,
           accessGranted: true,
+          plan: "basico",
+          maxDezenas: 6,
+          maxCotas: 1,
+          limiteJogosDia: 10,
           createdAt: novoUsuario.createdAt,
           updatedAt: novoUsuario.updatedAt
         };
@@ -911,121 +934,123 @@ function aplicarLimitesDoPlano() {
         alert("Erro ao fazer login: " + erro.message);
       }
     }
-async function gerarJogoUsuario() {
-  try {
-    if (!usuarioAtual) {
-      alert("Faça login para gerar seu jogo.");
-      return;
-    }
 
-    const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
+    async function gerarJogoUsuario() {
+      try {
+        if (!usuarioAtual) {
+          alert("Faça login para gerar seu jogo.");
+          return;
+        }
 
-    if (!usuarioAtualizado) {
-      alert("Usuário não encontrado.");
-      usuarioAtual = null;
-      mostrarLogin();
-      return;
-    }
+        const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
 
-    if (!usuarioAtualizado.accessGranted) {
-      alert("Seu acesso foi bloqueado pelo administrador.");
-      usuarioAtual = null;
-      mostrarLogin();
-      return;
-    }
+        if (!usuarioAtualizado) {
+          alert("Usuário não encontrado.");
+          usuarioAtual = null;
+          mostrarLogin();
+          return;
+        }
 
-    usuarioAtual = usuarioAtualizado;
-    atualizarUsuarioLogado();
+        if (!usuarioAtualizado.accessGranted) {
+          alert("Seu acesso foi bloqueado pelo administrador.");
+          usuarioAtual = null;
+          mostrarLogin();
+          return;
+        }
 
-    const configRef = doc(db, "config", "global");
-    const configSnap = await getDoc(configRef);
+        usuarioAtual = usuarioAtualizado;
+        atualizarUsuarioLogado();
 
-    if (!configSnap.exists()) {
-      alert("Configuração global não encontrada.");
-      return;
-    }
+        const configRef = doc(db, "config", "global");
+        const configSnap = await getDoc(configRef);
 
-    const config = configSnap.data();
-    const linhasAtivas = config.linhasAtivas || [];
-    const anteriores = config.dezenasAnteriores || [];
-    const atrasadas = config.dezenasAtrasadas || [];
-    const resultadoOficial = config.resultadoOficial || [];
+        if (!configSnap.exists()) {
+          alert("Configuração global não encontrada.");
+          return;
+        }
 
-    if (linhasAtivas.length === 0) {
-      alert("O administrador ainda não configurou as linhas ativas.");
-      return;
-    }
+        const config = configSnap.data();
+        const linhasAtivas = config.linhasAtivas || [];
+        const anteriores = config.dezenasAnteriores || [];
+        const atrasadas = config.dezenasAtrasadas || [];
+        const resultadoOficial = config.resultadoOficial || [];
 
-    const excluidas = new Set();
-    anteriores.forEach(function(numero) {
-      excluidas.add(numero);
-    });
-    atrasadas.forEach(function(numero) {
-      excluidas.add(numero);
-    });
+        if (linhasAtivas.length === 0) {
+          alert("O administrador ainda não configurou as linhas ativas.");
+          return;
+        }
 
-    const quantidade = parseInt(elQtdDezenas.value || "6");
-    const cotas = parseInt(elQtdCotas.value || "1");
-    const valorTotal = TABELA_VALORES[quantidade] || 6;
-    const valorPorPessoa = valorTotal / cotas;
+        const excluidas = new Set();
+        anteriores.forEach(function(numero) {
+          excluidas.add(numero);
+        });
+        atrasadas.forEach(function(numero) {
+          excluidas.add(numero);
+        });
 
-    const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
-    const maxCotas = Number(usuarioAtual.maxCotas || 1);
-const limiteJogosDia = Number(usuarioAtual.limiteJogosDia || 10);
-const jogosHoje = await contarJogosHoje(usuarioAtual.id);
+        const quantidade = parseInt(elQtdDezenas.value || "6");
+        const cotas = parseInt(elQtdCotas.value || "1");
+        const valorTotal = TABELA_VALORES[quantidade] || 6;
+        const valorPorPessoa = valorTotal / cotas;
 
-if (jogosHoje >= limiteJogosDia) {
-  alert(
-    "Seu plano permite até " +
-    limiteJogosDia +
-    " jogo(s) por dia. Atualize seu plano para liberar mais."
-  );
-  return;
-}
-    if (quantidade > maxDezenas) {
-      alert(
-        "Seu plano permite gerar até " +
-        maxDezenas +
-        " dezenas. Atualize seu plano para liberar mais."
-      );
-      return;
-    }
+        const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
+        const maxCotas = Number(usuarioAtual.maxCotas || 1);
+        const limiteJogosDia = Number(usuarioAtual.limiteJogosDia || 10);
+        const jogosHoje = await contarJogosHoje(usuarioAtual.id);
 
-    if (cotas > maxCotas) {
-      alert(
-        "Seu plano permite bolão de até " +
-        maxCotas +
-        " cota(s). Atualize seu plano para liberar mais."
-      );
-      return;
-    }
+        if (jogosHoje >= limiteJogosDia) {
+          alert(
+            "Seu plano permite até " +
+            limiteJogosDia +
+            " jogo(s) por dia. Atualize seu plano para liberar mais."
+          );
+          return;
+        }
 
-    const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
-    renderCartao(jogo);
+        if (quantidade > maxDezenas) {
+          alert(
+            "Seu plano permite gerar até " +
+            maxDezenas +
+            " dezenas. Atualize seu plano para liberar mais."
+          );
+          return;
+        }
 
-    let acertos = 0;
-    jogo.forEach(function(numero) {
-      if (resultadoOficial.includes(numero)) {
-        acertos++;
+        if (cotas > maxCotas) {
+          alert(
+            "Seu plano permite bolão de até " +
+            maxCotas +
+            " cota(s). Atualize seu plano para liberar mais."
+          );
+          return;
+        }
+
+        const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
+        renderCartao(jogo);
+
+        let acertos = 0;
+        jogo.forEach(function(numero) {
+          if (resultadoOficial.includes(numero)) {
+            acertos++;
+          }
+        });
+
+        elAcertos.textContent = String(acertos);
+
+        await salvarJogoGerado(
+          usuarioAtual,
+          jogo,
+          quantidade,
+          cotas,
+          valorTotal,
+          valorPorPessoa
+        );
+
+      } catch (erro) {
+        console.error("Erro ao gerar jogo:", erro);
+        alert("Erro ao gerar jogo: " + erro.message);
       }
-    });
-
-    elAcertos.textContent = String(acertos);
-
-    await salvarJogoGerado(
-      usuarioAtual,
-      jogo,
-      quantidade,
-      cotas,
-      valorTotal,
-      valorPorPessoa
-    );
-
-  } catch (erro) {
-    console.error("Erro ao gerar jogo:", erro);
-    alert("Erro ao gerar jogo: " + erro.message);
-  }
-}
+    }
 
     function renderCartao(jogo) {
       elCartao.innerHTML = "";
@@ -1066,8 +1091,6 @@ if (jogosHoje >= limiteJogosDia) {
     btnCadastrar.addEventListener("click", cadastrar);
     btnEntrar.addEventListener("click", login);
     btnGerar.addEventListener("click", gerarJogoUsuario);
-  gerarJogoUsuario();
-
     btnSair.addEventListener("click", sair);
 
     elQtdDezenas.addEventListener("change", atualizarValorAposta);
@@ -1076,16 +1099,28 @@ if (jogosHoje >= limiteJogosDia) {
     atualizarValorAposta();
     carregarTotalGlobal();
 
-    btnMensal.addEventListener("click", function() {
-      window.open("https://invoice.infinitepay.io/silvia-regina-967/ENO4gtBh3/", "_blank");
+    btnBasico.addEventListener("click", function() {
+      window.open(LINK_BASICO, "_blank");
     });
 
-    btnSemestral.addEventListener("click", function() {
-      window.open("https://invoice.infinitepay.io/silvia-regina-967/1X53UGgbv/", "_blank");
+    btnIntermediario.addEventListener("click", function() {
+      window.open(LINK_INTERMEDIARIO, "_blank");
     });
 
-    btnAnual.addEventListener("click", function() {
-      window.open("https://invoice.infinitepay.io/silvia-regina-967/2TMA4nTn49/", "_blank");
+    btnPremium.addEventListener("click", function() {
+      window.open(LINK_PREMIUM, "_blank");
+    });
+
+    btnBasicoPlano.addEventListener("click", function() {
+      window.open(LINK_BASICO, "_blank");
+    });
+
+    btnIntermediarioPlano.addEventListener("click", function() {
+      window.open(LINK_INTERMEDIARIO, "_blank");
+    });
+
+    btnPremiumPlano.addEventListener("click", function() {
+      window.open(LINK_PREMIUM, "_blank");
     });
   </script>
 </body>
