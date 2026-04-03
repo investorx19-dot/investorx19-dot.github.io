@@ -1028,13 +1028,13 @@ if (uniqueUsers.length === 0) {
           tbody.appendChild(tr);
         }
 
-        tbody.querySelectorAll("button[data-granted]").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const userId = btn.getAttribute("data-userid");
-            const currentlyGranted = btn.getAttribute("data-granted") === "true";
-            await toggleAccess(userId, !currentlyGranted);
-          });
-        });
+        tbody.querySelectorAll("button[data-plano]").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const userId = btn.getAttribute("data-userid");
+    const plano = btn.getAttribute("data-plano");
+    await liberarPlano(userId, plano);
+  });
+});
 
         tbody.querySelectorAll("button[data-plano]").forEach(btn => {
   btn.addEventListener("click", async () => {
