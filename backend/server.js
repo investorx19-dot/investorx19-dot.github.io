@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
 const admin = require("firebase-admin");
-
+const fs = require("fs");
 console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
 
@@ -46,12 +46,9 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
   throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON não definida");
 }
 console.log("Variável FIREBASE carregada");
-
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-
-// Corrige quebra de linha
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-
+const serviceAccount = JSON.parse(
+  fs.readFileSync("/etc/secrets/serviceAccountKey.json", "utf8")
+);
 console.log("JSON parseado com sucesso");
 
 try {
