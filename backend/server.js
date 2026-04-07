@@ -46,18 +46,40 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
   throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON não definida");
 }
 
-console.log("Variável FIREBASE carregada");
+[19:37, 07/04/2026] Edmilson: console.log("Variável FIREBASE carregada");
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+console.log("JSON do Firebase parseado");
+
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  console.log("Firebase inicializado com sucesso");
+} catch (err) {
+  console.error("ERRO AO INICIALIZAR FIREBASE:", err);
+  throw err;
+}
+[19:38, 07/04/2026] Edmilson: console.log("Variável FIREBASE carregada");
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 
-// Corrige quebra de linha da chave privada
+// Corrige quebra de linha
 serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+console.log("JSON parseado com sucesso");
 
-const db = admin.firestore();
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  console.log("Firebase inicializado com sucesso");
+} catch (err) {
+  console.error("ERRO AO INICIALIZAR FIREBASE:", err);
+  throw err;
+}
 
 const MP_ACCESS_TOKEN = "TEST-6570062735094902-022720-fa4004c535a816fa0b0513f20f335946-2955004469";
 
