@@ -1172,11 +1172,11 @@ async function pagarPlano(plano) {
       return;
     }
 
-    const response = await fetch("https://unbating-hearteningly-wilfredo.ngrok-free.dev/criar-pagamento", {
+    const response = await fetch("https://mark6-backend.onrender.com/criar-pagamento", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true"
+       
       },
       body: JSON.stringify({
         plano: plano,
