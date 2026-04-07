@@ -45,24 +45,7 @@ app.get("/teste-cors", (req, res) => {
 if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
   throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON não definida");
 }
-
-[19:37, 07/04/2026] Edmilson: console.log("Variável FIREBASE carregada");
-
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-
-console.log("JSON do Firebase parseado");
-
-try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-  console.log("Firebase inicializado com sucesso");
-} catch (err) {
-  console.error("ERRO AO INICIALIZAR FIREBASE:", err);
-  throw err;
-}
-[19:38, 07/04/2026] Edmilson: console.log("Variável FIREBASE carregada");
+console.log("Variável FIREBASE carregada");
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 
