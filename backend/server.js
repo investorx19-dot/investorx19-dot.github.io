@@ -10,9 +10,9 @@ const app = express();
 
 const allowedOrigins = [
   "https://mark6.com.br",
-  "https://www.mark6.com.br",
-  "http://localhost:5500",
-  "http://127.0.0.1:5500"
+  "http://localhost:3000",
+  "http://127.0.0.1:5500",
+  "https://unbating-hearteningly-wilfredo.ngrok-free.dev"
 ];
 
 const corsOptions = {
@@ -231,7 +231,7 @@ app.post("/webhook-mercadopago", async function (req, res) {
   }
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
