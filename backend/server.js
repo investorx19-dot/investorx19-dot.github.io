@@ -42,6 +42,12 @@ app.get("/teste-cors", (req, res) => {
   });
 });
 
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON não definida");
+}
+
+console.log("Variável FIREBASE carregada");
+
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 
 admin.initializeApp({
