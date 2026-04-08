@@ -95,7 +95,8 @@ app.post("/criar-pagamento", async function (req, res) {
     const plano = req.body.plano;
     const userId = req.body.userId;
     const email = req.body.email || "";
-
+console.log("=== ENTROU EM /criar-pagamento ===");
+console.log("Body recebido:", req.body);
     console.log("Recebido em /criar-pagamento:", {
       plano: plano,
       userId: userId,
