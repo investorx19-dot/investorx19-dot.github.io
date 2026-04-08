@@ -44,7 +44,7 @@ try {
   throw err;
 }
 
-const MP_ACCESS_TOKEN = "TEST-6570062735094902-022720-fa4004c535a816fa0b0513f20f335946-2955004469";
+const MP_ACCESS_TOKEN = "APP_USR-ab5b6326-b558-48ec-a48c-ab7c769b4354";
 
 const client = new MercadoPagoConfig({
   accessToken: MP_ACCESS_TOKEN
