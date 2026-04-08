@@ -1203,7 +1203,7 @@ async function pagarPlano(plano) {
       return;
     }
 
-    const linkPagamento = data.sandbox_init_point || data.init_point;
+    const linkPagamento = data.init_point;
 
     if (!linkPagamento) {
       alert("Link de pagamento não recebido.");
