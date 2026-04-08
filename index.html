@@ -657,26 +657,27 @@
     };
 
     async function contarJogosHoje(userId) {
-      try {
-        const hoje = new Date();
-        const ano = hoje.getFullYear();
-        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-        const dia = String(hoje.getDate()).padStart(2, "0");
-        const dataRef = ano + "-" + mes + "-" + dia;
+  try {
 
-        const consulta = query(
-          collection(db, "jogosGerados"),
-          where("userId", "==", userId),
-          where("dataRef", "==", dataRef)
-        );
-
-        const snap = await getDocs(consulta);
-        return snap.size;
-      } catch (e) {
-        console.error("Erro ao contar jogos do dia:", e);
-        return 0;
-      }
+    if (!userId || !dataRef) {
+      console.log("userId ou dataRef vazio, pulando contagem");
+      return 0;
     }
+
+    const consulta = query(
+      collection(db, "jogosGerados"),
+      where("userId", "==", userId),
+      where("dataRef", "==", dataRef)
+    );
+
+    const snap = await getDocs(consulta);
+    return snap.size;
+
+  } catch (e) {
+    console.error("Erro ao contar jogos do dia:", e);
+    return 0;
+  }
+}
 async function carregarPlanoUsuario(userId) {
   try {
     const ref = doc(db, "users", userId);
