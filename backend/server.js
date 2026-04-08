@@ -7,28 +7,11 @@ console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
 
 const app = express();
-
-const allowedOrigins = [
-  "https://mark6.com.br",
-  "http://localhost:3000",
-  "http://127.0.0.1:5500",
-  "https://unbating-hearteningly-wilfredo.ngrok-free.dev"
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Origem não permitida pelo CORS: " + origin));
-    }
-  },
+app.use(cors({
+  origin: "*",
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "ngrok-skip-browser-warning"]
-};
-
-app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => {
