@@ -136,9 +136,7 @@ app.post("/criar-pagamento", async function (req, res) {
             unit_price: Number(dadosPlano.preco)
           }
         ],
-        payer: {
-          email: email
-        },
+      
         external_reference: String(userId),
         notification_url: "https://unbating-hearteningly-wilfredo.ngrok-free.dev/webhook-mercadopago"
       }
