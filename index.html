@@ -1174,7 +1174,9 @@ async function carregarUsuario() {
       const usuario = snap.data();
 
       console.log("Usuário carregado:", usuario);
-
+usuarioAtual = usuario;
+aplicarLimitesDoPlano(usuarioAtual);
+atualizarValorAposta();
       aplicarLimitesDoPlano(usuario);
     } else {
       console.warn("Usuário não encontrado no Firebase");
