@@ -789,8 +789,8 @@ async function carregarPlanoUsuario(userId) {
     }
 
     function atualizarValorAposta() {
-      const quantidade = parseInt(elQtdDezenas.value || "6");
-      const cotas = parseInt(elQtdCotas.value || "1");
+      const quantidade = parseInt(elQtdDezenas ? elQtdDezenas.value : "6");
+const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
 
       const valorTotal = TABELA_VALORES[quantidade] || 6;
       const valorPorPessoa = valorTotal / cotas;
