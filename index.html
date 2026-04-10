@@ -808,31 +808,6 @@ async function carregarPlanoUsuario(userId) {
         });
     }
 
-    function aplicarLimitesDoPlano() {
-      if (!usuarioAtual) return;
-
-      const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
-      const maxCotas = Number(usuarioAtual.maxCotas || 1);
-
-      [...elQtdDezenas.options].forEach(function(opt) {
-        opt.disabled = Number(opt.value) > maxDezenas;
-      });
-
-      [...elQtdCotas.options].forEach(function(opt) {
-        opt.disabled = Number(opt.value) > maxCotas;
-      });
-
-      if (Number(elQtdDezenas.value) > maxDezenas) {
-        elQtdDezenas.value = String(maxDezenas);
-      }
-
-      if (Number(elQtdCotas.value) > maxCotas) {
-        elQtdCotas.value = String(maxCotas);
-      }
-
-      atualizarValorAposta();
-    }
-
     function mostrarApp() {
       elLogin.style.display = "none";
       elApp.style.display = "block";
