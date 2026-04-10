@@ -599,14 +599,14 @@ for (let i = 6; i <= maxDezenas; i++) {
     for (let i = 1; i <= maxCotas; i++) {
       const opt = document.createElement("option");
       opt.value = i;
-      opt.textContent = i === 1 ? "Sem bolão" : ${i} cotas;
+     opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
       selectCotas.appendChild(opt);
     }
   } else if (plano === "premium") {
     for (let i = 1; i <= 100; i++) {
       const opt = document.createElement("option");
       opt.value = i;
-      opt.textContent = i === 1 ? "Sem bolão" : ${i} cotas;
+      opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
       selectCotas.appendChild(opt);
     }
   }
