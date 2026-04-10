@@ -970,8 +970,8 @@ function validarLimitesPlano() {
     return false;
   }
 
-  const qtdDezenas = Number(elQtdDezenas.value || 0);
-  const qtdCotas = Number(elQtdCotas.value || 0);
+  const qtdDezenas = Number(elQtdDezenas ? elQtdDezenas.value : 0);
+const qtdCotas = Number(elQtdCotas ? elQtdCotas.value : 0);
 
   const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
   const maxCotas = Number(usuarioAtual.maxCotas || 1);
@@ -1153,8 +1153,13 @@ function validarLimitesPlano() {
     btnGerar.addEventListener("click", gerarJogoUsuario);
     btnSair.addEventListener("click", sair);
 
-    elQtdDezenas.addEventListener("change", atualizarValorAposta);
-    elQtdCotas.addEventListener("change", atualizarValorAposta);
+    if (elQtdDezenas) {
+  elQtdDezenas.addEventListener("change", atualizarValorAposta);
+}
+
+if (elQtdCotas) {
+  elQtdCotas.addEventListener("change", atualizarValorAposta);
+}
 
     atualizarValorAposta();
     carregarTotalGlobal();
