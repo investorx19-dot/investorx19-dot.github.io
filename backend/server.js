@@ -93,8 +93,10 @@ const db = admin.firestore();
  * Use variável de ambiente em produção:
  * MP_ACCESS_TOKEN=APP_USR-...
  */
-const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "COLOQUE_AQUI_SEU_APP_USR";
-
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+if (!MP_ACCESS_TOKEN) {
+  throw new Error("MP_ACCESS_TOKEN NÃO CONFIGURADO NO RENDER");
+}
 if (!MP_ACCESS_TOKEN || !MP_ACCESS_TOKEN.startsWith("APP_USR-")) {
   console.warn("ATENÇÃO: MP_ACCESS_TOKEN ausente ou não parece ser token de produção.");
 }

@@ -479,30 +479,13 @@
         <div class="campos-aposta">
           <div class="campo-aposta">
             <label for="qtdDezenas">Quantidade de dezenas:</label>
-            <select id="qtdDezenas">
-              <option value="6">6 dezenas</option>
-              <option value="7">7 dezenas</option>
-              <option value="8">8 dezenas</option>
-              <option value="9">9 dezenas</option>
-              <option value="10">10 dezenas</option>
-              <option value="11">11 dezenas</option>
-              <option value="12">12 dezenas</option>
-              <option value="13">13 dezenas</option>
-              <option value="14">14 dezenas</option>
-              <option value="15">15 dezenas</option>
-            </select>
+            <select id="qtdDezenas"></select>
           </div>
 
-          <div class="campo-aposta">
-            <label for="qtdCotas">Bolão:</label>
-            <select id="qtdCotas">
-              <option value="1">Sem bolão</option>
-              <option value="2">2 cotas</option>
-              <option value="3">3 cotas</option>
-              <option value="5">5 cotas</option>
-              <option value="10">10 cotas</option>
-            </select>
-          </div>
+          <div id="areaBolao">
+  <label for="bolao">Bolão:</label>
+  <select id="bolao"></select>
+</div>
         </div>
 
         <div id="valorAposta" class="valor-aposta">
@@ -581,10 +564,55 @@
       messagingSenderId: "924943702876",
       appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+const db = getFirestore();
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
 
+function aplicarLimitesDoPlano(usuario) {
+  const selectDezenas = document.getElementById("qtdDezenas");
+  const selectCotas = document.getElementById("qtdCotas");
+
+  if (!selectDezenas || !selectCotas || !usuario) return;
+
+  const maxDezenas = usuario.maxDezenas || 6;
+  const maxCotas = usuario.maxCotas || 1;
+  const plano = usuario.plan || "basico";
+
+  // DEZENAS
+  selectDezenas.innerHTML = "";
+  for (let i = 6; i <= maxDezenas; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = ${i} dezenas;
+    selectDezenas.appendChild(option);
+  }
+
+  // COTAS (BOLÃO)
+  selectCotas.innerHTML = "";
+
+  if (plano === "basico") {
+    const opt = document.createElement("option");
+    opt.value = 1;
+    opt.textContent = "Sem bolão";
+    selectCotas.appendChild(opt);
+  } else if (plano === "intermediario") {
+    for (let i = 1; i <= maxCotas; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i === 1 ? "Sem bolão" : ${i} cotas;
+      selectCotas.appendChild(opt);
+    }
+  } else if (plano === "premium") {
+    for (let i = 1; i <= 100; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i === 1 ? "Sem bolão" : ${i} cotas;
+      selectCotas.appendChild(opt);
+    }
+  }
+}
     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
       try {
         const hoje = new Date();
@@ -1157,7 +1185,31 @@ function validarLimitesPlano() {
 
     atualizarValorAposta();
     carregarTotalGlobal();
+async function carregarUsuario() {
+  try {
+    const email = localStorage.getItem("emailUsuario");
 
+    if (!email) {
+      console.warn("Usuário não logado");
+      return;
+    }
+
+    const ref = doc(db, "users", email);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      const usuario = snap.data();
+
+      console.log("Usuário carregado:", usuario);
+
+      aplicarLimitesDoPlano(usuario);
+    } else {
+      console.warn("Usuário não encontrado no Firebase");
+    }
+  } catch (err) {
+    console.error("Erro ao carregar usuário:", err);
+  }
+}
 async function pagarPlano(plano) {
   try {
     if (!usuarioAtual) {
