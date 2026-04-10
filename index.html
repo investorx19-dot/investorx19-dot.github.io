@@ -577,14 +577,15 @@ function aplicarLimitesDoPlano(usuario) {
   const maxCotas = usuario.maxCotas || 1;
   const plano = usuario.plan || "basico";
 
-  // DEZENAS
-  selectDezenas.innerHTML = "";
-  for (let i = 6; i <= maxDezenas; i++) {
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent = i + " dezenas";
-    selectDezenas.appendChild(option);
-  }
+// DEZENAS
+selectDezenas.innerHTML = "";
+
+for (let i = 6; i <= maxDezenas; i++) {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = i + " dezenas";
+  selectDezenas.appendChild(option);
+}
 
   // COTAS (BOLÃO)
   selectCotas.innerHTML = "";
