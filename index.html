@@ -480,6 +480,7 @@
           <div class="campo-aposta">
             <label for="qtdDezenas">Quantidade de dezenas:</label>
             <select id="qtdDezenas"></select>
+            <select id="qtdCotas"></select>
           </div>
 
           <div id="areaBolao">
@@ -572,6 +573,7 @@ function aplicarLimitesDoPlano(usuario) {
   const selectCotas = document.getElementById("qtdCotas");
 
   if (!selectDezenas || !selectCotas || !usuario) {
+    console.warn("Selects ou usuário não encontrados");
     return;
   }
 
@@ -579,41 +581,37 @@ function aplicarLimitesDoPlano(usuario) {
   const maxCotas = Number(usuario.maxCotas || 1);
   const plano = usuario.plan || "basico";
 
-  // preenche dezenas
   selectDezenas.innerHTML = "";
+  selectCotas.innerHTML = "";
 
   for (let i = 6; i <= maxDezenas; i++) {
     const opt = document.createElement("option");
-    opt.value = i;
+    opt.value = String(i);
     opt.textContent = i + " dezenas";
     selectDezenas.appendChild(opt);
   }
 
-  // preenche cotas
-  selectCotas.innerHTML = "";
-
   if (plano === "basico") {
     const opt = document.createElement("option");
-    opt.value = 1;
+    opt.value = "1";
     opt.textContent = "Sem bolão";
     selectCotas.appendChild(opt);
   } else if (plano === "intermediario") {
     for (let i = 1; i <= maxCotas; i++) {
       const opt = document.createElement("option");
-      opt.value = i;
+      opt.value = String(i);
       opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
       selectCotas.appendChild(opt);
     }
-  } else if (plano === "premium") {
+  } else {
     for (let i = 1; i <= 100; i++) {
       const opt = document.createElement("option");
-      opt.value = i;
+      opt.value = String(i);
       opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
       selectCotas.appendChild(opt);
     }
   }
 
-  // seleciona primeiro item
   if (selectDezenas.options.length > 0) {
     selectDezenas.selectedIndex = 0;
   }
@@ -621,6 +619,9 @@ function aplicarLimitesDoPlano(usuario) {
   if (selectCotas.options.length > 0) {
     selectCotas.selectedIndex = 0;
   }
+
+  console.log("Dezenas carregadas:", selectDezenas.options.length);
+  console.log("Cotas carregadas:", selectCotas.options.length);
 }
     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
       try {
@@ -1266,6 +1267,7 @@ btnIntermediario.addEventListener("click", function() {
 
 btnPremium.addEventListener("click", function() {
   pagarPlano("premium");
+  carregarUsuario();
 });
 </script>
 </body>
