@@ -579,17 +579,17 @@ function aplicarLimitesDoPlano(usuario) {
   const maxCotas = Number(usuario.maxCotas || 1);
   const plano = usuario.plan || "basico";
 
-  // DEZENAS
+  // preenche dezenas
   selectDezenas.innerHTML = "";
 
   for (let i = 6; i <= maxDezenas; i++) {
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent = i + " dezenas";
-    selectDezenas.appendChild(option);
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i + " dezenas";
+    selectDezenas.appendChild(opt);
   }
 
-  // COTAS
+  // preenche cotas
   selectCotas.innerHTML = "";
 
   if (plano === "basico") {
@@ -611,6 +611,15 @@ function aplicarLimitesDoPlano(usuario) {
       opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
       selectCotas.appendChild(opt);
     }
+  }
+
+  // seleciona primeiro item
+  if (selectDezenas.options.length > 0) {
+    selectDezenas.selectedIndex = 0;
+  }
+
+  if (selectCotas.options.length > 0) {
+    selectCotas.selectedIndex = 0;
   }
 }
     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
