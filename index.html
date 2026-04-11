@@ -421,6 +421,28 @@
 
       .campos-aposta{
         grid-template-columns: 1fr;
+        .campos-aposta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.campo-aposta {
+  flex: 1;
+  min-width: 200px;
+}
+
+.campo-aposta select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.campo-aposta label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #ccc;
       }
     }
   </style>
@@ -476,17 +498,17 @@
       </div>
 
       <div class="painel-aposta">
-        <div class="campos-aposta">
-          <div class="campo-aposta">
-            <label for="qtdDezenas">Quantidade de dezenas:</label>
-            <select id="qtdDezenas"></select>
-            <select id="qtdCotas"></select>
-          </div>
+       <div class="campos-aposta">
+  <div class="campo-aposta">
+    <label for="qtdDezenas">Quantidade de dezenas:</label>
+    <select id="qtdDezenas"></select>
+  </div>
 
-          <div id="areaBolao">
-  <label for="bolao">Bolão:</label>
+  <div class="campo-aposta">
+    <label for="qtdCotas">Bolão:</label>
+    <select id="qtdCotas"></select>
+  </div>
 </div>
-        </div>
 
         <div id="valorAposta" class="valor-aposta">
           Valor total: R$ 6,00<br>
