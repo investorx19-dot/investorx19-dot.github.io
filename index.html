@@ -444,12 +444,14 @@
   font-weight: bold;
   color: #ccc;
 
-  .planos-container {
+ .planos-container {
   display: flex;
-  gap: 20px;
+  justify-content: center; /* CENTRALIZA */
+  align-items: stretch;
+  gap: 30px;
   flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 20px;
+  width: 100%;
+  margin: 40px auto;
 }
 
 .plano-card {
@@ -514,10 +516,10 @@
 }
 
 @media (max-width: 1100px) {
-  .plano-card {
-    width: 100%;
-    max-width: 420px;
-  }
+ .plano-card {
+  max-width: 320px;
+  width: 100%;
+}
 }
   </style>
 </head>
