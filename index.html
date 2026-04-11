@@ -686,23 +686,27 @@ function aplicarLimitesDoPlano(usuario) {
 
     async function contarJogosHoje(userId) {
   try {
-
-    if (!userId || !dataRef) {
-      console.log("userId ou dataRef vazio, pulando contagem");
+    if (!userId) {
+      console.warn("userId vazio, pulando contagem");
       return 0;
     }
 
-    const consulta = query(
+    const hoje = new Date();
+    const ano = String(hoje.getFullYear());
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoje.getDate()).padStart(2, "0");
+    const dataRef = ano + "-" + mes + "-" + dia;
+
+    const q = query(
       collection(db, "jogosGerados"),
       where("userId", "==", userId),
       where("dataRef", "==", dataRef)
     );
 
-    const snap = await getDocs(consulta);
+    const snap = await getDocs(q);
     return snap.size;
-
-  } catch (e) {
-    console.error("Erro ao contar jogos do dia:", e);
+  } catch (erro) {
+    console.error("Erro ao contar jogos do dia:", erro);
     return 0;
   }
 }
@@ -1162,8 +1166,6 @@ async function carregarUsuario() {
       console.warn("Usuário não encontrado no Firestore");
       return;
     }
-
-    console.log("Usuário carregado:", usuario);
 
     usuarioAtual = usuario;
     atualizarUsuarioLogado();
