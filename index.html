@@ -443,8 +443,82 @@
   margin-bottom: 5px;
   font-weight: bold;
   color: #ccc;
-      }
-    }
+  
+  .planos-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.plano-card {
+  background: rgba(10, 20, 40, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+  width: 320px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.plano-titulo {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.plano-preco {
+  font-size: 26px;
+  font-weight: 800;
+  color: #7ee6ff;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.plano-lista {
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+  line-height: 1.8;
+  font-size: 18px;
+}
+
+.plano-descricao {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #d7e7ff;
+  min-height: 95px;
+  margin-bottom: 20px;
+}
+
+.btn-plano {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #35d7ff, #3ca7ff);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-plano:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+@media (max-width: 1100px) {
+  .plano-card {
+    width: 100%;
+    max-width: 420px;
+  }
+}
   </style>
 </head>
 <body>
@@ -469,27 +543,55 @@
       </div>
     </div>
 
-    <div class="planos">
-      <h2>Planos de Acesso</h2>
+   <div class="planos-container">
+  <div class="plano-card plano-basico">
+    <div class="plano-titulo">🟢 Plano Básico</div>
+    <div class="plano-preco">R$ 19,90</div>
+    <ul class="plano-lista">
+      <li>até 6 dezenas</li>
+      <li>sem bolão</li>
+      <li>até 10 jogos por dia</li>
+    </ul>
+    <p class="plano-descricao">
+      Você pode gerar até 10 jogos por dia de 6 dezenas e não inclui bolão.
+    </p>
+    <button id="btnBasicoPlano" type="button" class="btn-plano">
+      Assinar Básico • R$ 19,90
+    </button>
+  </div>
 
-      <div class="cards-planos">
-        <div class="plano">
-          <h3>🟢 Plano Básico</h3>
-          <p>Até 6 dezenas, sem bolão e até 10 jogos por dia.</p>
-          <button id="btnBasicoPlano" type="button">
-  Assinar Básico • R$ 19,90
-</button>
+  <div class="plano-card plano-intermediario">
+    <div class="plano-titulo">🔵 Plano Intermediário</div>
+    <div class="plano-preco">R$ 39,90</div>
+    <ul class="plano-lista">
+      <li>até 10 dezenas</li>
+      <li>bolão até 10 cotas</li>
+      <li>até 30 jogos por dia</li>
+    </ul>
+    <p class="plano-descricao">
+      Você pode gerar até 30 jogos por dia de até 10 dezenas e pode gerar bolão de até 10 cotas.
+    </p>
+    <button id="btnIntermediarioPlano" type="button" class="btn-plano">
+      Assinar Intermediário • R$ 39,90
+    </button>
+  </div>
 
-<button id="btnIntermediarioPlano" type="button">
-  Assinar Intermediário • R$ 39,90
-</button>
-
-<button id="btnPremiumPlano" type="button">
-  Assinar Premium • R$ 79,90
-</button>
-        </div>
-      </div>
-    </div>
+  <div class="plano-card plano-premium">
+    <div class="plano-titulo">🟣 Plano Premium</div>
+    <div class="plano-preco">R$ 79,90</div>
+    <ul class="plano-lista">
+      <li>até 15 dezenas</li>
+      <li>bolão ilimitado</li>
+      <li>jogos ilimitados</li>
+    </ul>
+    <p class="plano-descricao">
+      Você pode gerar jogos ilimitados de até 15 dezenas e pode gerar bolões ilimitados.
+    </p>
+    <button id="btnPremiumPlano" type="button" class="btn-plano">
+      Assinar Premium • R$ 79,90
+    </button>
+  </div>
+</div>
 
     <div id="app" style="display:none;">
       <div class="topo-app">
