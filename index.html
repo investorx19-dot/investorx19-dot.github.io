@@ -571,23 +571,25 @@ function aplicarLimitesDoPlano(usuario) {
   const selectDezenas = document.getElementById("qtdDezenas");
   const selectCotas = document.getElementById("qtdCotas");
 
-  if (!selectDezenas || !selectCotas || !usuario) return;
+  if (!selectDezenas || !selectCotas || !usuario) {
+    return;
+  }
 
-  const maxDezenas = usuario.maxDezenas || 6;
-  const maxCotas = usuario.maxCotas || 1;
+  const maxDezenas = Number(usuario.maxDezenas || 6);
+  const maxCotas = Number(usuario.maxCotas || 1);
   const plano = usuario.plan || "basico";
 
-// DEZENAS
-selectDezenas.innerHTML = "";
+  // DEZENAS
+  selectDezenas.innerHTML = "";
 
-for (let i = 6; i <= maxDezenas; i++) {
-  const option = document.createElement("option");
-  option.value = i;
-  option.textContent = i + " dezenas";
-  selectDezenas.appendChild(option);
-}
+  for (let i = 6; i <= maxDezenas; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = i + " dezenas";
+    selectDezenas.appendChild(option);
+  }
 
-  // COTAS (BOLÃO)
+  // COTAS
   selectCotas.innerHTML = "";
 
   if (plano === "basico") {
@@ -599,7 +601,7 @@ for (let i = 6; i <= maxDezenas; i++) {
     for (let i = 1; i <= maxCotas; i++) {
       const opt = document.createElement("option");
       opt.value = i;
-     opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
+      opt.textContent = i === 1 ? "Sem bolão" : i + " cotas";
       selectCotas.appendChild(opt);
     }
   } else if (plano === "premium") {
@@ -826,50 +828,26 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
     }
 
     async function buscarUsuarioPorEmail(email) {
-      const consulta = query(
-        collection(db, "users"),
-        where("email", "==", normalizarEmail(email))
-      );
+  try {
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snap = await getDocs(q);
 
-      const snap = await getDocs(consulta);
-      if (snap.empty) return null;
-
-      let usuarioMaisRecente = null;
-
-      snap.forEach(function(item) {
-        const dados = item.data();
-
-        const usuario = {
-          uid: item.id,
-          nome: dados.nome || "",
-          email: dados.email || "",
-          telefone: dados.telefone || dados.phone || "",
-          accessGranted: !!dados.accessGranted,
-          plan: dados.plan || "basico",
-          maxDezenas: Number(dados.maxDezenas || 6),
-          maxCotas: Number(dados.maxCotas || 1),
-          limiteJogosDia: Number(dados.limiteJogosDia || 10),
-          createdAt: Number(dados.createdAt || 0),
-          updatedAt: Number(dados.updatedAt || 0)
-        };
-
-        if (!usuarioMaisRecente) {
-          usuarioMaisRecente = usuario;
-        } else {
-          const tempoAtual = Number(usuario.updatedAt || usuario.createdAt || 0);
-          const tempoSalvo = Number(
-            usuarioMaisRecente.updatedAt || usuarioMaisRecente.createdAt || 0
-          );
-
-          if (tempoAtual >= tempoSalvo) {
-            usuarioMaisRecente = usuario;
-          }
-        }
-      });
-
-      return usuarioMaisRecente;
+    if (snap.empty) {
+      return null;
     }
 
+    const docEncontrado = snap.docs[0];
+    const usuario = docEncontrado.data();
+
+    return {
+      id: docEncontrado.id,
+      ...usuario
+    };
+  } catch (erro) {
+    console.error("Erro ao buscar usuário por email:", erro);
+    return null;
+  }
+}
     async function cadastrar() {
       const nome = elNome.value.trim();
       const email = normalizarEmail(elEmail.value);
@@ -1178,22 +1156,21 @@ async function carregarUsuario() {
       return;
     }
 
-    const ref = doc(db, "users", email);
-    const snap = await getDoc(ref);
+    const usuario = await buscarUsuarioPorEmail(email);
 
-    if (snap.exists()) {
-      const usuario = snap.data();
-
-      console.log("Usuário carregado:", usuario);
-usuarioAtual = usuario;
-aplicarLimitesDoPlano(usuarioAtual);
-atualizarValorAposta();
-      aplicarLimitesDoPlano(usuario);
-    } else {
-      console.warn("Usuário não encontrado no Firebase");
+    if (!usuario) {
+      console.warn("Usuário não encontrado no Firestore");
+      return;
     }
-  } catch (err) {
-    console.error("Erro ao carregar usuário:", err);
+
+    console.log("Usuário carregado:", usuario);
+
+    usuarioAtual = usuario;
+    atualizarUsuarioLogado();
+    aplicarLimitesDoPlano(usuarioAtual);
+    atualizarValorAposta();
+  } catch (erro) {
+    console.error("Erro ao carregar usuário:", erro);
   }
 }
 async function pagarPlano(plano) {
