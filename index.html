@@ -443,7 +443,7 @@
   margin-bottom: 5px;
   font-weight: bold;
   color: #ccc;
-  
+
   .planos-container {
   display: flex;
   gap: 20px;
@@ -700,6 +700,9 @@ function aplicarLimitesDoPlano(usuario) {
     return;
   }
 
+  const valorDezenasAtual = selectDezenas.value;
+  const valorCotasAtual = selectCotas.value;
+
   const maxDezenas = Number(usuario.maxDezenas || 6);
   const maxCotas = Number(usuario.maxCotas || 1);
   const plano = usuario.plan || "basico";
@@ -735,16 +738,18 @@ function aplicarLimitesDoPlano(usuario) {
     }
   }
 
-  if (selectDezenas.options.length > 0) {
-    selectDezenas.selectedIndex = 0;
+  if (valorDezenasAtual && [...selectDezenas.options].some(o => o.value === valorDezenasAtual)) {
+    selectDezenas.value = valorDezenasAtual;
   }
 
-  if (selectCotas.options.length > 0) {
-    selectCotas.selectedIndex = 0;
+  if (valorCotasAtual && [...selectCotas.options].some(o => o.value === valorCotasAtual)) {
+    selectCotas.value = valorCotasAtual;
   }
 
   console.log("Dezenas carregadas:", selectDezenas.options.length);
   console.log("Cotas carregadas:", selectCotas.options.length);
+
+  atualizarValorAposta();
 }
     async function salvarJogoGerado(usuario, jogo, qtdDezenas, qtdCotas, valorTotal, valorPorPessoa) {
       try {
