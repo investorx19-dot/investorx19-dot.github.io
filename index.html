@@ -670,16 +670,17 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      collection,
-      getDocs,
-      query,
-      where,
-      addDoc
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     import { LINE_RANGES, gerarJogoValido } from "./gerador.js";
 
@@ -955,18 +956,17 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
         });
     }
 
-    function mostrarApp() {
-      elLogin.style.display = "none";
-      elApp.style.display = "block";
+ function mostrarApp() {
+  elLogin.style.display = "none";
+  elApp.style.display = "block";
 
-      atualizarUsuarioLogado();
-      aplicarLimitesDoPlano();
-      renderCartao([]);
-      elAcertos.textContent = "0";
+  atualizarUsuarioLogado();
+  aplicarLimitesDoPlano(usuarioAtual);
+  renderCartao([]);
+  elAcertos.textContent = "0";
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
     function mostrarLogin() {
       elLogin.style.display = "block";
       elApp.style.display = "none";
@@ -993,60 +993,117 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
     return null;
   }
 }
-    async function cadastrar() {
-      const nome = elNome.value.trim();
-      const email = normalizarEmail(elEmail.value);
-      const telefone = normalizarTelefone(elTelefone.value);
+ async function cadastrar() {
+  const nome = elNome.value.trim();
+  const email = normalizarEmail(elEmail.value);
+  const telefone = normalizarTelefone(elTelefone.value);
 
-      if (!nome || !email || !telefone) {
-        alert("Preencha nome, e-mail e telefone.");
-        return;
-      }
+  if (!nome || !email || !telefone) {
+    alert("Preencha nome, e-mail e telefone.");
+    return;
+  }
 
-      try {
-        const existente = await buscarUsuarioPorEmail(email);
-        if (existente) {
-          alert("Este e-mail já está cadastrado. Use o botão Entrar.");
-          return;
-        }
-
-        const novoUsuario = {
-          nome: nome,
-          email: email,
-          telefone: telefone,
-          accessGranted: true,
-          plan: "basico",
-          maxDezenas: 6,
-          maxCotas: 1,
-          limiteJogosDia: 10,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        };
-
-        const referencia = await addDoc(collection(db, "users"), novoUsuario);
-
-        usuarioAtual = {
-          id: referencia.id,
-          nome: nome,
-          email: email,
-          telefone: telefone,
-          accessGranted: true,
-          plan: "basico",
-          maxDezenas: 6,
-          maxCotas: 1,
-          limiteJogosDia: 10,
-          createdAt: novoUsuario.createdAt,
-          updatedAt: novoUsuario.updatedAt
-        };
-
-        mostrarApp();
-        alert("Cadastro realizado com sucesso. Acesso liberado automaticamente.");
-      } catch (erro) {
-        console.error("Erro no cadastro:", erro);
-        alert("Erro ao cadastrar usuário: " + erro.message);
-      }
+  try {
+    const existente = await buscarUsuarioPorEmail(email);
+    if (existente) {
+      alert("Este e-mail já está cadastrado. Use o botão Entrar.");
+      return;
     }
 
+    const agora = Date.now();
+    const seteDiasEmMs = 7 * 24 * 60 * 60 * 1000;
+
+    const novoUsuario = {
+      nome: nome,
+      email: email,
+      telefone: telefone,
+      accessGranted: true,
+      plan: "basico",
+      maxDezenas: 6,
+      maxCotas: 1,
+      limiteJogosDia: 10,
+      paymentStatus: "trial",
+      trialAtivo: true,
+      trialInicio: agora,
+      trialFim: agora + seteDiasEmMs,
+      createdAt: agora,
+      updatedAt: agora
+    };
+
+    const referencia = await addDoc(collection(db, "users"), novoUsuario);
+
+    usuarioAtual = {
+      id: referencia.id,
+      nome: nome,
+      email: email,
+      telefone: telefone,
+      accessGranted: true,
+      plan: "basico",
+      maxDezenas: 6,
+      maxCotas: 1,
+      limiteJogosDia: 10,
+      paymentStatus: "trial",
+      trialAtivo: true,
+      trialInicio: novoUsuario.trialInicio,
+      trialFim: novoUsuario.trialFim,
+      createdAt: novoUsuario.createdAt,
+      updatedAt: novoUsuario.updatedAt
+    };
+
+    mostrarApp();
+    alert("Cadastro realizado com sucesso! Você ganhou 7 dias grátis de acesso 🎉");
+  } catch (erro) {
+    console.error("Erro no cadastro:", erro);
+    alert("Erro ao cadastrar usuário: " + erro.message);
+  }
+}
+async function verificarStatusAcesso(usuario) {
+  try {
+    if (!usuario) return { liberado: false, motivo: "Usuário inválido." };
+
+    const agora = Date.now();
+    const userRef = doc(db, "users", usuario.id);
+
+    const paymentStatus = usuario.paymentStatus || "trial";
+    const trialFim = Number(usuario.trialFim || 0);
+    const accessGranted = usuario.accessGranted !== false;
+
+    if (!accessGranted) {
+      return { liberado: false, motivo: "Seu acesso foi bloqueado pelo administrador." };
+    }
+
+    if (paymentStatus === "paid") {
+      return { liberado: true };
+    }
+
+    if (trialFim > agora) {
+      const diasRestantes = Math.ceil((trialFim - agora) / (1000 * 60 * 60 * 24));
+      return {
+        liberado: true,
+        emTrial: true,
+        diasRestantes: diasRestantes
+      };
+    }
+
+    await updateDoc(userRef, {
+      accessGranted: false,
+      trialAtivo: false,
+      paymentStatus: "expired",
+      updatedAt: agora
+    });
+
+    return {
+      liberado: false,
+      motivo: "Seu período de 7 dias grátis terminou. Escolha um plano para continuar."
+    };
+  } catch (erro) {
+    console.error("Erro ao verificar status de acesso:", erro);
+    return {
+      liberado: false,
+      motivo: "Erro ao verificar acesso: " + erro.message
+    };
+  }
+}
     async function login() {
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
@@ -1076,16 +1133,22 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
       return;
     }
 
-    usuarioAtual = user;
+   usuarioAtual = user;
 
-    await carregarPlanoUsuario(usuarioAtual.id || usuarioAtual.uid);
+const statusAcesso = await verificarStatusAcesso(usuarioAtual);
 
-    mostrarApp();
+if (!statusAcesso.liberado) {
+  alert(statusAcesso.motivo);
+  return;
+}
 
-  } catch (erro) {
-    console.error("Erro no login:", erro);
-    alert("Erro ao fazer login: " + erro.message);
-  }
+await carregarPlanoUsuario(usuarioAtual.id || usuarioAtual.uid);
+
+mostrarApp();
+
+if (statusAcesso.emTrial) {
+  alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
+}
 }
 function validarLimitesPlano() {
   if (!usuarioAtual) {
@@ -1126,14 +1189,19 @@ const qtdCotas = Number(elQtdCotas ? elQtdCotas.value : 0);
       return;
     }
 
-    const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
+   const statusAcesso = await verificarStatusAcesso(usuarioAtualizado);
 
-    if (!usuarioAtualizado) {
-      alert("Usuário não encontrado.");
-      usuarioAtual = null;
-      mostrarLogin();
-      return;
-    }
+if (!statusAcesso.liberado) {
+  alert(statusAcesso.motivo);
+  usuarioAtual = null;
+  mostrarLogin();
+  return;
+}
+
+usuarioAtual = usuarioAtualizado;
+atualizarUsuarioLogado();
+aplicarLimitesDoPlano(usuarioAtual);
+atualizarValorAposta();
 
     if (!usuarioAtualizado.accessGranted) {
       alert("Seu acesso foi bloqueado pelo administrador.");
