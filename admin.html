@@ -584,11 +584,13 @@
   return "-";
 }
 
-    function formatarPagamento(status) {
-      if (status === "paid") return "Pago";
-      if (status === "pending") return "Pendente";
-      return "-";
-    }
+   function formatarPagamento(status) {
+  if (status === "paid") return "Pago";
+  if (status === "pending") return "Pendente";
+  if (status === "trial") return "Teste grátis";
+  if (status === "expired") return "Expirado";
+  return "-";
+}
 
     function formatarData(timestamp){
       if(!timestamp) return "-";
@@ -993,7 +995,11 @@ if (uniqueUsers.length === 0) {
           const phone = (u.telefone || u.phone || "").toString();
           const plano = formatarPlano(u.plan || "");
           const pagamento = formatarPagamento(u.paymentStatus || "");
-          const vencimento = formatarData(u.expiresAt || null);
+         const vencimento = formatarData(
+  u.paymentStatus === "paid"
+    ? (u.expiresAt || u.accessExpiresAt || null)
+    : (u.trialFim || null)
+);
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -1092,17 +1098,22 @@ if (uniqueUsers.length === 0) {
       preco = 79.90;
     }
 
-    await updateDoc(doc(db, "users", userDocId), {
-      accessGranted: true,
-      paymentStatus: "paid",
-      plan: plan,
-      maxDezenas: maxDezenas,
-      maxCotas: maxCotas,
-      limiteJogosDia: limiteJogosDia,
-      valorPlano: preco,
-      paidAt: agora,
-      updatedAt: agora
-    });
+  const trintaDias = 30 * 24 * 60 * 60 * 1000;
+const vencimentoPlano = agora + trintaDias;
+
+await updateDoc(doc(db, "users", userDocId), {
+  accessGranted: true,
+  paymentStatus: "paid",
+  trialAtivo: false,
+  plan: plan,
+  maxDezenas: maxDezenas,
+  maxCotas: maxCotas,
+  limiteJogosDia: limiteJogosDia,
+  valorPlano: preco,
+  paidAt: agora,
+  expiresAt: vencimentoPlano,
+  updatedAt: agora
+});
 
     toast("Plano atualizado com sucesso.", "ok");
     await loadUsers();
