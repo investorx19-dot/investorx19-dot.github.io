@@ -1111,7 +1111,7 @@ async function verificarStatusAcesso(usuario) {
     };
   }
 }
-    async function login() {
+  async function login() {
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
 
@@ -1135,29 +1135,30 @@ async function verificarStatusAcesso(usuario) {
       return;
     }
 
-    if (!user.accessGranted) {
-      alert("Seu acesso foi bloqueado pelo administrador.");
+    usuarioAtual = user;
+
+    const statusAcesso = await verificarStatusAcesso(usuarioAtual);
+
+    if (!statusAcesso.liberado) {
+      alert(statusAcesso.motivo);
       return;
     }
 
-   usuarioAtual = user;
+    await carregarPlanoUsuario(usuarioAtual.id || usuarioAtual.uid);
 
-const statusAcesso = await verificarStatusAcesso(usuarioAtual);
+    mostrarApp();
 
-if (!statusAcesso.liberado) {
-  alert(statusAcesso.motivo);
-  return;
+    if (statusAcesso.emTrial) {
+      alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
+    }
+
+  } catch (erro) {
+    console.error("Erro no login:", erro);
+    alert("Erro ao fazer login: " + erro.message);
+  }
 }
 
-await carregarPlanoUsuario(usuarioAtual.id || usuarioAtual.uid);
-
-mostrarApp();
-
-if (statusAcesso.emTrial) {
-  alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
-}
-
-function validarLimitesPlano() 
+function validarLimitesPlano() {
   if (!usuarioAtual) {
     alert("Faça login primeiro.");
     return false;
