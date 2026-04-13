@@ -1186,7 +1186,7 @@ const qtdCotas = Number(elQtdCotas ? elQtdCotas.value : 0);
 
   return true;
 }
-    async function gerarJogoUsuario() {
+   async function gerarJogoUsuario() {
   try {
     if (!validarLimitesPlano()) {
       return;
@@ -1197,19 +1197,23 @@ const qtdCotas = Number(elQtdCotas ? elQtdCotas.value : 0);
       return;
     }
 
-   const statusAcesso = await verificarStatusAcesso(usuarioAtualizado);
+    const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
 
-if (!statusAcesso.liberado) {
-  alert(statusAcesso.motivo);
-  usuarioAtual = null;
-  mostrarLogin();
-  return;
-}
+    if (!usuarioAtualizado) {
+      alert("Usuário não encontrado.");
+      usuarioAtual = null;
+      mostrarLogin();
+      return;
+    }
 
-usuarioAtual = usuarioAtualizado;
-atualizarUsuarioLogado();
-aplicarLimitesDoPlano(usuarioAtual);
-atualizarValorAposta();
+    const statusAcesso = await verificarStatusAcesso(usuarioAtualizado);
+
+    if (!statusAcesso.liberado) {
+      alert(statusAcesso.motivo);
+      usuarioAtual = null;
+      mostrarLogin();
+      return;
+    }
 
     if (!usuarioAtualizado.accessGranted) {
       alert("Seu acesso foi bloqueado pelo administrador.");
@@ -1244,11 +1248,11 @@ atualizarValorAposta();
 
     const excluidas = new Set();
 
-    anteriores.forEach(function (numero) {
+    anteriores.forEach(function(numero) {
       excluidas.add(numero);
     });
 
-    atrasadas.forEach(function (numero) {
+    atrasadas.forEach(function(numero) {
       excluidas.add(numero);
     });
 
@@ -1266,8 +1270,8 @@ atualizarValorAposta();
     if (jogosHoje >= limiteJogosDia) {
       alert(
         "Seu plano permite até " +
-          limiteJogosDia +
-          " jogo(s) por dia. Atualize seu plano para liberar mais."
+        limiteJogosDia +
+        " jogo(s) por dia. Atualize seu plano para liberar mais."
       );
       return;
     }
@@ -1275,8 +1279,8 @@ atualizarValorAposta();
     if (quantidade > maxDezenas) {
       alert(
         "Seu plano permite gerar até " +
-          maxDezenas +
-          " dezenas. Atualize seu plano para liberar mais."
+        maxDezenas +
+        " dezenas. Atualize seu plano para liberar mais."
       );
       return;
     }
@@ -1284,8 +1288,8 @@ atualizarValorAposta();
     if (cotas > maxCotas) {
       alert(
         "Seu plano permite bolão de até " +
-          maxCotas +
-          " cota(s). Atualize seu plano para liberar mais."
+        maxCotas +
+        " cota(s). Atualize seu plano para liberar mais."
       );
       return;
     }
@@ -1295,7 +1299,7 @@ atualizarValorAposta();
 
     let acertos = 0;
 
-    jogo.forEach(function (numero) {
+    jogo.forEach(function(numero) {
       if (resultadoOficial.includes(numero)) {
         acertos++;
       }
