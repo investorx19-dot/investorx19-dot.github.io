@@ -1059,7 +1059,9 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
 }
 async function verificarStatusAcesso(usuario) {
   try {
-    if (!usuario) return { liberado: false, motivo: "Usuário inválido." };
+    if (!usuario) {
+      return { liberado: false, motivo: "Usuário inválido." };
+    }
 
     const agora = Date.now();
     const userRef = doc(db, "users", usuario.id);
@@ -1069,7 +1071,7 @@ async function verificarStatusAcesso(usuario) {
     const accessGranted = usuario.accessGranted !== false;
 
     if (!accessGranted) {
-      return { liberado: false, motivo: "Seu acesso foi bloqueado pelo administrador." };
+      return { liberado: false, motivo: "Seu acesso foi bloqueado." };
     }
 
     if (paymentStatus === "paid") {
@@ -1078,6 +1080,7 @@ async function verificarStatusAcesso(usuario) {
 
     if (trialFim > agora) {
       const diasRestantes = Math.ceil((trialFim - agora) / (1000 * 60 * 60 * 24));
+
       return {
         liberado: true,
         emTrial: true,
@@ -1094,13 +1097,15 @@ async function verificarStatusAcesso(usuario) {
 
     return {
       liberado: false,
-      motivo: "Seu período de 7 dias grátis terminou. Escolha um plano para continuar."
+      motivo: "Seu período de 7 dias grátis terminou."
     };
+
   } catch (erro) {
-    console.error("Erro ao verificar status de acesso:", erro);
+    console.error("Erro ao verificar acesso:", erro);
+
     return {
       liberado: false,
-      motivo: "Erro ao verificar acesso: " + erro.message
+      motivo: "Erro ao verificar acesso."
     };
   }
 }
