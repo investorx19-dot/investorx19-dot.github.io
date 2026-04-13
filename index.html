@@ -378,50 +378,53 @@
       line-height:1.6;
     }
 
-    @media (max-width: 700px){
-      .wrap{
-        padding:20px 12px 40px;
-      }
+@media (max-width: 700px){
+  .wrap{
+    padding:20px 12px 40px;
+  }
 
-      #login, #app{
-        padding:18px;
-      }
+  #login, #app{
+    padding:18px;
+  }
 
-      h1{
-        font-size:24px;
-      }
+  h1{
+    font-size:24px;
+  }
 
-      .cards-planos{
-        flex-direction:column;
-        align-items:center;
-      }
+  .cards-planos{
+    flex-direction:column;
+    align-items:center;
+  }
 
-      .plano{
-        width:100%;
-        max-width:340px;
-      }
+  .plano{
+    width:100%;
+    max-width:340px;
+  }
 
-      .numero{
-        width:34px;
-        height:34px;
-        line-height:34px;
-        font-size:14px;
-      }
+  .numero{
+    width:34px;
+    height:34px;
+    line-height:34px;
+    font-size:14px;
+  }
 
-      .topo-app{
-        flex-direction:column;
-        align-items:stretch;
-      }
+  .topo-app{
+    flex-direction:column;
+    align-items:stretch;
+  }
 
-      .topo-app button,
-      .acoes-login button,
-      .botoes-planos button{
-        width:100%;
-      }
+  .topo-app button,
+  .acoes-login button,
+  .botoes-planos button{
+    width:100%;
+  }
 
-      .campos-aposta{
-        grid-template-columns: 1fr;
-        .campos-aposta {
+  .campos-aposta{
+    grid-template-columns: 1fr;
+  }
+}
+
+.campos-aposta {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
@@ -444,16 +447,15 @@
   font-weight: bold;
   color: #ccc;
 }
+
 .planos-container {
   width: 100%;
   max-width: 1100px;
   margin: 40px auto;
-
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-
-  justify-items: center; /* 👈 ESSA LINHA resolve */
+  justify-items: center;
 }
 
 .plano-card {
@@ -464,11 +466,10 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
   color: #ffffff;
   text-align: center;
-}
-.plano-card {
   width: 100%;
-  max-width: 320px; /* 👈 limita largura e centraliza bonito */
+  max-width: 320px;
 }
+
 .plano-titulo {
   font-size: 28px;
   font-weight: 700;
@@ -1071,7 +1072,10 @@ async function verificarStatusAcesso(usuario) {
     const accessGranted = usuario.accessGranted !== false;
 
     if (!accessGranted) {
-      return { liberado: false, motivo: "Seu acesso foi bloqueado." };
+      return {
+        liberado: false,
+        motivo: "Seu acesso foi bloqueado pelo administrador."
+      };
     }
 
     if (paymentStatus === "paid") {
@@ -1097,15 +1101,13 @@ async function verificarStatusAcesso(usuario) {
 
     return {
       liberado: false,
-      motivo: "Seu período de 7 dias grátis terminou."
+      motivo: "Seu período de 7 dias grátis terminou. Escolha um plano para continuar."
     };
-
   } catch (erro) {
     console.error("Erro ao verificar acesso:", erro);
-
     return {
       liberado: false,
-      motivo: "Erro ao verificar acesso."
+      motivo: "Erro ao verificar acesso: " + erro.message
     };
   }
 }
@@ -1154,8 +1156,8 @@ mostrarApp();
 if (statusAcesso.emTrial) {
   alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
 }
-}
-function validarLimitesPlano() {
+
+function validarLimitesPlano() 
   if (!usuarioAtual) {
     alert("Faça login primeiro.");
     return false;
