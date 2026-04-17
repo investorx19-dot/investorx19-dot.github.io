@@ -1,6 +1,6 @@
 // gerador.js - Configuração Mega-Sena (01 a 60) ✅ (ES Module)
 
-import { gerarJogo as gerarJogoEngine } from './engine.js';
+import { gerarJogo } from './js/engine.js';
 
 export const LINE_RANGES = {
   1: [1,2,3,4,5,6,7,8,9,10],
