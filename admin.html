@@ -645,20 +645,27 @@
       });
     }
 
-    function mkNumberInputs(containerId, cssClass, count){
-      const box = document.getElementById(containerId);
-      box.innerHTML = "";
-      for(let i=0;i<count;i++){
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = "1";
-        input.max = "60";
-        input.placeholder = "00";
-        input.className = cssClass;
-        input.inputMode = "numeric";
-        box.appendChild(input);
-      }
-    }
+  function mkNumberInputs(containerId, cssClass, count){
+  const box = document.getElementById(containerId);
+
+  if (!box) {
+    console.warn("Container não encontrado:", containerId);
+    return;
+  }
+
+  box.innerHTML = "";
+
+  for (let i = 0; i < count; i++) {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "1";
+    input.max = "60";
+    input.placeholder = "00";
+    input.className = cssClass;
+    input.inputMode = "numeric";
+    box.appendChild(input);
+  }
+}
 
     mkNumberInputs("prevBox", "anterior", 6);
     mkNumberInputs("lateBox", "atrasada", 5);
