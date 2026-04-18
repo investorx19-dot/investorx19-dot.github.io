@@ -937,64 +937,65 @@
       }
     }
 
-    async function saveConfig(){
-      try{
+ async function saveConfig() {
+  try {
     const modoLinhasVazias = document.getElementById('modoLinhasVazias')?.value || 'automatico';
-const repeticaoUltimoConcurso = document.getElementById('repeticaoUltimoConcurso')?.value || 'automatico';
-const modoAtrasadas = document.getElementById('modoAtrasadas')?.value || 'nenhum';
+    const repeticaoUltimoConcurso = document.getElementById('repeticaoUltimoConcurso')?.value || 'automatico';
+    const modoAtrasadas = document.getElementById('modoAtrasadas')?.value || 'nenhum';
 
-let linhasAtivas = [];
+    const anterior = parseNumsFromInputs('.anterior');
+    const atrasadas = parseNumsFromInputs('.atrasada');
+    const resultado = parseNumsFromInputs('.resultado');
 
-if (modoLinhasVazias === 'manual') {
-  const selecionadas = Array.from(
-    document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')
-  ).map(el => Number(el.value));
+    let linhasAtivas = [];
 
-  // no modo manual, as marcadas podem ficar vazias
-  // então as ativas são as que não foram marcadas
-  linhasAtivas = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
+    if (modoLinhasVazias === 'manual') {
+      const selecionadas = Array.from(
+        document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')
+      ).map(el => Number(el.value));
 
-  if (linhasAtivas.length === 0) {
-    toast('No modo manual, deixe pelo menos 1 linha ativa.', 'error');
-    return;
-  }
-} else {
-  // modo automático: todas ficam disponíveis
-  linhasAtivas = [1, 2, 3, 4, 5, 6];
-}
+      linhasAtivas = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
 
-        if(anterior.length !== 6){
-          toast("Preencha as 6 dezenas do sorteio anterior.", "error");
-          return;
-        }
+      if (linhasAtivas.length === 0) {
+        toast('No modo manual, deixe pelo menos 1 linha ativa.', 'error');
+        return;
+      }
+    } else {
+      linhasAtivas = [1, 2, 3, 4, 5, 6];
+    }
 
-        if(atrasadas.length !== 5){
-          toast("Preencha as 5 dezenas mais atrasadas.", "error");
-          return;
-        }
+    if (anterior.length !== 6) {
+      toast("Preencha as 6 dezenas do sorteio anterior.", "error");
+      return;
+    }
 
-        if(resultado.length !== 6){
-          toast("Preencha as 6 dezenas do resultado oficial.", "error");
-          return;
-        }
+    if (atrasadas.length !== 5) {
+      toast("Preencha as 5 dezenas mais atrasadas.", "error");
+      return;
+    }
+
+    if (resultado.length !== 6) {
+      toast("Preencha as 6 dezenas do resultado oficial.", "error");
+      return;
+    }
 
     await setDoc(doc(db, "config", "global"), {
-  linhasAtivas,
-  modoLinhasVazias,
-  repeticaoUltimoConcurso,
-  modoAtrasadas,
-  dezenasAnteriores: anterior,
-  dezenasAtrasadas: atrasadas,
-  resultadoOficial: resultado,
-  updatedAt: Date.now()
-}, { merge: true });
+      linhasAtivas,
+      modoLinhasVazias,
+      repeticaoUltimoConcurso,
+      modoAtrasadas,
+      dezenasAnteriores: anterior,
+      dezenasAtrasadas: atrasadas,
+      resultadoOficial: resultado,
+      updatedAt: Date.now()
+    }, { merge: true });
 
-        toast("Config salva com sucesso.", "ok");
-      } catch(err){
-        console.error(err);
-        toast("Erro ao salvar config.", "error");
-      }
-    }
+    toast("Config salva com sucesso.", "ok");
+  } catch (err) {
+    console.error(err);
+    toast("Erro ao salvar config.", "error");
+  }
+}
 
     $("btnLoadConfig").addEventListener("click", loadConfig);
     $("btnProcessarResultado").addEventListener("click", processarResultadoOficial);
