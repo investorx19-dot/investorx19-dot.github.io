@@ -419,24 +419,54 @@
           <div class="sep"></div>
 
           <h2>1) Linhas Ativas</h2>
-          <div class="checkboxes" id="linhasBox">
-            <label><input type="checkbox" class="linha" value="1"> Linha 1 (01–10)</label>
-            <label><input type="checkbox" class="linha" value="2"> Linha 2 (11–20)</label>
-            <label><input type="checkbox" class="linha" value="3"> Linha 3 (21–30)</label>
-            <label><input type="checkbox" class="linha" value="4"> Linha 4 (31–40)</label>
-            <label><input type="checkbox" class="linha" value="5"> Linha 5 (41–50)</label>
-            <label><input type="checkbox" class="linha" value="6"> Linha 6 (51–60)</label>
-          </div>
+          <div class="config-bloco">
+  <h3>Linhas em branco</h3>
+
+  <label for="modoLinhasVazias">Modo:</label>
+  <select id="modoLinhasVazias">
+    <option value="automatico">Automático</option>
+    <option value="manual">Manual</option>
+  </select>
+
+  <div id="linhasVaziasManuais" style="margin-top: 10px; display: none;">
+    <p>Escolha manualmente quais linhas podem ficar em branco:</p>
+
+    <label><input type="checkbox" value="1"> Linha 1 (1-10)</label><br>
+    <label><input type="checkbox" value="2"> Linha 2 (11-20)</label><br>
+    <label><input type="checkbox" value="3"> Linha 3 (21-30)</label><br>
+    <label><input type="checkbox" value="4"> Linha 4 (31-40)</label><br>
+    <label><input type="checkbox" value="5"> Linha 5 (41-50)</label><br>
+    <label><input type="checkbox" value="6"> Linha 6 (51-60)</label>
+  </div>
+</div>
 
           <div class="sep"></div>
 
-          <h2>2) Dezenas do Sorteio Anterior (6)</h2>
-          <div class="nums" id="prevBox"></div>
+       <div class="config-bloco">
+  <h3>Repetição do último concurso</h3>
+
+  <label for="repeticaoUltimoConcurso">Permitir repetição de dezenas do último concurso:</label>
+  <select id="repeticaoUltimoConcurso">
+    <option value="automatico">Automático</option>
+    <option value="0">Não permitir repetidas</option>
+    <option value="1">Permitir até 1 repetida</option>
+    <option value="2">Permitir até 2 repetidas</option>
+  </select>
+</div>
 
           <div class="sep"></div>
 
-          <h2>3) 5 Dezenas Mais Atrasadas</h2>
-          <div class="nums five" id="lateBox"></div>
+       <div class="config-bloco">
+  <h3>Dezenas atrasadas</h3>
+
+  <label for="modoAtrasadas">Tratamento:</label>
+  <select id="modoAtrasadas">
+    <option value="nenhum">Não considerar</option>
+    <option value="leve">Penalização leve</option>
+    <option value="media">Penalização média</option>
+    <option value="forte">Penalização forte</option>
+  </select>
+</div>
 
           <div class="sep"></div>
 
@@ -1182,6 +1212,22 @@ await updateDoc(doc(db, "users", userDocId), {
     tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
   }
 }
+<script>
+  const modoLinhasVazias = document.getElementById('modoLinhasVazias');
+  const linhasVaziasManuais = document.getElementById('linhasVaziasManuais');
+
+  function atualizarExibicaoLinhasVazias() {
+    if (modoLinhasVazias.value === 'manual') {
+      linhasVaziasManuais.style.display = 'block';
+    } else {
+      linhasVaziasManuais.style.display = 'none';
+    }
+  }
+
+  modoLinhasVazias.addEventListener('change', atualizarExibicaoLinhasVazias);
+
+  atualizarExibicaoLinhasVazias();
+</script>
   </script>
 </body>
 </html>

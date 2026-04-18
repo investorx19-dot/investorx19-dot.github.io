@@ -37,29 +37,88 @@ function pegarNumeroAleatorio(lista) {
     const index = Math.floor(Math.random() * lista.length);
     return lista[index];
 }
+function contarPares(jogo) {
+    return jogo.filter(n => n % 2 === 0).length;
+}
 
-// 🧠 Geração principal do jogo
-export function gerarJogo() {
+function contarConsecutivos(jogo) {
+    let total = 0;
+    const ordenado = [...jogo].sort((a, b) => a - b);
 
-    const faixas = dividirPorFaixa();
-
-    // Escolhe quais faixas NÃO usar
-    const faixasVazias = escolherFaixasVazias(faixas);
-
-    // Remove faixas vazias
-    const faixasAtivas = faixas.filter(f => !faixasVazias.includes(f));
-
-    let numerosDisponiveis = faixasAtivas.flatMap(f => f.numeros);
-
-    let jogo = [];
-
-    while (jogo.length < 6) {
-        let numero = pegarNumeroAleatorio(numerosDisponiveis);
-
-        if (!jogo.includes(numero)) {
-            jogo.push(numero);
+    for (let i = 0; i < ordenado.length - 1; i++) {
+        if (ordenado[i] + 1 === ordenado[i + 1]) {
+            total++;
         }
     }
+
+    return total;
+}
+
+function somaJogo(jogo) {
+    return jogo.reduce((acc, n) => acc + n, 0);
+}
+
+function jogoValido(jogo) {
+    const pares = contarPares(jogo);
+    const consecutivos = contarConsecutivos(jogo);
+    const soma = somaJogo(jogo);
+
+    const paresOk = pares >= 2 && pares <= 4;
+    const consecutivosOk = consecutivos <= 2;
+    const somaOk = soma >= 130 && soma <= 220;
+
+    return paresOk && consecutivosOk && somaOk;
+}
+// 🧠 Geração principal do jogo
+export function gerarJogo() {
+    let tentativas = 0;
+
+    while (tentativas < 200) {
+        tentativas++;
+
+        const faixas = dividirPorFaixa();
+
+        const faixasVazias = escolherFaixasVazias(faixas);
+        const faixasAtivas = faixas.filter(f => !faixasVazias.includes(f));
+
+        let numerosDisponiveis = faixasAtivas.flatMap(f => f.numeros);
+
+        let jogo = [];
+
+        while (jogo.length < 6) {
+            let numero = pegarNumeroAleatorio(numerosDisponiveis);
+
+            if (!jogo.includes(numero)) {
+                jogo.push(numero);
+            }
+        }
+
+        jogo.sort((a, b) => a - b);
+
+        if (jogoValido(jogo)) {
+            return jogo;
+        }
+    }
+
+    // se não achar um jogo válido após várias tentativas,
+    // retorna um jogo simples mesmo
+    const faixas = dividirPorFaixa();
+    const faixasVazias = escolherFaixasVazias(faixas);
+    const faixasAtivas = faixas.filter(f => !faixasVazias.includes(f));
+    let numerosDisponiveis = faixasAtivas.flatMap(f => f.numeros);
+
+    let jogoFinal = [];
+
+    while (jogoFinal.length < 6) {
+        let numero = pegarNumeroAleatorio(numerosDisponiveis);
+
+        if (!jogoFinal.includes(numero)) {
+            jogoFinal.push(numero);
+        }
+    }
+
+    return jogoFinal.sort((a, b) => a - b);
+}
 
     // Ordena os números
     jogo.sort((a, b) => a - b);
