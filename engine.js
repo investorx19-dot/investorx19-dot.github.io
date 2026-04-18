@@ -119,9 +119,3 @@ export function gerarJogo() {
 
     return jogoFinal.sort((a, b) => a - b);
 }
-
-    // Ordena os números
-    jogo.sort((a, b) => a - b);
-
-    return jogo;
-}
