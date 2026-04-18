@@ -939,15 +939,29 @@
 
     async function saveConfig(){
       try{
-        const linhasAtivas = [...document.querySelectorAll(".linha:checked")].map(el => Number(el.value));
-        const anterior = parseNumsFromInputs(".anterior");
-        const atrasadas = parseNumsFromInputs(".atrasada");
-        const resultado = parseNumsFromInputs(".resultado");
+    const modoLinhasVazias = document.getElementById('modoLinhasVazias')?.value || 'automatico';
+const repeticaoUltimoConcurso = document.getElementById('repeticaoUltimoConcurso')?.value || 'automatico';
+const modoAtrasadas = document.getElementById('modoAtrasadas')?.value || 'nenhum';
 
-        if(linhasAtivas.length === 0){
-          toast("Selecione pelo menos 1 linha ativa.", "error");
-          return;
-        }
+let linhasAtivas = [];
+
+if (modoLinhasVazias === 'manual') {
+  const selecionadas = Array.from(
+    document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')
+  ).map(el => Number(el.value));
+
+  // no modo manual, as marcadas podem ficar vazias
+  // então as ativas são as que não foram marcadas
+  linhasAtivas = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
+
+  if (linhasAtivas.length === 0) {
+    toast('No modo manual, deixe pelo menos 1 linha ativa.', 'error');
+    return;
+  }
+} else {
+  // modo automático: todas ficam disponíveis
+  linhasAtivas = [1, 2, 3, 4, 5, 6];
+}
 
         if(anterior.length !== 6){
           toast("Preencha as 6 dezenas do sorteio anterior.", "error");
@@ -964,13 +978,16 @@
           return;
         }
 
-        await setDoc(doc(db, "config", "global"), {
-          linhasAtivas,
-          dezenasAnteriores: anterior,
-          dezenasAtrasadas: atrasadas,
-          resultadoOficial: resultado,
-          updatedAt: Date.now()
-        }, { merge: true });
+    await setDoc(doc(db, "config", "global"), {
+  linhasAtivas,
+  modoLinhasVazias,
+  repeticaoUltimoConcurso,
+  modoAtrasadas,
+  dezenasAnteriores: anterior,
+  dezenasAtrasadas: atrasadas,
+  resultadoOficial: resultado,
+  updatedAt: Date.now()
+}, { merge: true });
 
         toast("Config salva com sucesso.", "ok");
       } catch(err){
