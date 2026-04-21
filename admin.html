@@ -905,38 +905,61 @@
       await carregarJogosGerados();
     });
 
-    async function loadConfig(){
-      try{
-        const ref = doc(db, "config", "global");
-        const snap = await getDoc(ref);
+ async function loadConfig() {
+  try {
+    const ref = doc(db, "config", "global");
+    const snap = await getDoc(ref);
 
-        let linhasAtivas = [];
-        let dezenasAnteriores = [];
-        let dezenasAtrasadas = [];
-        let resultadoOficial = [];
+    let linhasAtivas = [];
+    let dezenasAnteriores = [];
+    let dezenasAtrasadas = [];
+    let resultadoOficial = [];
+    let modoLinhasVazias = "automatico";
+    let repeticaoUltimoConcurso = "automatico";
+    let modoAtrasadas = "nenhum";
 
-        if(snap.exists()){
-          const data = snap.data();
-          linhasAtivas = data.linhasAtivas || [];
-          dezenasAnteriores = data.dezenasAnteriores || [];
-          dezenasAtrasadas = data.dezenasAtrasadas || [];
-          resultadoOficial = data.resultadoOficial || [];
-        }
+    if (snap.exists()) {
+      const data = snap.data();
 
-        document.querySelectorAll(".linha").forEach(cb => {
-          cb.checked = linhasAtivas.includes(Number(cb.value));
-        });
-
-        setInputsFromArray(".anterior", dezenasAnteriores);
-        setInputsFromArray(".atrasada", dezenasAtrasadas);
-        setInputsFromArray(".resultado", resultadoOficial);
-        toast("Config carregada.", "ok");
-      }catch(err){
-        console.error(err);
-        toast("Erro ao carregar config.", "error");
-      }
+      linhasAtivas = data.linhasAtivas || [];
+      dezenasAnteriores = data.dezenasAnteriores || [];
+      dezenasAtrasadas = data.dezenasAtrasadas || [];
+      resultadoOficial = data.resultadoOficial || [];
+      modoLinhasVazias = data.modoLinhasVazias || "automatico";
+      repeticaoUltimoConcurso = data.repeticaoUltimoConcurso || "automatico";
+      modoAtrasadas = data.modoAtrasadas || "nenhum";
     }
 
+    // restaura os selects
+    const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
+    const elRepeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso");
+    const elModoAtrasadas = document.getElementById("modoAtrasadas");
+
+    if (elModoLinhasVazias) elModoLinhasVazias.value = modoLinhasVazias;
+    if (elRepeticaoUltimoConcurso) elRepeticaoUltimoConcurso.value = repeticaoUltimoConcurso;
+    if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
+
+    // restaura checkboxes das linhas vazias manuais
+    const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
+
+    checkboxes.forEach(cb => {
+      const numeroLinha = Number(cb.value);
+
+      // se a linha NÃO está ativa, ela é vazia no modo manual
+      cb.checked = !linhasAtivas.includes(numeroLinha);
+    });
+
+    // restaura dezenas
+    setInputsFromArray(".anterior", dezenasAnteriores);
+    setInputsFromArray(".atrasada", dezenasAtrasadas);
+    setInputsFromArray(".resultado", resultadoOficial);
+
+    toast("Config carregada.", "ok");
+  } catch (err) {
+    console.error(err);
+    toast("Erro ao carregar config.", "error");
+  }
+}
  async function saveConfig() {
   try {
     const modoLinhasVazias = document.getElementById('modoLinhasVazias')?.value || 'automatico';
