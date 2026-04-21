@@ -127,25 +127,61 @@ function escolherQuantidadeFaixasVazias() {
     if (random < 0.3) return 2;
     return 1;
 }
+function calcularPesoFaixas(faixas, historico) {
+    const contagem = {};
 
-// 🎯 Decide quais faixas ficarão vazias com peso
-function escolherFaixasVazias(faixas, historico = []) {
-    const quantidade = escolherQuantidadeFaixasVazias();
-    const pesos = calcularPesosLinhasVazias(historico);
+    // inicia contagem
+    faixas.forEach(f => contagem[f.nome] = 0);
 
-    let faixasDisponiveis = [...faixas];
-    let vazias = [];
+    // percorre histórico
+    historico.forEach(jogo => {
+        jogo.forEach(numero => {
+            faixas.forEach(faixa => {
+                if (faixa.numeros.includes(numero)) {
+                    contagem[faixa.nome]++;
+                }
+            });
+        });
+    });
+
+    // transforma em pesos (menos frequente = maior peso)
+    const pesos = faixas.map(f => {
+        const freq = contagem[f.nome];
+        return {
+            faixa: f,
+            peso: 1 / (freq + 1)
+        };
+    });
+
+    return pesos;
+}
+function escolherFaixasVazias(faixas, historico) {
+    const pesos = calcularPesoFaixas(faixas, historico);
+
+    const random = Math.random();
+
+    let quantidade = 1;
+    if (random < 0.3) quantidade = 2;
+    if (random < 0.1) quantidade = 0;
+
+    let selecionadas = [];
 
     for (let i = 0; i < quantidade; i++) {
-        if (faixasDisponiveis.length === 0) break;
+        let totalPeso = pesos.reduce((acc, p) => acc + p.peso, 0);
+        let r = Math.random() * totalPeso;
 
-        const escolhida = escolherLinhaComPeso(faixasDisponiveis, pesos);
-        vazias.push(escolhida);
+        for (let j = 0; j < pesos.length; j++) {
+            r -= pesos[j].peso;
 
-        faixasDisponiveis = faixasDisponiveis.filter(f => f.id !== escolhida.id);
+            if (r <= 0) {
+                selecionadas.push(pesos[j].faixa);
+                pesos.splice(j, 1);
+                break;
+            }
+        }
     }
 
-    return vazias;
+    return selecionadas;
 }
 
 // 🧠 Geração principal do jogo

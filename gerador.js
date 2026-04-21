@@ -34,10 +34,14 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
     excluidas = new Set(Array.isArray(excluidas) ? excluidas : []);
   }
 
-  // 👉 Se não tiver linhas definidas, usa o engine inteligente
-  if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0) {
-    return gerarJogoInteligente(quantidade, historico);
-  }
+ const modoAutomatico =
+  Array.isArray(linhasAtivas) &&
+  linhasAtivas.length === 6 &&
+  [1, 2, 3, 4, 5, 6].every(l => linhasAtivas.includes(l));
+
+if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico) {
+  return gerarJogoInteligente(quantidade);
+}
 
   if (quantidade < linhasAtivas.length) {
     throw new Error(
