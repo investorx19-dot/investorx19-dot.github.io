@@ -118,9 +118,14 @@
     .sep{height:1px;background: var(--line);margin:12px 0}
     .small{font-size:12px;color: var(--muted)}
 
-    label{font-size:13px;color:var(--muted)}
+    label{
+      font-size:13px;
+      color:var(--muted);
+      display:block;
+      margin-bottom:6px;
+    }
 
-    input{
+    input, select{
       width:100%;
       padding:11px 12px;
       border-radius:12px;
@@ -174,9 +179,13 @@
       border-radius:14px;
       cursor:pointer;
       user-select:none;
+      margin-bottom:0;
     }
 
-    .checkboxes input{width:auto}
+    .checkboxes input[type="checkbox"]{
+      width:auto;
+      margin:0;
+    }
 
     .toast{
       display:none;
@@ -366,7 +375,6 @@
             <h3>Histórico de Processamentos</h3>
             <div id="historicoProcessamentosLista" class="historico-lista">
               <div class="muted">Nenhum processamento ainda.</div>
-             
             </div>
           </div>
 
@@ -420,54 +428,65 @@
           <div class="sep"></div>
 
           <h2>1) Linhas Ativas</h2>
+
           <div class="config-bloco">
-  <h3>Linhas em branco</h3>
+            <h3>Linhas em branco</h3>
 
-  <label for="modoLinhasVazias">Modo:</label>
-  <select id="modoLinhasVazias">
-    <option value="automatico">Automático</option>
-    <option value="manual">Manual</option>
-  </select>
+            <label for="modoLinhasVazias">Modo:</label>
+            <select id="modoLinhasVazias">
+              <option value="automatico">Automático</option>
+              <option value="manual">Manual</option>
+            </select>
 
-  <div id="linhasVaziasManuais" style="margin-top: 10px; display: none;">
-    <p>Escolha manualmente quais linhas podem ficar em branco:</p>
+            <div id="linhasVaziasManuais" class="checkboxes" style="margin-top: 10px; display: none;">
+              <p style="margin:0 0 4px">Escolha manualmente quais linhas podem ficar em branco:</p>
 
-    <label><input type="checkbox" value="1"> Linha 1 (1-10)</label><br>
-    <label><input type="checkbox" value="2"> Linha 2 (11-20)</label><br>
-    <label><input type="checkbox" value="3"> Linha 3 (21-30)</label><br>
-    <label><input type="checkbox" value="4"> Linha 4 (31-40)</label><br>
-    <label><input type="checkbox" value="5"> Linha 5 (41-50)</label><br>
-    <label><input type="checkbox" value="6"> Linha 6 (51-60)</label>
-  </div>
-</div>
-
-          <div class="sep"></div>
-
-       <div class="config-bloco">
-  <h3>Repetição do último concurso</h3>
-
-  <label for="repeticaoUltimoConcurso">Permitir repetição de dezenas do último concurso:</label>
-  <select id="repeticaoUltimoConcurso">
-    <option value="automatico">Automático</option>
-    <option value="0">Não permitir repetidas</option>
-    <option value="1">Permitir até 1 repetida</option>
-    <option value="2">Permitir até 2 repetidas</option>
-  </select>
-</div>
+              <label><input type="checkbox" value="1"> Linha 1 (1-10)</label>
+              <label><input type="checkbox" value="2"> Linha 2 (11-20)</label>
+              <label><input type="checkbox" value="3"> Linha 3 (21-30)</label>
+              <label><input type="checkbox" value="4"> Linha 4 (31-40)</label>
+              <label><input type="checkbox" value="5"> Linha 5 (41-50)</label>
+              <label><input type="checkbox" value="6"> Linha 6 (51-60)</label>
+            </div>
+          </div>
 
           <div class="sep"></div>
 
-       <div class="config-bloco">
-  <h3>Dezenas atrasadas</h3>
+          <div class="config-bloco">
+            <h3>Repetição do último concurso</h3>
 
-  <label for="modoAtrasadas">Tratamento:</label>
-  <select id="modoAtrasadas">
-    <option value="nenhum">Não considerar</option>
-    <option value="leve">Penalização leve</option>
-    <option value="media">Penalização média</option>
-    <option value="forte">Penalização forte</option>
-  </select>
-</div>
+            <label for="repeticaoUltimoConcurso">Permitir repetição de dezenas do último concurso:</label>
+            <select id="repeticaoUltimoConcurso">
+              <option value="automatico">Automático</option>
+              <option value="0">Não permitir repetidas</option>
+              <option value="1">Permitir até 1 repetida</option>
+              <option value="2">Permitir até 2 repetidas</option>
+            </select>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="config-bloco">
+            <h3>Dezenas atrasadas</h3>
+
+            <label for="modoAtrasadas">Tratamento:</label>
+            <select id="modoAtrasadas">
+              <option value="nenhum">Não considerar</option>
+              <option value="leve">Penalização leve</option>
+              <option value="media">Penalização média</option>
+              <option value="forte">Penalização forte</option>
+            </select>
+          </div>
+
+          <div class="sep"></div>
+
+          <h2>2) Sorteio anterior (6)</h2>
+          <div class="nums" id="prevBox"></div>
+
+          <div class="sep"></div>
+
+          <h2>3) Dezenas mais atrasadas (5)</h2>
+          <div class="nums five" id="lateBox"></div>
 
           <div class="sep"></div>
 
@@ -609,19 +628,19 @@
     }
 
     function formatarPlano(plano) {
-  if (plano === "basico") return "Básico";
-  if (plano === "intermediario") return "Intermediário";
-  if (plano === "premium") return "Premium";
-  return "-";
-}
+      if (plano === "basico") return "Básico";
+      if (plano === "intermediario") return "Intermediário";
+      if (plano === "premium") return "Premium";
+      return "-";
+    }
 
-   function formatarPagamento(status) {
-  if (status === "paid") return "Pago";
-  if (status === "pending") return "Pendente";
-  if (status === "trial") return "Teste grátis";
-  if (status === "expired") return "Expirado";
-  return "-";
-}
+    function formatarPagamento(status) {
+      if (status === "paid") return "Pago";
+      if (status === "pending") return "Pendente";
+      if (status === "trial") return "Teste grátis";
+      if (status === "expired") return "Expirado";
+      return "-";
+    }
 
     function formatarData(timestamp){
       if(!timestamp) return "-";
@@ -646,27 +665,27 @@
       });
     }
 
-  function mkNumberInputs(containerId, cssClass, count){
-  const box = document.getElementById(containerId);
+    function mkNumberInputs(containerId, cssClass, count){
+      const box = document.getElementById(containerId);
 
-  if (!box) {
-    console.warn("Container não encontrado:", containerId);
-    return;
-  }
+      if (!box) {
+        console.warn("Container não encontrado:", containerId);
+        return;
+      }
 
-  box.innerHTML = "";
+      box.innerHTML = "";
 
-  for (let i = 0; i < count; i++) {
-    const input = document.createElement("input");
-    input.type = "number";
-    input.min = "1";
-    input.max = "60";
-    input.placeholder = "00";
-    input.className = cssClass;
-    input.inputMode = "numeric";
-    box.appendChild(input);
-  }
-}
+      for (let i = 0; i < count; i++) {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "1";
+        input.max = "60";
+        input.placeholder = "00";
+        input.className = cssClass;
+        input.inputMode = "numeric";
+        box.appendChild(input);
+      }
+    }
 
     mkNumberInputs("prevBox", "anterior", 6);
     mkNumberInputs("lateBox", "atrasada", 5);
@@ -680,7 +699,7 @@
 
     function setInputsFromArray(selector, arr){
       const inputs = [...document.querySelectorAll(selector)];
-      for(let i=0;i<inputs.length;i++){
+      for(let i = 0; i < inputs.length; i++){
         inputs[i].value = (arr && arr[i] != null) ? String(arr[i]) : "";
       }
     }
@@ -765,13 +784,13 @@
         });
 
         toast(
-  "Processamento concluído. " +
-  totalJogosProcessados +
-  " jogo(s) processado(s) e " +
-  totalAcertosSomados +
-  " acerto(s).",
-  "ok"
-);
+          "Processamento concluído. " +
+          totalJogosProcessados +
+          " jogo(s) processado(s) e " +
+          totalAcertosSomados +
+          " acerto(s).",
+          "ok"
+        );
 
         await carregarResumoAdmin();
         await carregarHistoricoProcessamentos();
@@ -821,42 +840,49 @@
       }
     }
 
- async function carregarHistoricoProcessamentos() {
-  try {
-    const box = document.getElementById("historicoProcessamentosLista")
+    async function carregarHistoricoProcessamentos() {
+      try {
+        const box = document.getElementById("historicoProcessamentosLista");
 
-    if (!box) {
-      console.warn("Container do histórico não encontrado");
-      return;
+        if (!box) {
+          console.warn("Container do histórico não encontrado");
+          return;
+        }
+
+        box.innerHTML = "";
+
+        const querySnapshot = await getDocs(collection(db, "historicoProcessamentos"));
+        const items = [];
+
+        querySnapshot.forEach(docItem => {
+          items.push(docItem.data());
+        });
+
+        items.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+        if (!items.length) {
+          box.innerHTML = '<div class="muted">Nenhum processamento ainda.</div>';
+          return;
+        }
+
+        items.slice(0, 10).forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "historico-item";
+
+          div.innerHTML = `
+            <div><strong>Resultado:</strong> ${escapeHtml(item.resultadoTexto || "")}</div>
+            <div class="small">Jogos processados: ${Number(item.jogosProcessados || 0)}</div>
+            <div class="small">Acertos somados: ${Number(item.acertosSomados || 0)}</div>
+            <div class="small">Data: ${escapeHtml(formatarDataHora(item.createdAt))}</div>
+          `;
+
+          box.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error("Erro ao carregar histórico:", err);
+      }
     }
-
-    box.innerHTML = "";
-
-    const querySnapshot = await getDocs(collection(db, "historico"));
-    const items = [];
-
-    querySnapshot.forEach(doc => {
-      items.push(doc.data());
-    });
-
-    items.slice(0, 10).forEach((item) => {
-      const div = document.createElement("div");
-      div.className = "historico-item";
-
-      div.innerHTML = `
-        <div><strong>Resultado:</strong> ${escapeHtml(item.resultadoTexto || "")}</div>
-        <div class="small">Jogos processados: ${Number(item.jogosProcessados || 0)}</div>
-        <div class="small">Acertos somados: ${Number(item.acertosSomados || 0)}</div>
-        <div class="small">Data: ${escapeHtml(formatarDataHora(item.createdAt))}</div>
-      `;
-
-      box.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error("Erro ao carregar histórico:", err);
-  }
-}
 
     $("btnLogin").addEventListener("click", async () => {
       const email = $("adminEmail").value.trim();
@@ -906,122 +932,131 @@
       await carregarJogosGerados();
     });
 
- async function loadConfig() {
-  try {
-    const ref = doc(db, "config", "global");
-    const snap = await getDoc(ref);
+    function atualizarExibicaoLinhasVazias() {
+      const modoLinhasVazias = document.getElementById("modoLinhasVazias");
+      const linhasVaziasManuais = document.getElementById("linhasVaziasManuais");
 
-    let linhasAtivas = [];
-    let dezenasAnteriores = [];
-    let dezenasAtrasadas = [];
-    let resultadoOficial = [];
-    let modoLinhasVazias = "automatico";
-    let repeticaoUltimoConcurso = "automatico";
-    let modoAtrasadas = "nenhum";
+      if (!modoLinhasVazias || !linhasVaziasManuais) return;
 
-    if (snap.exists()) {
-      const data = snap.data();
-
-      linhasAtivas = data.linhasAtivas || [];
-      dezenasAnteriores = data.dezenasAnteriores || [];
-      dezenasAtrasadas = data.dezenasAtrasadas || [];
-      resultadoOficial = data.resultadoOficial || [];
-      modoLinhasVazias = data.modoLinhasVazias || "automatico";
-      repeticaoUltimoConcurso = data.repeticaoUltimoConcurso || "automatico";
-      modoAtrasadas = data.modoAtrasadas || "nenhum";
+      linhasVaziasManuais.style.display =
+        modoLinhasVazias.value === "manual" ? "grid" : "none";
     }
 
-    // restaura os selects
-    const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
-    const elRepeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso");
-    const elModoAtrasadas = document.getElementById("modoAtrasadas");
+    async function loadConfig() {
+      try {
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
 
-    if (elModoLinhasVazias) elModoLinhasVazias.value = modoLinhasVazias;
-    if (elRepeticaoUltimoConcurso) elRepeticaoUltimoConcurso.value = repeticaoUltimoConcurso;
-    if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
+        let linhasAtivas = [];
+        let dezenasAnteriores = [];
+        let dezenasAtrasadas = [];
+        let resultadoOficial = [];
+        let modoLinhasVazias = "automatico";
+        let repeticaoUltimoConcurso = "automatico";
+        let modoAtrasadas = "nenhum";
 
-    // restaura checkboxes das linhas vazias manuais
-    const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
+        if (snap.exists()) {
+          const data = snap.data();
 
-    checkboxes.forEach(cb => {
-      const numeroLinha = Number(cb.value);
+          linhasAtivas = data.linhasAtivas || [];
+          dezenasAnteriores = data.dezenasAnteriores || [];
+          dezenasAtrasadas = data.dezenasAtrasadas || [];
+          resultadoOficial = data.resultadoOficial || [];
+          modoLinhasVazias = data.modoLinhasVazias || "automatico";
+          repeticaoUltimoConcurso = String(data.repeticaoUltimoConcurso ?? "automatico");
+          modoAtrasadas = data.modoAtrasadas || "nenhum";
+        }
 
-      // se a linha NÃO está ativa, ela é vazia no modo manual
-      cb.checked = !linhasAtivas.includes(numeroLinha);
-    });
+        const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
+        const elRepeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso");
+        const elModoAtrasadas = document.getElementById("modoAtrasadas");
 
-    // restaura dezenas
-    setInputsFromArray(".anterior", dezenasAnteriores);
-    setInputsFromArray(".atrasada", dezenasAtrasadas);
-    setInputsFromArray(".resultado", resultadoOficial);
+        if (elModoLinhasVazias) elModoLinhasVazias.value = modoLinhasVazias;
+        if (elRepeticaoUltimoConcurso) elRepeticaoUltimoConcurso.value = repeticaoUltimoConcurso;
+        if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
 
-    toast("Config carregada.", "ok");
-  } catch (err) {
-    console.error(err);
-    toast("Erro ao carregar config.", "error");
-  }
-}
- async function saveConfig() {
-  try {
-    const modoLinhasVazias = document.getElementById('modoLinhasVazias')?.value || 'automatico';
-    const repeticaoUltimoConcurso = document.getElementById('repeticaoUltimoConcurso')?.value || 'automatico';
-    const modoAtrasadas = document.getElementById('modoAtrasadas')?.value || 'nenhum';
+        const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
 
-    const anterior = parseNumsFromInputs('.anterior');
-    const atrasadas = parseNumsFromInputs('.atrasada');
-    const resultado = parseNumsFromInputs('.resultado');
-console.log("anterior =", anterior, "total =", anterior.length);
-console.log("atrasadas =", atrasadas, "total =", atrasadas.length);
-console.log("resultado =", resultado, "total =", resultado.length);
-    let linhasAtivas = [];
+        checkboxes.forEach(cb => {
+          const numeroLinha = Number(cb.value);
+          cb.checked = !linhasAtivas.includes(numeroLinha);
+        });
 
-    if (modoLinhasVazias === 'manual') {
-      const selecionadas = Array.from(
-        document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')
-      ).map(el => Number(el.value));
+        setInputsFromArray(".anterior", dezenasAnteriores);
+        setInputsFromArray(".atrasada", dezenasAtrasadas);
+        setInputsFromArray(".resultado", resultadoOficial);
 
-      linhasAtivas = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
-
-      if (linhasAtivas.length === 0) {
-        toast('No modo manual, deixe pelo menos 1 linha ativa.', 'error');
-        return;
+        atualizarExibicaoLinhasVazias();
+        toast("Config carregada.", "ok");
+      } catch (err) {
+        console.error(err);
+        toast("Erro ao carregar config.", "error");
       }
-    } else {
-      linhasAtivas = [1, 2, 3, 4, 5, 6];
     }
 
-    if (anterior.length !== 6) {
-      toast("Preencha as 6 dezenas do sorteio anterior.", "error");
-      return;
+    async function saveConfig() {
+      try {
+        const modoLinhasVazias = document.getElementById("modoLinhasVazias")?.value || "automatico";
+        const repeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso")?.value || "automatico";
+        const modoAtrasadas = document.getElementById("modoAtrasadas")?.value || "nenhum";
+
+        const anterior = parseNumsFromInputs(".anterior");
+        const atrasadas = parseNumsFromInputs(".atrasada");
+        const resultado = parseNumsFromInputs(".resultado");
+
+        console.log("anterior =", anterior, "total =", anterior.length);
+        console.log("atrasadas =", atrasadas, "total =", atrasadas.length);
+        console.log("resultado =", resultado, "total =", resultado.length);
+
+        let linhasAtivas = [];
+
+        if (modoLinhasVazias === "manual") {
+          const selecionadas = Array.from(
+            document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')
+          ).map(el => Number(el.value));
+
+          linhasAtivas = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
+
+          if (linhasAtivas.length === 0) {
+            toast("No modo manual, deixe pelo menos 1 linha ativa.", "error");
+            return;
+          }
+        } else {
+          linhasAtivas = [1, 2, 3, 4, 5, 6];
+        }
+
+        if (anterior.length !== 6) {
+          toast("Preencha as 6 dezenas do sorteio anterior.", "error");
+          return;
+        }
+
+        if (atrasadas.length !== 5) {
+          toast("Preencha as 5 dezenas mais atrasadas.", "error");
+          return;
+        }
+
+        if (resultado.length !== 6) {
+          toast("Preencha as 6 dezenas do resultado oficial.", "error");
+          return;
+        }
+
+        await setDoc(doc(db, "config", "global"), {
+          linhasAtivas,
+          modoLinhasVazias,
+          repeticaoUltimoConcurso,
+          modoAtrasadas,
+          dezenasAnteriores: anterior,
+          dezenasAtrasadas: atrasadas,
+          resultadoOficial: resultado,
+          updatedAt: Date.now()
+        }, { merge: true });
+
+        toast("Config salva com sucesso.", "ok");
+      } catch (err) {
+        console.error(err);
+        toast("Erro ao salvar config.", "error");
+      }
     }
-
-    if (atrasadas.length !== 5) {
-      toast("Preencha as 5 dezenas mais atrasadas.", "error");
-      return;
-    }
-
-    if (resultado.length !== 6) {
-      toast("Preencha as 6 dezenas do resultado oficial.", "error");
-      return;
-    }
-
-    await setDoc(doc(db, "config", "global"), {
-      linhasAtivas,
-      modoLinhasVazias,
-      repeticaoUltimoConcurso,
-      modoAtrasadas,
-      dezenasAnteriores: anterior,
-      dezenasAtrasadas: atrasadas,
-      resultadoOficial: resultado,
-      updatedAt: Date.now()
-    }, { merge: true });
-
-    toast("Config salva com sucesso.", "ok");
-  } catch (err) {
-    console.error(err);
-    toast("Erro ao salvar config.", "error");
-  }
-}
 
     $("btnLoadConfig").addEventListener("click", loadConfig);
     $("btnProcessarResultado").addEventListener("click", processarResultadoOficial);
@@ -1060,14 +1095,14 @@ console.log("resultado =", resultado, "total =", resultado.length);
           .sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
 
         $("dupInfo").textContent =
-  duplicatesHidden > 0
-    ? "Aviso: " + duplicatesHidden + " duplicado(s) ocultado(s) por e-mail"
-    : "Sem duplicações detectadas.";
+          duplicatesHidden > 0
+            ? "Aviso: " + duplicatesHidden + " duplicado(s) ocultado(s) por e-mail"
+            : "Sem duplicações detectadas.";
 
-if (uniqueUsers.length === 0) {
-  tbody.innerHTML = '<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>';
-  return;
-}
+        if (uniqueUsers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>';
+          return;
+        }
 
         tbody.innerHTML = "";
 
@@ -1076,60 +1111,60 @@ if (uniqueUsers.length === 0) {
           const phone = (u.telefone || u.phone || "").toString();
           const plano = formatarPlano(u.plan || "");
           const pagamento = formatarPagamento(u.paymentStatus || "");
-         const vencimento = formatarData(
-  u.paymentStatus === "paid"
-    ? (u.expiresAt || u.accessExpiresAt || null)
-    : (u.trialFim || null)
-);
+          const vencimento = formatarData(
+            u.paymentStatus === "paid"
+              ? (u.expiresAt || u.accessExpiresAt || null)
+              : (u.trialFim || null)
+          );
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
-  <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
-  <td class="mono">${escapeHtml(u.email || "")}</td>
-  <td class="mono">${escapeHtml(phone || "-")}</td>
-  <td>${escapeHtml(plano)}</td>
-  <td>${escapeHtml(pagamento)}</td>
-  <td class="mono">${escapeHtml(vencimento)}</td>
-  <td class="right">
-    <span class="status">
-      <span class="dot ${granted ? "green" : "red"}"></span>
-      ${granted ? "Liberado" : "Bloqueado"}
-    </span>
-  </td>
-  <td class="right">
-    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
-      <button class="btn ${granted ? "danger" : "success"}"
-              data-userid="${escapeHtml(u.id)}"
-              data-granted="${granted}">
-        ${granted ? "Bloquear" : "Liberar"}
-      </button>
+            <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
+            <td class="mono">${escapeHtml(u.email || "")}</td>
+            <td class="mono">${escapeHtml(phone || "-")}</td>
+            <td>${escapeHtml(plano)}</td>
+            <td>${escapeHtml(pagamento)}</td>
+            <td class="mono">${escapeHtml(vencimento)}</td>
+            <td class="right">
+              <span class="status">
+                <span class="dot ${granted ? "green" : "red"}"></span>
+                ${granted ? "Liberado" : "Bloqueado"}
+              </span>
+            </td>
+            <td class="right">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
+                <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-granted="${granted}">
+                  ${granted ? "Bloquear" : "Liberar"}
+                </button>
 
-      <div class="acoes-dias">
-  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
-  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
-  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
-</div>
-    </div>
-  </td>
-`;
+                <div class="acoes-dias">
+                  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
+                  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
+                  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
+                </div>
+              </div>
+            </td>
+          `;
           tbody.appendChild(tr);
         }
 
-        tbody.querySelectorAll("button[data-plano]").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const userId = btn.getAttribute("data-userid");
-    const plano = btn.getAttribute("data-plano");
-    await liberarPlano(userId, plano);
-  });
-});
+        tbody.querySelectorAll(".btn-toggle-access").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const granted = btn.getAttribute("data-granted") === "true";
+            await toggleAccess(userId, !granted);
+          });
+        });
 
         tbody.querySelectorAll("button[data-plano]").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const userId = btn.getAttribute("data-userid");
-    const plano = btn.getAttribute("data-plano");
-    await liberarPlano(userId, plano);
-  });
-});
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const plano = btn.getAttribute("data-plano");
+            await liberarPlano(userId, plano);
+          });
+        });
 
       } catch(err){
         console.error(err);
@@ -1154,131 +1189,121 @@ if (uniqueUsers.length === 0) {
     }
 
     async function liberarPlano(userDocId, planoNome){
-  try{
-    const agora = Date.now();
+      try{
+        const agora = Date.now();
 
-    let plan = "basico";
-    let maxDezenas = 6;
-    let maxCotas = 1;
-    let limiteJogosDia = 10;
-    let preco = 19.90;
+        let plan = "basico";
+        let maxDezenas = 6;
+        let maxCotas = 1;
+        let limiteJogosDia = 10;
+        let preco = 19.90;
 
-    if (planoNome === "intermediario") {
-      plan = "intermediario";
-      maxDezenas = 10;
-      maxCotas = 10;
-      limiteJogosDia = 30;
-      preco = 39.90;
+        if (planoNome === "intermediario") {
+          plan = "intermediario";
+          maxDezenas = 10;
+          maxCotas = 10;
+          limiteJogosDia = 30;
+          preco = 39.90;
+        }
+
+        if (planoNome === "premium") {
+          plan = "premium";
+          maxDezenas = 15;
+          maxCotas = 9999;
+          limiteJogosDia = 9999;
+          preco = 79.90;
+        }
+
+        const trintaDias = 30 * 24 * 60 * 60 * 1000;
+        const vencimentoPlano = agora + trintaDias;
+
+        await updateDoc(doc(db, "users", userDocId), {
+          accessGranted: true,
+          paymentStatus: "paid",
+          trialAtivo: false,
+          plan: plan,
+          maxDezenas: maxDezenas,
+          maxCotas: maxCotas,
+          limiteJogosDia: limiteJogosDia,
+          valorPlano: preco,
+          paidAt: agora,
+          expiresAt: vencimentoPlano,
+          updatedAt: agora
+        });
+
+        toast("Plano atualizado com sucesso.", "ok");
+        await loadUsers();
+        await carregarResumoAdmin();
+
+      } catch(err){
+        console.error(err);
+        toast("Erro ao liberar plano.", "error");
+      }
     }
 
-    if (planoNome === "premium") {
-      plan = "premium";
-      maxDezenas = 15;
-      maxCotas = 9999;
-      limiteJogosDia = 9999;
-      preco = 79.90;
+    async function carregarJogosGerados() {
+      const tbody = $("jogosTbody");
+      tbody.innerHTML = '<tr><td colspan="10" class="small">Carregando...</td></tr>';
+
+      try {
+        const snap = await getDocs(collection(db, "jogosGerados"));
+        const jogos = [];
+
+        snap.forEach((docItem) => {
+          jogos.push(docItem.data());
+        });
+
+        jogos.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+        if (!jogos.length) {
+          tbody.innerHTML = '<tr><td colspan="10" class="small">Nenhum jogo encontrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+
+        jogos.forEach((dados) => {
+          const nome = dados.nome || "";
+          const email = dados.email || "";
+          const jogo = Array.isArray(dados.jogo) ? dados.jogo.join(" - ") : "";
+          const tipoAposta = dados.tipoAposta || "simples";
+          const qtdDezenas = dados.qtdDezenas || 6;
+          const qtdCotas = dados.qtdCotas || 1;
+          const valorTotal = Number(dados.valorTotal || 0);
+          const valorPorPessoa = Number(dados.valorPorPessoa || 0);
+          const acertos = Number(dados.acertos || 0);
+          const data = formatarDataHora(dados.createdAt);
+
+          const tr = document.createElement("tr");
+          const tipoHtml = tipoAposta === "bolao"
+            ? '<span class="tag-bolao">Bolão</span>'
+            : '<span class="tag-simples">Simples</span>';
+
+          tr.innerHTML =
+            "<td>" + escapeHtml(nome) + "</td>" +
+            '<td class="mono">' + escapeHtml(email) + "</td>" +
+            '<td class="mono">' + escapeHtml(jogo) + "</td>" +
+            "<td>" + tipoHtml + "</td>" +
+            "<td>" + escapeHtml(String(qtdDezenas)) + "</td>" +
+            "<td>" + escapeHtml(String(qtdCotas)) + "</td>" +
+            "<td>" + escapeHtml(formatarMoeda(valorTotal)) + "</td>" +
+            "<td>" + escapeHtml(formatarMoeda(valorPorPessoa)) + "</td>" +
+            "<td>" + escapeHtml(String(acertos)) + "</td>" +
+            "<td>" + escapeHtml(data) + "</td>";
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Erro ao carregar jogos gerados:", err);
+        tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
+      }
     }
 
-  const trintaDias = 30 * 24 * 60 * 60 * 1000;
-const vencimentoPlano = agora + trintaDias;
+    document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
 
-await updateDoc(doc(db, "users", userDocId), {
-  accessGranted: true,
-  paymentStatus: "paid",
-  trialAtivo: false,
-  plan: plan,
-  maxDezenas: maxDezenas,
-  maxCotas: maxCotas,
-  limiteJogosDia: limiteJogosDia,
-  valorPlano: preco,
-  paidAt: agora,
-  expiresAt: vencimentoPlano,
-  updatedAt: agora
-});
-
-    toast("Plano atualizado com sucesso.", "ok");
-    await loadUsers();
-    await carregarResumoAdmin();
-
-  } catch(err){
-    console.error(err);
-    toast("Erro ao liberar plano.", "error");
-  }
-}
-
-     async function carregarJogosGerados() {
-  const tbody = $("jogosTbody");
-  tbody.innerHTML = '<tr><td colspan="10" class="small">Carregando...</td></tr>';
-
-  try {
-    const snap = await getDocs(collection(db, "jogosGerados"));
-    const jogos = [];
-
-    snap.forEach((docItem) => {
-      jogos.push(docItem.data());
+    window.addEventListener("DOMContentLoaded", async () => {
+      atualizarExibicaoLinhasVazias();
     });
-
-    jogos.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-
-    if (!jogos.length) {
-      tbody.innerHTML = '<tr><td colspan="10" class="small">Nenhum jogo encontrado.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = "";
-
-    jogos.forEach((dados) => {
-      const nome = dados.nome || "";
-      const email = dados.email || "";
-      const jogo = Array.isArray(dados.jogo) ? dados.jogo.join(" - ") : "";
-      const tipoAposta = dados.tipoAposta || "simples";
-      const qtdDezenas = dados.qtdDezenas || 6;
-      const qtdCotas = dados.qtdCotas || 1;
-      const valorTotal = Number(dados.valorTotal || 0);
-      const valorPorPessoa = Number(dados.valorPorPessoa || 0);
-      const acertos = Number(dados.acertos || 0);
-      const data = formatarDataHora(dados.createdAt);
-
-      const tr = document.createElement("tr");
-      const tipoHtml = tipoAposta === "bolao"
-        ? '<span class="tag-bolao">Bolão</span>'
-        : '<span class="tag-simples">Simples</span>';
-
-      tr.innerHTML =
-        "<td>" + escapeHtml(nome) + "</td>" +
-        '<td class="mono">' + escapeHtml(email) + "</td>" +
-        '<td class="mono">' + escapeHtml(jogo) + "</td>" +
-        "<td>" + tipoHtml + "</td>" +
-        "<td>" + escapeHtml(String(qtdDezenas)) + "</td>" +
-        "<td>" + escapeHtml(String(qtdCotas)) + "</td>" +
-        "<td>" + escapeHtml(formatarMoeda(valorTotal)) + "</td>" +
-        "<td>" + escapeHtml(formatarMoeda(valorPorPessoa)) + "</td>" +
-        "<td>" + escapeHtml(String(acertos)) + "</td>" +
-        "<td>" + escapeHtml(data) + "</td>";
-
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error("Erro ao carregar jogos gerados:", err);
-    tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
-  }
-}
-
-  const modoLinhasVazias = document.getElementById('modoLinhasVazias');
-  const linhasVaziasManuais = document.getElementById('linhasVaziasManuais');
-
-  function atualizarExibicaoLinhasVazias() {
-    if (modoLinhasVazias.value === 'manual') {
-      linhasVaziasManuais.style.display = 'block';
-    } else {
-      linhasVaziasManuais.style.display = 'none';
-    }
-  }
-
-  modoLinhasVazias.addEventListener('change', atualizarExibicaoLinhasVazias);
-
-  atualizarExibicaoLinhasVazias();
-window.addEventListener("DOMContentLoaded", loadConfig);
   </script>
 </body>
 </html>
