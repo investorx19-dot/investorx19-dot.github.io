@@ -127,33 +127,13 @@ function escolherQuantidadeFaixasVazias() {
     if (random < 0.3) return 2;
     return 1;
 }
-function calcularPesoFaixas(faixas, historico) {
-    const contagem = {};
+function calcularPesoFaixas(faixas, historico = []) {
+    const pesosLinhasVazias = calcularPesosLinhasVazias(historico);
 
-    // inicia contagem
-    faixas.forEach(f => contagem[f.nome] = 0);
-
-    // percorre histórico
-    historico.forEach(jogo => {
-        jogo.forEach(numero => {
-            faixas.forEach(faixa => {
-                if (faixa.numeros.includes(numero)) {
-                    contagem[faixa.nome]++;
-                }
-            });
-        });
-    });
-
-    // transforma em pesos (menos frequente = maior peso)
-    const pesos = faixas.map(f => {
-        const freq = contagem[f.nome];
-        return {
-            faixa: f,
-            peso: 1 / (freq + 1)
-        };
-    });
-
-    return pesos;
+    return faixas.map(faixa => ({
+        faixa,
+        peso: pesosLinhasVazias[faixa.id] || 1
+    }));
 }
 function escolherFaixasVazias(faixas, historico) {
     const pesos = calcularPesoFaixas(faixas, historico);
@@ -183,11 +163,126 @@ function escolherFaixasVazias(faixas, historico) {
 
     return selecionadas;
 }
+function calcularFrequenciaHistorica(historico = []) {
+    const frequencia = {};
 
+    for (let i = 1; i <= 60; i++) {
+        frequencia[i] = 0;
+    }
+
+    historico.forEach(sorteio => {
+        sorteio.forEach(numero => {
+            if (frequencia[numero] !== undefined) {
+                frequencia[numero]++;
+            }
+        });
+    });
+
+    return frequencia;
+}
+
+function calcularAtrasoAtual(historico = []) {
+    const atraso = {};
+
+    for (let i = 1; i <= 60; i++) {
+        atraso[i] = historico.length;
+    }
+
+    for (let i = historico.length - 1; i >= 0; i--) {
+        const sorteio = historico[i];
+
+        sorteio.forEach(numero => {
+            if (atraso[numero] === historico.length) {
+                atraso[numero] = historico.length - 1 - i;
+            }
+        });
+    }
+
+    return atraso;
+}
+
+function calcularTendenciaRecente(historico = [], quantidadeRecentes = 10) {
+    const recente = {};
+
+    for (let i = 1; i <= 60; i++) {
+        recente[i] = 0;
+    }
+
+    const ultimos = historico.slice(-quantidadeRecentes);
+
+    ultimos.forEach(sorteio => {
+        sorteio.forEach(numero => {
+            if (recente[numero] !== undefined) {
+                recente[numero]++;
+            }
+        });
+    });
+
+    return recente;
+}
+
+function normalizarMapa(mapa) {
+    const valores = Object.values(mapa);
+    const min = Math.min(...valores);
+    const max = Math.max(...valores);
+
+    const normalizado = {};
+
+    for (const chave in mapa) {
+        if (max === min) {
+            normalizado[chave] = 1;
+        } else {
+            normalizado[chave] = (mapa[chave] - min) / (max - min);
+        }
+    }
+
+    return normalizado;
+}
+
+function calcularScoreDezenas(historico = []) {
+    const frequencia = normalizarMapa(calcularFrequenciaHistorica(historico));
+    const atraso = normalizarMapa(calcularAtrasoAtual(historico));
+    const recente = normalizarMapa(calcularTendenciaRecente(historico, 10));
+
+    const score = {};
+
+    for (let i = 1; i <= 60; i++) {
+        score[i] =
+            (frequencia[i] * 0.4) +
+            (atraso[i] * 0.2) +
+            (recente[i] * 0.4);
+    }
+
+    return score;
+}
+
+function escolherNumeroComScore(lista, score, jaEscolhidos = []) {
+    const candidatos = lista.filter(n => !jaEscolhidos.includes(n));
+
+    if (candidatos.length === 0) return null;
+
+    const pesos = candidatos.map(n => ({
+        numero: n,
+        peso: (score[n] || 0) + 0.01
+    }));
+
+    const totalPeso = pesos.reduce((acc, item) => acc + item.peso, 0);
+    let alvo = Math.random() * totalPeso;
+    let acumulado = 0;
+
+    for (const item of pesos) {
+        acumulado += item.peso;
+        if (alvo <= acumulado) {
+            return item.numero;
+        }
+    }
+
+    return pesos[0].numero;
+}
 // 🧠 Geração principal do jogo
-export function gerarJogo(historico = []) {
+export function gerarJogo(historico = [], quantidade = 6) {
     let tentativas = 0;
-
+const scoreDezenas = calcularScoreDezenas(historico);
     while (tentativas < 200) {
         tentativas++;
 
@@ -198,13 +293,15 @@ export function gerarJogo(historico = []) {
         let numerosDisponiveis = faixasAtivas.flatMap(f => f.numeros);
         let jogo = [];
 
-        while (jogo.length < 6) {
-            let numero = pegarNumeroAleatorio(numerosDisponiveis);
+while (jogo.length < quantidade) {
+    let numero = escolherNumeroComScore(numerosDisponiveis, scoreDezenas, jogo);
 
-            if (!jogo.includes(numero)) {
-                jogo.push(numero);
-            }
-        }
+    if (numero !== null && !jogo.includes(numero)) {
+        jogo.push(numero);
+    } else {
+        break;
+    }
+}
 
         jogo.sort((a, b) => a - b);
 
@@ -221,13 +318,15 @@ export function gerarJogo(historico = []) {
 
     let jogoFinal = [];
 
-    while (jogoFinal.length < 6) {
-        let numero = pegarNumeroAleatorio(numerosDisponiveis);
+ while (jogoFinal.length < quantidade) {
+    let numero = escolherNumeroComScore(numerosDisponiveis, scoreDezenas, jogoFinal);
 
-        if (!jogoFinal.includes(numero)) {
-            jogoFinal.push(numero);
-        }
+    if (numero !== null && !jogoFinal.includes(numero)) {
+        jogoFinal.push(numero);
+    } else {
+        break;
     }
+}
 
     return jogoFinal.sort((a, b) => a - b);
 }

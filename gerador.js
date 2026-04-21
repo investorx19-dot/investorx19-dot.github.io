@@ -19,7 +19,7 @@ const MULT3 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 
 // 🚀 FUNÇÃO INTELIGENTE (usa engine.js)
 // historico é opcional por enquanto
 export function gerarJogoInteligente(quantidade = 6) {
-  return gerarJogoEngine(HISTORICO_MEGA);
+  return gerarJogoEngine(HISTORICO_MEGA, quantidade);
 }
 
 // 🔥 FUNÇÃO ORIGINAL (mantida + adaptada)
