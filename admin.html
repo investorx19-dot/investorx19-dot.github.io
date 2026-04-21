@@ -366,6 +366,7 @@
             <h3>Histórico de Processamentos</h3>
             <div id="historicoProcessamentosLista" class="historico-lista">
               <div class="muted">Nenhum processamento ainda.</div>
+             
             </div>
           </div>
 
@@ -822,7 +823,7 @@
 
  async function carregarHistoricoProcessamentos() {
   try {
-    const box = document.getElementById("historicoProcessamentos");
+    const box = document.getElementById("historicoProcessamentosLista")
 
     if (!box) {
       console.warn("Container do histórico não encontrado");
@@ -969,7 +970,9 @@
     const anterior = parseNumsFromInputs('.anterior');
     const atrasadas = parseNumsFromInputs('.atrasada');
     const resultado = parseNumsFromInputs('.resultado');
-
+console.log("anterior =", anterior, "total =", anterior.length);
+console.log("atrasadas =", atrasadas, "total =", atrasadas.length);
+console.log("resultado =", resultado, "total =", resultado.length);
     let linhasAtivas = [];
 
     if (modoLinhasVazias === 'manual') {
