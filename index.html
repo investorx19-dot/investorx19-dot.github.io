@@ -539,7 +539,12 @@
 
       <input id="nome" placeholder="Nome" />
       <input id="email" type="email" placeholder="E-mail" />
-      <input id="telefone" placeholder="Telefone" />
+     <input 
+  id="telefone" 
+  type="tel"
+  placeholder="Telefone com DDD. Ex: 21999887766"
+  maxlength="15"
+/>
 
       <div class="acoes-login">
         <button id="btnCadastrar" type="button">Cadastrar</button>
@@ -917,7 +922,14 @@ async function carregarPlanoUsuario(userId) {
     function normalizarTelefone(telefone) {
       return String(telefone || "").replace(/\D/g, "");
     }
+    function telefoneComDDDValido(telefone) {
+  const numero = normalizarTelefone(telefone);
 
+  // Aceita telefone brasileiro com DDD:
+  // 10 dígitos = fixo com DDD
+  // 11 dígitos = celular com DDD
+  return numero.length === 10 || numero.length === 11;
+}
     function atualizarUsuarioLogado() {
       if (!usuarioAtual) {
         elUsuarioLogado.textContent = "Usuário logado";
@@ -999,10 +1011,15 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
 
-  if (!nome || !email || !telefone) {
-    alert("Preencha nome, e-mail e telefone.");
-    return;
-  }
+ if (!nome || !email || !telefone) {
+  alert("Preencha nome, e-mail e telefone.");
+  return;
+}
+
+if (!telefoneComDDDValido(telefone)) {
+  alert("Informe o telefone com DDD. Exemplo: 21999887766");
+  return;
+}
 
   try {
     const existente = await buscarUsuarioPorEmail(email);
