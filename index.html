@@ -511,7 +511,40 @@
   font-weight: 700;
   cursor: pointer;
 }
+.plano-periodos {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 18px;
+}
 
+.plano-periodos label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.plano-periodos input {
+  width: auto;
+  margin: 0;
+}
+
+.plano-periodos span {
+  font-weight: 700;
+  color: #7ee6ff;
+}
+
+.selo-desconto {
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 800;
+}
 @media (max-width: 980px) {
   .planos-container {
     grid-template-columns: repeat(2, minmax(280px, 1fr));
@@ -554,8 +587,25 @@
 
    <div class="planos-container">
   <div class="plano-card plano-basico">
-    <div class="plano-titulo">🟢 Plano Básico</div>
-    <div class="plano-preco">R$ 19,90</div>
+  <div class="plano-titulo">🟢 Plano Básico</div>
+<div class="plano-preco" id="precoBasicoPlano">R$ 19,90</div>
+
+<div class="plano-periodos">
+  <label>
+    <input type="radio" name="periodoBasico" value="mensal" checked>
+    Mensal <span>R$ 19,90</span>
+  </label>
+
+  <label>
+    <input type="radio" name="periodoBasico" value="semestral">
+    Semestral <span>R$ 101,49</span> <small class="selo-desconto">-15%</small>
+  </label>
+
+  <label>
+    <input type="radio" name="periodoBasico" value="anual">
+    Anual <span>R$ 179,10</span> <small class="selo-desconto">-25%</small>
+  </label>
+</div>
     <ul class="plano-lista">
       <li>até 6 dezenas</li>
       <li>sem bolão</li>
@@ -571,7 +621,23 @@
 
   <div class="plano-card plano-intermediario">
     <div class="plano-titulo">🔵 Plano Intermediário</div>
-    <div class="plano-preco">R$ 39,90</div>
+    <div class="plano-preco" id="precoIntermediarioPlano">R$ 39,90</div>
+    <div class="plano-periodos">
+      <label>
+        <input type="radio" name="periodoIntermediario" value="mensal" checked>
+        Mensal <span>R$ 39,90</span>
+      </label>
+
+      <label>
+        <input type="radio" name="periodoIntermediario" value="semestral">
+        Semestral <span>R$ 202,98</span> <small class="selo-desconto">-15%</small>
+      </label>
+
+      <label>
+        <input type="radio" name="periodoIntermediario" value="anual">
+        Anual <span>R$ 358,20</span> <small class="selo-desconto">-25%</small>
+      </label>
+    </div>
     <ul class="plano-lista">
       <li>até 10 dezenas</li>
       <li>bolão até 10 cotas</li>
@@ -586,8 +652,25 @@
   </div>
 
   <div class="plano-card plano-premium">
-    <div class="plano-titulo">🟣 Plano Premium</div>
-    <div class="plano-preco">R$ 79,90</div>
+   <div class="plano-titulo">🟣 Plano Premium</div>
+<div class="plano-preco" id="precoPremiumPlano">R$ 79,90</div>
+
+<div class="plano-periodos">
+  <label>
+    <input type="radio" name="periodoPremium" value="mensal" checked>
+    Mensal <span>R$ 79,90</span>
+  </label>
+
+  <label>
+    <input type="radio" name="periodoPremium" value="semestral">
+    Semestral <span>R$ 407,49</span> <small class="selo-desconto">-15%</small>
+  </label>
+
+  <label>
+    <input type="radio" name="periodoPremium" value="anual">
+    Anual <span>R$ 719,10</span> <small class="selo-desconto">-25%</small>
+  </label>
+</div>
     <ul class="plano-lista">
       <li>até 15 dezenas</li>
       <li>bolão ilimitado</li>
@@ -1424,7 +1507,7 @@ async function carregarUsuario() {
     console.error("Erro ao carregar usuário:", erro);
   }
 }
-async function pagarPlano(plano) {
+async function pagarPlano(plano, periodo = "mensal") {
   try {
     if (!usuarioAtual) {
       alert("Faça login primeiro.");
@@ -1445,11 +1528,12 @@ async function pagarPlano(plano) {
         "Content-Type": "application/json",
        
       },
-      body: JSON.stringify({
-        plano: plano,
-        userId: userId,
-        email: email
-      })
+     body: JSON.stringify({
+  plano: plano,
+  periodo: periodo,
+  userId: userId,
+  email: email
+})
     });
 
     const texto = await response.text();
@@ -1484,16 +1568,63 @@ async function pagarPlano(plano) {
     alert("Erro ao gerar pagamento: " + erro.message);
   }
 }
+const precosPlanos = {
+  basico: {
+    mensal: "R$ 19,90",
+    semestral: "R$ 101,49",
+    anual: "R$ 179,10"
+  },
+  intermediario: {
+    mensal: "R$ 39,90",
+    semestral: "R$ 203,49",
+    anual: "R$ 359,10"
+  },
+  premium: {
+    mensal: "R$ 79,90",
+    semestral: "R$ 407,49",
+    anual: "R$ 719,10"
+  }
+};
+
+function periodoSelecionado(nomeRadio) {
+  return document.querySelector(input[name="${nomeRadio}"]:checked).value;
+}
+
+function atualizarCardPlano(plano, nomeRadio, idPreco, idBotao, nomePlano) {
+  const periodo = periodoSelecionado(nomeRadio);
+  const valor = precosPlanos[plano][periodo];
+
+  document.getElementById(idPreco).textContent = valor;
+  document.getElementById(idBotao).textContent = Assinar ${nomePlano} • ${valor};
+}
+
+document.querySelectorAll('input[name="periodoBasico"]').forEach(input => {
+  input.addEventListener("change", function() {
+    atualizarCardPlano("basico", "periodoBasico", "precoBasicoPlano", "btnBasicoPlano", "Básico");
+  });
+});
+
+document.querySelectorAll('input[name="periodoIntermediario"]').forEach(input => {
+  input.addEventListener("change", function() {
+    atualizarCardPlano("intermediario", "periodoIntermediario", "precoIntermediarioPlano", "btnIntermediarioPlano", "Intermediário");
+  });
+});
+
+document.querySelectorAll('input[name="periodoPremium"]').forEach(input => {
+  input.addEventListener("change", function() {
+    atualizarCardPlano("premium", "periodoPremium", "precoPremiumPlano", "btnPremiumPlano", "Premium");
+  });
+});
 btnBasicoPlano.addEventListener("click", function() {
-  pagarPlano("basico");
+  pagarPlano("basico", periodoSelecionado("periodoBasico"));
 });
 
 btnIntermediarioPlano.addEventListener("click", function() {
-  pagarPlano("intermediario");
+  pagarPlano("intermediario", periodoSelecionado("periodoIntermediario"));
 });
 
 btnPremiumPlano.addEventListener("click", function() {
-  pagarPlano("premium");
+  pagarPlano("premium", periodoSelecionado("periodoPremium"));
 });
 
 btnBasico.addEventListener("click", function() {
