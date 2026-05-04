@@ -9,11 +9,6 @@ console.log("CAMINHO:", __filename);
 
 const app = express();
 
-/**
- * CORS
- * Em produção, permita seu domínio.
- * Se quiser testar localmente, mantenha localhost também.
- */
 const allowedOrigins = [
   "https://mark6.com.br",
   "https://www.mark6.com.br",
@@ -24,7 +19,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permite requests sem origin (ex.: alguns testes, curl, webhook health)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -50,12 +44,6 @@ app.get("/teste-cors", (req, res) => {
   });
 });
 
-/**
- * FIREBASE
- * Prioridade:
- * 1) variável FIREBASE_SERVICE_ACCOUNT_JSON
- * 2) arquivo /etc/secrets/serviceAccountKey.json
- */
 let serviceAccount;
 
 try {
@@ -88,17 +76,14 @@ try {
 
 const db = admin.firestore();
 
-/**
- * MERCADO PAGO
- * Use variável de ambiente em produção:
- * MP_ACCESS_TOKEN=APP_USR-...
- */
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+
 if (!MP_ACCESS_TOKEN) {
   throw new Error("MP_ACCESS_TOKEN NÃO CONFIGURADO NO RENDER");
 }
-if (!MP_ACCESS_TOKEN || !MP_ACCESS_TOKEN.startsWith("APP_USR-")) {
-  console.warn("ATENÇÃO: MP_ACCESS_TOKEN ausente ou não parece ser token de produção.");
+
+if (!MP_ACCESS_TOKEN.startsWith("APP_USR-")) {
+  console.warn("ATENÇÃO: MP_ACCESS_TOKEN não parece ser token de produção.");
 }
 
 const client = new MercadoPagoConfig({
@@ -111,52 +96,98 @@ const paymentClient = new Payment(client);
 /**
  * DADOS DOS PLANOS
  */
-function obterDadosPlano(plano) {
-  if (plano === "basico") {
-    return {
+function obterDadosPlano(plano, periodo = "mensal") {
+  const planos = {
+    basico: {
       titulo: "Plano Básico Mark6",
-      preco: 19.90,
       plan: "basico",
       maxDezenas: 6,
       maxCotas: 1,
-      limiteJogosDia: 10
-    };
-  }
-
-  if (plano === "intermediario") {
-    return {
+      limiteJogosDia: 10,
+      precos: {
+        mensal: 19.90,
+        semestral: 101.49,
+        anual: 179.10
+      }
+    },
+    intermediario: {
       titulo: "Plano Intermediário Mark6",
-      preco: 39.90,
       plan: "intermediario",
       maxDezenas: 10,
       maxCotas: 10,
-      limiteJogosDia: 30
-    };
-  }
-
-  if (plano === "premium") {
-    return {
+      limiteJogosDia: 30,
+      precos: {
+        mensal: 39.90,
+        semestral: 203.49,
+        anual: 359.10
+      }
+    },
+    premium: {
       titulo: "Plano Premium Mark6",
-      preco: 79.90,
       plan: "premium",
       maxDezenas: 15,
       maxCotas: 9999,
-      limiteJogosDia: 9999
-    };
+      limiteJogosDia: 9999,
+      precos: {
+        mensal: 79.90,
+        semestral: 407.49,
+        anual: 719.10
+      }
+    }
+  };
+
+  const dados = planos[plano];
+
+  if (!dados) {
+    return null;
   }
 
-  return null;
+  const preco = dados.precos[periodo];
+
+  if (!preco) {
+    return null;
+  }
+
+  return {
+    titulo: dados.titulo + " - " + periodo,
+    preco: preco,
+    periodo: periodo,
+    plan: dados.plan,
+    maxDezenas: dados.maxDezenas,
+    maxCotas: dados.maxCotas,
+    limiteJogosDia: dados.limiteJogosDia
+  };
+}
+
+/**
+ * DESCOBRIR PLANO PELO VALOR DO PAGAMENTO
+ */
+function obterPlanoPorValor(valor) {
+  const valorArredondado = Number(valor.toFixed(2));
+
+  const mapa = {
+    "19.90": { plano: "basico", periodo: "mensal" },
+    "101.49": { plano: "basico", periodo: "semestral" },
+    "179.10": { plano: "basico", periodo: "anual" },
+
+    "39.90": { plano: "intermediario", periodo: "mensal" },
+    "203.49": { plano: "intermediario", periodo: "semestral" },
+    "359.10": { plano: "intermediario", periodo: "anual" },
+
+    "79.90": { plano: "premium", periodo: "mensal" },
+    "407.49": { plano: "premium", periodo: "semestral" },
+    "719.10": { plano: "premium", periodo: "anual" }
+  };
+
+  return mapa[valorArredondado.toFixed(2)] || null;
 }
 
 /**
  * CRIAR PAGAMENTO - CHECKOUT PRO
- * Cria a preferência e devolve init_point
  */
 app.post("/criar-pagamento", async function (req, res) {
   try {
-    const plano = req.body.plano;
-    const userId = req.body.userId;
-    const email = req.body.email || "";
+    const { plano, periodo = "mensal", userId, email = "" } = req.body;
 
     console.log("=== ENTROU EM /criar-pagamento ===");
     console.log("Body recebido:", req.body);
@@ -167,21 +198,14 @@ app.post("/criar-pagamento", async function (req, res) {
       });
     }
 
-    const dadosPlano = obterDadosPlano(plano);
+    const dadosPlano = obterDadosPlano(plano, periodo);
 
     if (!dadosPlano) {
       return res.status(400).json({
-        erro: "Plano inválido."
+        erro: "Plano ou período inválido."
       });
     }
 
-    /**
-     * IMPORTANTE:
-     * - back_urls: retorno depois do pagamento
-     * - auto_return: retorno automático quando aprovado
-     * - notification_url: webhook público do backend
-     * - external_reference: vincula o pagamento ao userId
-     */
     const preferenceBody = {
       items: [
         {
@@ -203,7 +227,8 @@ app.post("/criar-pagamento", async function (req, res) {
       statement_descriptor: "MARK6",
       metadata: {
         userId: String(userId),
-        plano: dadosPlano.plan
+        plano: dadosPlano.plan,
+        periodo: dadosPlano.periodo
       }
     };
 
@@ -214,7 +239,10 @@ app.post("/criar-pagamento", async function (req, res) {
     console.log("Preferência criada com sucesso:");
     console.log({
       id: response.id,
-      init_point: response.init_point
+      init_point: response.init_point,
+      plano: dadosPlano.plan,
+      periodo: dadosPlano.periodo,
+      preco: dadosPlano.preco
     });
 
     return res.json({
@@ -247,7 +275,6 @@ app.get("/webhook-mercadopago", (req, res) => {
 
 /**
  * WEBHOOK - POST
- * Recebe notificação, consulta o pagamento e atualiza o usuário no Firestore
  */
 app.post("/webhook-mercadopago", async function (req, res) {
   try {
@@ -276,10 +303,6 @@ app.post("/webhook-mercadopago", async function (req, res) {
 
     console.log("Pagamento consultado:", JSON.stringify(pagamento));
 
-    /**
-     * Dependendo da versão/resposta, o SDK pode devolver em estruturas ligeiramente diferentes.
-     * Vamos cobrir os dois cenários mais comuns.
-     */
     const paymentData = pagamento?.body ? pagamento.body : pagamento;
 
     const statusPagamento = paymentData?.status;
@@ -298,20 +321,17 @@ app.post("/webhook-mercadopago", async function (req, res) {
 
     const userId = String(externalReference);
 
-    let plano = "basico";
+    const planoEncontrado = obterPlanoPorValor(transactionAmount);
 
-    if (transactionAmount === 39.9) {
-      plano = "intermediario";
+    if (!planoEncontrado) {
+      console.log("Plano não encontrado para o valor:", transactionAmount);
+      return res.sendStatus(200);
     }
 
-    if (transactionAmount === 79.9) {
-      plano = "premium";
-    }
-
-    const dadosPlano = obterDadosPlano(plano);
+    const dadosPlano = obterDadosPlano(planoEncontrado.plano, planoEncontrado.periodo);
 
     if (!dadosPlano) {
-      console.log("Plano não encontrado");
+      console.log("Dados do plano não encontrados");
       return res.sendStatus(200);
     }
 
@@ -319,6 +339,7 @@ app.post("/webhook-mercadopago", async function (req, res) {
       accessGranted: true,
       paymentStatus: "paid",
       plan: dadosPlano.plan,
+      periodoPlano: dadosPlano.periodo,
       maxDezenas: dadosPlano.maxDezenas,
       maxCotas: dadosPlano.maxCotas,
       limiteJogosDia: dadosPlano.limiteJogosDia,
@@ -328,7 +349,7 @@ app.post("/webhook-mercadopago", async function (req, res) {
       updatedAt: Date.now()
     }, { merge: true });
 
-    console.log("Usuário atualizado com sucesso:", userId, dadosPlano.plan);
+    console.log("Usuário atualizado com sucesso:", userId, dadosPlano.plan, dadosPlano.periodo);
 
     return res.sendStatus(200);
   } catch (erro) {
