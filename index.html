@@ -1587,7 +1587,8 @@ const precosPlanos = {
 };
 
 function periodoSelecionado(nomeRadio) {
-  return document.querySelector(input[name="${nomeRadio}"]:checked).value;
+  const selecionado = document.querySelector('input[name="' + nomeRadio + '"]:checked');
+  return selecionado ? selecionado.value : "mensal";
 }
 
 function atualizarCardPlano(plano, nomeRadio, idPreco, idBotao, nomePlano) {
@@ -1595,22 +1596,22 @@ function atualizarCardPlano(plano, nomeRadio, idPreco, idBotao, nomePlano) {
   const valor = precosPlanos[plano][periodo];
 
   document.getElementById(idPreco).textContent = valor;
-  document.getElementById(idBotao).textContent = Assinar ${nomePlano} • ${valor};
+  document.getElementById(idBotao).textContent = "Assinar " + nomePlano + " • " + valor;
 }
 
-document.querySelectorAll('input[name="periodoBasico"]').forEach(input => {
+document.querySelectorAll('input[name="periodoBasico"]').forEach(function(input) {
   input.addEventListener("change", function() {
     atualizarCardPlano("basico", "periodoBasico", "precoBasicoPlano", "btnBasicoPlano", "Básico");
   });
 });
 
-document.querySelectorAll('input[name="periodoIntermediario"]').forEach(input => {
+document.querySelectorAll('input[name="periodoIntermediario"]').forEach(function(input) {
   input.addEventListener("change", function() {
     atualizarCardPlano("intermediario", "periodoIntermediario", "precoIntermediarioPlano", "btnIntermediarioPlano", "Intermediário");
   });
 });
 
-document.querySelectorAll('input[name="periodoPremium"]').forEach(input => {
+document.querySelectorAll('input[name="periodoPremium"]').forEach(function(input) {
   input.addEventListener("change", function() {
     atualizarCardPlano("premium", "periodoPremium", "precoPremiumPlano", "btnPremiumPlano", "Premium");
   });
