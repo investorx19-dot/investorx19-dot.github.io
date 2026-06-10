@@ -610,8 +610,15 @@
         </div>
       </div>
 
-      <div class="centro">
+     <div class="centro">
         <button id="btnGerar" type="button">GERAR JOGO</button>
+      </div>
+
+      <div id="blocoResultadoReal" class="linha" style="text-align: center; margin-top: 20px;">
+        <h3 style="margin-bottom: 5px; color: var(--yellow);">✨ Último Concurso Oficial (Mega-Sena)</h3>
+        <p id="infoConcurso" style="font-size: 13px; color: var(--muted); margin: 0 0 12px 0;">Carregando dados...</p>
+        <div id="numerosSorteioReal">
+          </div>
       </div>
 
       <div class="contador-global">
@@ -1671,6 +1678,47 @@ btnPremium.addEventListener("click", function() {
   pagarPlano("premium");
   carregarUsuario();
 });
+async function buscarResultadoAPILoteria() {
+  const elNumeros = document.getElementById("numerosSorteioReal");
+  const elInfo = document.getElementById("infoConcurso");
+
+  if (!elNumeros || !elInfo) return;
+
+  try {
+    // Requisição para uma API pública e estável da Mega-Sena
+    const resposta = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
+    
+    if (!resposta.ok) {
+      throw new Error("Erro ao consultar a API");
+    }
+
+    const dados = await resposta.json();
+    
+    // Extrai o número do concurso, a data e as dezenas sorteadas
+    const concurso = dados.concurso;
+    const dataSorteio = dados.data;
+    const dezenas = dados.dezenas; // Vem como um array de strings, ex: ["05", "12", ...]
+
+    // Atualiza o texto informativo
+    elInfo.textContent = "Concurso nº " + concurso + " • sorteado em " + dataSorteio;
+
+    // Limpa a área e renderiza as dezenas sorteadas com as bolinhas amarelas do seu tema
+    elNumeros.innerHTML = "";
+    dezenas.forEach(function(numero) {
+      const span = document.createElement("span");
+      span.className = "numero selecionado"; // Usa a classe amarela do seu CSS
+      span.textContent = numero;
+      elNumeros.appendChild(span);
+    });
+
+  } catch (erro) {
+    console.error("Erro ao buscar dados da API externa:", erro);
+    elInfo.textContent = "Não foi possível carregar o último sorteio automaticamente.";
+  }
+}
+
+// Chamar a função para rodar assim que a página abrir
+buscarResultadoAPILoteria();
 </script>
 </body>
 </html>
