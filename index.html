@@ -585,7 +585,65 @@
       </div>
     </div>
 
-   <div class="planos-container">
+       <div id="app" style="display:none;">
+      <div class="topo-app">
+        <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
+        <button id="btnSair" type="button">Sair</button>
+      </div>
+
+      <div class="painel-aposta">
+       <div class="campos-aposta">
+  <div class="campo-aposta">
+    <label for="qtdDezenas">Quantidade de dezenas:</label>
+    <select id="qtdDezenas"></select>
+  </div>
+
+  <div class="campo-aposta">
+    <label for="qtdCotas">Bolão:</label>
+    <select id="qtdCotas"></select>
+  </div>
+</div>
+
+        <div id="valorAposta" class="valor-aposta">
+          Valor total: R$ 6,00<br>
+          Por pessoa: R$ 6,00
+        </div>
+      </div>
+
+      <div class="centro">
+        <button id="btnGerar" type="button">GERAR JOGO</button>
+      </div>
+
+      <div class="contador-global">
+        <div class="contador-titulo">Prova de funcionamento</div>
+        <div id="totalAcertosGlobal" class="contador-numero">1.826</div>
+        <div class="contador-texto">Total acumulado de dezenas acertadas pela comunidade Mark6</div>
+      </div>
+
+      <h2>Cartão Virtual</h2>
+      <div id="cartao"></div>
+
+      <p class="centro">
+        <strong>Acertos no último sorteio:</strong>
+        <span id="acertos">0</span>
+      </p>
+
+      <div class="potencial-ganho">
+        <p class="chance-msg">🔥 Este jogo pode ser o próximo premiado.</p>
+        <h3>💰 Potencial de ganho</h3>
+
+        <div class="ganho-linha">🎯 <strong>4 acertos</strong> → ~R$ 1.200</div>
+        <div class="ganho-linha">🔥 <strong>5 acertos</strong> → ~R$ 45.000</div>
+        <div class="ganho-linha">🏆 <strong>6 acertos</strong> → <span class="premio-max">R$ 35.000.000+</span></div>
+
+        <small>*Valores médios baseados em concursos anteriores da Mega-Sena</small>
+      </div>
+
+      <div class="aviso-urgencia">
+        <p class="urgencia-assinatura">⏳ Garanta seu acesso antes do próximo sorteio.</p>
+        <p class="urgencia-sub">Assine agora para gerar seus jogos com antecedência.</p>
+      </div>
+<div class="planos-container">
   <div class="plano-card plano-basico">
   <div class="plano-titulo">🟢 Plano Básico</div>
 <div class="plano-preco" id="precoBasicoPlano">R$ 19,90</div>
@@ -684,66 +742,6 @@
     </button>
   </div>
 </div>
-
-    <div id="app" style="display:none;">
-      <div class="topo-app">
-        <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
-        <button id="btnSair" type="button">Sair</button>
-      </div>
-
-      <div class="painel-aposta">
-       <div class="campos-aposta">
-  <div class="campo-aposta">
-    <label for="qtdDezenas">Quantidade de dezenas:</label>
-    <select id="qtdDezenas"></select>
-  </div>
-
-  <div class="campo-aposta">
-    <label for="qtdCotas">Bolão:</label>
-    <select id="qtdCotas"></select>
-  </div>
-</div>
-
-        <div id="valorAposta" class="valor-aposta">
-          Valor total: R$ 6,00<br>
-          Por pessoa: R$ 6,00
-        </div>
-      </div>
-
-      <div class="centro">
-        <button id="btnGerar" type="button">GERAR JOGO</button>
-      </div>
-
-      <div class="contador-global">
-        <div class="contador-titulo">Prova de funcionamento</div>
-        <div id="totalAcertosGlobal" class="contador-numero">1.826</div>
-        <div class="contador-texto">Total acumulado de dezenas acertadas pela comunidade Mark6</div>
-      </div>
-
-      <h2>Cartão Virtual</h2>
-      <div id="cartao"></div>
-
-      <p class="centro">
-        <strong>Acertos no último sorteio:</strong>
-        <span id="acertos">0</span>
-      </p>
-
-      <div class="potencial-ganho">
-        <p class="chance-msg">🔥 Este jogo pode ser o próximo premiado.</p>
-        <h3>💰 Potencial de ganho</h3>
-
-        <div class="ganho-linha">🎯 <strong>4 acertos</strong> → ~R$ 1.200</div>
-        <div class="ganho-linha">🔥 <strong>5 acertos</strong> → ~R$ 45.000</div>
-        <div class="ganho-linha">🏆 <strong>6 acertos</strong> → <span class="premio-max">R$ 35.000.000+</span></div>
-
-        <small>*Valores médios baseados em concursos anteriores da Mega-Sena</small>
-      </div>
-
-      <div class="aviso-urgencia">
-        <p class="urgencia-assinatura">⏳ Garanta seu acesso antes do próximo sorteio.</p>
-        <p class="urgencia-sub">Assine agora para gerar seus jogos com antecedência.</p>
-      </div>
-
       <div class="bloco-assinaturas">
         <h3>Renovar assinatura</h3>
         <p class="mensagem">Escolha um plano para manter seu acesso ativo.</p>
