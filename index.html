@@ -1678,6 +1678,25 @@ btnPremium.addEventListener("click", function() {
   pagarPlano("premium");
   carregarUsuario();
 });
+// Funções auxiliares para identificar os padrões matemáticos
+function ehFibonacci(num) {
+  // Sequência de Fibonacci até 60 (limite da Mega-Sena)
+  const seqFib = [1, 2, 3, 5, 8, 13, 21, 34, 55];
+  return seqFib.includes(num);
+}
+
+function ehPrimo(num) {
+  if (num <= 1) return false;
+  for (let i = 2; i <= Math.sqrt(num); i++) {
+    if (num % i === 0) return false;
+  }
+  return true;
+}
+
+function ehMultiploDe3(num) {
+  return num % 3 === 0;
+}
+
 async function buscarResultadoAPILoteria() {
   const elNumeros = document.getElementById("numerosSorteioReal");
   const elInfo = document.getElementById("infoConcurso");
@@ -1685,7 +1704,6 @@ async function buscarResultadoAPILoteria() {
   if (!elNumeros || !elInfo) return;
 
   try {
-    // Requisição para uma API pública e estável da Mega-Sena
     const resposta = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
     
     if (!resposta.ok) {
@@ -1694,19 +1712,63 @@ async function buscarResultadoAPILoteria() {
 
     const dados = await resposta.json();
     
-    // Extrai o número do concurso, a data e as dezenas sorteadas
     const concurso = dados.concurso;
     const dataSorteio = dados.data;
-    const dezenas = dados.dezenas; // Vem como um array de strings, ex: ["05", "12", ...]
+    const dezenas = dados.dezenas;
 
-    // Atualiza o texto informativo
-    elInfo.textContent = "Concurso nº " + concurso + " • sorteado em " + dataSorteio;
+    // Atualiza a legenda para explicar as cores ao usuário
+    elInfo.innerHTML = "Concurso nº " + concurso + " • " + dataSorteio + "<br>" +
+                       "<span style='color:#a855f7; font-weight:bold;'>■ Fibonacci</span> " +
+                       "<span style='color:#ec4899; font-weight:bold; margin:0 8px;'>■ Primos</span> " +
+                       "<span style='color:#06b6d4; font-weight:bold;'>■ Múltiplos de 3</span>";
 
-    // Limpa a área e renderiza as dezenas sorteadas com as bolinhas amarelas do seu tema
     elNumeros.innerHTML = "";
-    dezenas.forEach(function(numero) {
+    
+    dezenas.forEach(function(dezenaStr) {
+      const num = parseInt(dezenaStr, 10);
       const span = document.createElement("span");
-      span.className = "numero selecionado"; // Usa a classe amarela do seu CSS
+      span.className = "numero"; // Classe base estrutural do seu CSS
+      span.textContent = dezenaStr;
+
+      // Regra de prioridade para aplicar as cores de destaque
+      if (ehFibonacci(num)) {
+        span.classList.add("fibonacci");
+      } else if (ehPrimo(num)) {
+        span.classList.add("primo");
+      } else if (ehMultiploDe3(num)) {
+        span.classList.add("multiplo3");
+      } else {
+        // Caso não seja nenhum deles, mantém a cor amarela original (padrão)
+        span.classList.add("selecionado");
+      }
+
+      elNumeros.appendChild(span);
+    });
+
+  } catch (erro) {
+    console.error("Erro ao buscar dados da API externa:", erro);
+    elInfo.textContent = "Não foi possível carregar o último sorteio automaticamente.";
+  }
+}
+
+// Executa a função ao iniciar a página
+buscarResultadoAPILoteria();
+      span.className = "numero selecionado"; 
+      /* Cores de destaque para a análise do último sorteio */
+    .numero.fibonacci {
+      background: #a855f7 !important; /* Roxo */
+      color: #ffffff !important;
+    }
+
+    .numero.primo {
+      background: #ec4899 !important; /* Rosa/Carmim */
+      color: #ffffff !important;
+    }
+
+    .numero.multiplo3 {
+      background: #06b6d4 !important; /* Azul Ciano */
+      color: #ffffff !important;
+    }// Usa a classe amarela do seu CSS
       span.textContent = numero;
       elNumeros.appendChild(span);
     });
