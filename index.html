@@ -1195,9 +1195,9 @@ async function verificarStatusAcesso(usuario) {
       return { liberado: true };
     }
 
+    // Se o trial ainda está dentro do prazo
     if (trialFim > agora) {
       const diasRestantes = Math.ceil((trialFim - agora) / (1000 * 60 * 60 * 24));
-
       return {
         liberado: true,
         emTrial: true,
@@ -1205,16 +1205,19 @@ async function verificarStatusAcesso(usuario) {
       };
     }
 
-    await updateDoc(userRef, {
-      accessGranted: false,
-      trialAtivo: false,
-      paymentStatus: "expired",
-      updatedAt: agora
-    });
+    // Se o trial acabou, nós não bloqueamos mais o login. 
+    // Atualizamos o status no banco se necessário, mas deixamos entrar com restrição.
+    if (usuario.trialAtivo !== false || paymentStatus !== "expired") {
+      await updateDoc(userRef, {
+        trialAtivo: false,
+        paymentStatus: "expired",
+        updatedAt: agora
+      });
+    }
 
     return {
-      liberado: false,
-      motivo: "Seu período de 7 dias grátis terminou. Escolha um plano para continuar."
+      liberado: true,
+      trialExpirado: true
     };
   } catch (erro) {
     console.error("Erro ao verificar acesso:", erro);
@@ -1263,6 +1266,8 @@ async function verificarStatusAcesso(usuario) {
 
     if (statusAcesso.emTrial) {
       alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
+    } else if (statusAcesso.trialExpirado) {
+      alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para continuar gerando jogos!");
     }
 
   } catch (erro) {
@@ -1310,7 +1315,15 @@ async function gerarJogoUsuario() {
       return;
     }
 
+    // --- NOVA TRAVA DE TRIAL EXPIRADO AQUI ---
+    if (usuarioAtual.paymentStatus === "expired" || usuarioAtual.trialAtivo === false) {
+      alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo e gerar novos jogos.");
+      return;
+    }
+    // ----------------------------------------
+
     const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
+    // ... restante do código da função continua igual
 
     if (!usuarioAtualizado) {
       alert("Usuário não encontrado.");
