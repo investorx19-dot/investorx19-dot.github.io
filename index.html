@@ -1320,22 +1320,23 @@ async function gerarJogoUsuario() {
       return;
     }
 
-    // --- NOVA VALIDAÇÃO INTELIGENTE DE ACESSO ---
+    // --- VALIDAÇÃO DE ACESSO CORRIGIDA E LIMPA ---
     const planoAtivo = usuarioAtual.plan;
     const statusPagamento = usuarioAtual.paymentStatus;
 
-    // Se o plano NÃO for um dos planos pagos válidos, checamos as travas do trial
+    // Se o usuário NÃO tiver nenhum plano pago ativo, aplicamos as travas do Trial
     if (planoAtivo !== "basico" && planoAtivo !== "intermediario" && planoAtivo !== "premium") {
       
-      if (statusPagamento === "expired" || statusPagamento === "Pago" === false || usuarioAtual.trialAtivo === false) {
+      // Bloqueia se o status for expirado ou se o trial foi desativado
+      if (statusPagamento === "expired" || usuarioAtual.trialAtivo === false) {
         alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo e gerar novos jogos.");
         return;
       }
     }
-    // --------------------------------------------
+    // -------------------------------------
 
     const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
-    // ... restante do código original da função segue igual
+    // ... o restante do código continua igual abaixo
 
     if (!usuarioAtualizado) {
       alert("Usuário não encontrado.");
