@@ -1089,28 +1089,41 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
     return null;
   }
 }
- async function cadastrar() {
+async function cadastrar() {
   const nome = elNome.value.trim();
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
 
- if (!nome || !email || !telefone) {
-  alert("Preencha nome, e-mail e telefone.");
-  return;
-}
+  if (!nome || !email || !telefone) {
+    alert("Preencha nome, e-mail e telefone.");
+    return;
+  }
 
-if (!telefoneComDDDValido(telefone)) {
-  alert("Informe o telefone com DDD. Exemplo: 21999887766");
-  return;
-}
+  if (!telefoneComDDDValido(telefone)) {
+    alert("Informe o telefone com DDD. Exemplo: 21999887766");
+    return;
+  }
 
   try {
-    const existente = await buscarUsuarioPorEmail(email);
-    if (existente) {
+    // 1. Verifica se o E-mail já existe
+    const qEmail = query(collection(db, "users"), where("email", "==", email));
+    const snapEmail = await getDocs(qEmail);
+
+    if (!snapEmail.empty) {
       alert("Este e-mail já está cadastrado. Use o botão Entrar.");
       return;
     }
 
+    // 2. Verifica se o Telefone já existe
+    const qTelefone = query(collection(db, "users"), where("telefone", "==", telefone));
+    const snapTelefone = await getDocs(qTelefone);
+
+    if (!snapTelefone.empty) {
+      alert("Este telefone já está cadastrado em outra conta. Use o botão Entrar.");
+      return;
+    }
+
+    // Se passou pelas duas validações, cria o usuário normalmente
     const agora = Date.now();
     const seteDiasEmMs = 7 * 24 * 60 * 60 * 1000;
 
@@ -1122,7 +1135,7 @@ if (!telefoneComDDDValido(telefone)) {
       plan: "basico",
       maxDezenas: 6,
       maxCotas: 1,
-      limiteJogosDia: 10,
+      limiteJogosDia: 3, // Mantendo a alteração anterior de 3 jogos por dia
       paymentStatus: "trial",
       trialAtivo: true,
       trialInicio: agora,
@@ -1142,7 +1155,7 @@ if (!telefoneComDDDValido(telefone)) {
       plan: "basico",
       maxDezenas: 6,
       maxCotas: 1,
-      limiteJogosDia: 10,
+      limiteJogosDia: 3,
       paymentStatus: "trial",
       trialAtivo: true,
       trialInicio: novoUsuario.trialInicio,
