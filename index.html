@@ -952,7 +952,7 @@ async function carregarPlanoUsuario(userId) {
     const dados = snap.data();
     console.log("Plano carregado do Firestore:", dados);
 
-    if (dados.paymentStatus === "paid") {
+    if (dados.paymentStatus === "Pago") {
       usuarioAtual = {
         ...usuarioAtual,
         plan: dados.plan || "basico",
