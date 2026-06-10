@@ -1313,15 +1313,22 @@ async function gerarJogoUsuario() {
       return;
     }
 
-    // --- NOVA TRAVA DE TRIAL EXPIRADO AQUI ---
-    if (usuarioAtual.paymentStatus === "expired" || usuarioAtual.trialAtivo === false) {
-      alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo e gerar novos jogos.");
-      return;
+    // --- NOVA VALIDAÇÃO INTELIGENTE DE ACESSO ---
+    const planoAtivo = usuarioAtual.plan;
+    const statusPagamento = usuarioAtual.paymentStatus;
+
+    // Se o plano NÃO for um dos planos pagos válidos, checamos as travas do trial
+    if (planoAtivo !== "basico" && planoAtivo !== "intermediario" && planoAtivo !== "premium") {
+      
+      if (statusPagamento === "expired" || statusPagamento === "Pago" === false || usuarioAtual.trialAtivo === false) {
+        alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo e gerar novos jogos.");
+        return;
+      }
     }
-    // ----------------------------------------
+    // --------------------------------------------
 
     const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
-    // ... restante do código da função continua igual
+    // ... restante do código original da função segue igual
 
     if (!usuarioAtualizado) {
       alert("Usuário não encontrado.");
