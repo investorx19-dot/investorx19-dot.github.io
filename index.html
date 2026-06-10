@@ -556,6 +556,21 @@
     grid-template-columns: 1fr;
   }
 }
+/* Cores de destaque para a análise do último sorteio */
+    .numero.fibonacci {
+      background: #a855f7 !important; /* Roxo */
+      color: #ffffff !important;
+    }
+
+    .numero.primo {
+      background: #ec4899 !important; /* Rosa/Carmim */
+      color: #ffffff !important;
+    }
+
+    .numero.multiplo3 {
+      background: #06b6d4 !important; /* Azul Ciano */
+      color: #ffffff !important;
+    }
   </style>
 </head>
 <body>
@@ -1756,29 +1771,6 @@ async function buscarResultadoAPILoteria() {
 buscarResultadoAPILoteria();
       span.className = "numero selecionado"; 
       /* Cores de destaque para a análise do último sorteio */
-    .numero.fibonacci {
-      background: #a855f7 !important; /* Roxo */
-      color: #ffffff !important;
-    }
-
-    .numero.primo {
-      background: #ec4899 !important; /* Rosa/Carmim */
-      color: #ffffff !important;
-    }
-
-    .numero.multiplo3 {
-      background: #06b6d4 !important; /* Azul Ciano */
-      color: #ffffff !important;
-    }// Usa a classe amarela do seu CSS
-      span.textContent = numero;
-      elNumeros.appendChild(span);
-    });
-
-  } catch (erro) {
-    console.error("Erro ao buscar dados da API externa:", erro);
-    elInfo.textContent = "Não foi possível carregar o último sorteio automaticamente.";
-  }
-}
 
 // Chamar a função para rodar assim que a página abrir
 buscarResultadoAPILoteria();
