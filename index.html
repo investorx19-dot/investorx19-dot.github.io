@@ -952,25 +952,25 @@ async function carregarPlanoUsuario(userId) {
     const dados = snap.data();
     console.log("Plano carregado do Firestore:", dados);
 
-    if (dados.paymentStatus === "Pago") {
+    // ALTERAÇÃO AQUI: Verificando tanto "paid" quanto "Pago"
+    if (dados.paymentStatus === "paid" || dados.paymentStatus === "Pago") {
       usuarioAtual = {
         ...usuarioAtual,
         plan: dados.plan || "basico",
         maxDezenas: dados.maxDezenas || 6,
         maxCotas: dados.maxCotas || 1,
         limiteJogosDia: dados.limiteJogosDia || 10,
-        paymentStatus: dados.paymentStatus || "pending",
+        paymentStatus: dados.paymentStatus || "Pago", // Mantém como Pago
         accessGranted: dados.accessGranted || false
       };
 
       const elStatusPlano = document.getElementById("statusPlano");
       if (elStatusPlano) {
-        elStatusPlano.textContent =
-          "Plano: " + (dados.plan || "basico");
+        elStatusPlano.textContent = "Plano: " + (dados.plan || "basico");
       }
 
     } else {
-      console.log("Usuário sem pagamento aprovado.");
+      console.log("Usuário sem pagamento aprovado. Status atual:", dados.paymentStatus);
     }
   } catch (erro) {
     console.error("Erro ao carregar plano do usuário:", erro);
