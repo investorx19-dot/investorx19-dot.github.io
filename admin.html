@@ -248,7 +248,7 @@
     .dot{
       width:10px;
       height:10px;
-      border-radius:99px;
+      border-radius:999px;
       display:inline-block;
     }
 
@@ -494,7 +494,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
               <div>
                 <h3 style="margin: 0; color: #cfe0ff;">Sincronizar Resultados Automático</h3>
-                <p class="small" style="margin: 4px 0 0;" id="apiStatusTxt">Insere o último concurso nos campos abaixo.</p>
+                <p class="small" style="margin: 4px 0 0;" id="apiStatusTxt">Insere o último concurso nos campos de dezenas.</p>
               </div>
               <button type="button" id="btnSincronizarApi" class="btn success" style="padding: 6px 12px; font-size: 13px;">🔄 Capturar da API</button>
             </div>
@@ -619,6 +619,7 @@
     $("adminEmail").placeholder = ADMIN_EMAIL;
 
     function toast(msg, type="ok"){
+      if (!toastEl) return;
       toastEl.className = "toast show " + (type === "error" ? "error" : "ok");
       toastEl.textContent = msg;
       setTimeout(() => { toastEl.className = "toast"; }, 4200);
@@ -677,14 +678,11 @@
 
     function mkNumberInputs(containerId, cssClass, count){
       const box = document.getElementById(containerId);
-
       if (!box) {
         console.warn("Container não encontrado:", containerId);
         return;
       }
-
       box.innerHTML = "";
-
       for (let i = 0; i < count; i++) {
         const input = document.createElement("input");
         input.type = "number";
@@ -771,11 +769,7 @@
 
         if(statsSnap.exists()){
           const statsData = statsSnap.data();
-          totalAtual = Number(
-            statsData.totalAcertosV2 ??
-            statsData.totalAcertos ??
-            1826
-          );
+          totalAtual = Number(statsData.totalAcertosV2 ?? statsData.totalAcertos ?? 1826);
         }
 
         const novoTotal = totalAtual + totalAcertosSomados;
@@ -793,14 +787,7 @@
           createdAt: Date.now()
         });
 
-        toast(
-          "Processamento concluído. " +
-          totalJogosProcessados +
-          " jogo(s) processado(s) e " +
-          totalAcertosSomados +
-          " acerto(s).",
-          "ok"
-        );
+        toast("Processamento concluído. " + totalJogosProcessados + " jogo(s) processado(s) e " + totalAcertosSomados + " acerto(s).", "ok");
 
         await carregarResumoAdmin();
         await carregarHistoricoProcessamentos();
@@ -820,9 +807,7 @@
 
         const usersSnap = await getDocs(collection(db, "users"));
         const jogosSnap = await getDocs(collection(db, "jogosGerados"));
-        const pendentesSnap = await getDocs(
-          query(collection(db, "jogosGerados"), where("processado", "==", false))
-        );
+        const pendentesSnap = await getDocs(query(collection(db, "jogosGerados"), where("processado", "==", false)));
         const statsSnap = await getDoc(doc(db, "stats", "global"));
 
         let usuariosAtivos = 0;
@@ -834,17 +819,13 @@
         let totalAcertos = 1826;
         if (statsSnap.exists()) {
           const statsData = statsSnap.data();
-          totalAcertos = Number(
-            statsData.totalAcertosV2 ??
-            statsData.totalAcertos ??
-            1826
-          );
+          totalAcertos = Number(statsData.totalAcertosV2 ?? statsData.totalAcertos ?? 1826);
         }
 
-        elUsuarios.textContent = usuariosAtivos.toLocaleString("pt-BR");
-        elJogos.textContent = jogosSnap.size.toLocaleString("pt-BR");
-        elPendentes.textContent = pendentesSnap.size.toLocaleString("pt-BR");
-        elAcertos.textContent = totalAcertos.toLocaleString("pt-BR");
+        if(elUsuarios) elUsuarios.textContent = usuariosAtivos.toLocaleString("pt-BR");
+        if(elJogos) elJogos.textContent = jogosSnap.size.toLocaleString("pt-BR");
+        if(elPendentes) elPendentes.textContent = pendentesSnap.size.toLocaleString("pt-BR");
+        if(elAcertos) elAcertos.textContent = totalAcertos.toLocaleString("pt-BR");
       } catch (err) {
         console.error("Erro ao carregar resumo admin:", err);
       }
@@ -853,21 +834,13 @@
     async function carregarHistoricoProcessamentos() {
       try {
         const box = document.getElementById("historicoProcessamentosLista");
-
-        if (!box) {
-          console.warn("Container do histórico não encontrado");
-          return;
-        }
+        if (!box) return;
 
         box.innerHTML = "";
-
         const querySnapshot = await getDocs(collection(db, "historicoProcessamentos"));
         const items = [];
 
-        querySnapshot.forEach(docItem => {
-          items.push(docItem.data());
-        });
-
+        querySnapshot.forEach(docItem => { items.push(docItem.data()); });
         items.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
         if (!items.length) {
@@ -878,17 +851,14 @@
         items.slice(0, 10).forEach((item) => {
           const div = document.createElement("div");
           div.className = "historico-item";
-
           div.innerHTML = `
             <div><strong>Resultado:</strong> ${escapeHtml(item.resultadoTexto || "")}</div>
             <div class="small">Jogos processados: ${Number(item.jogosProcessados || 0)}</div>
             <div class="small">Acertos somados: ${Number(item.acertosSomados || 0)}</div>
             <div class="small">Data: ${escapeHtml(formatarDataHora(item.createdAt))}</div>
           `;
-
           box.appendChild(div);
         });
-
       } catch (err) {
         console.error("Erro ao carregar histórico:", err);
       }
@@ -897,7 +867,6 @@
     $("btnLogin").addEventListener("click", async () => {
       const email = $("adminEmail").value.trim();
       const pass = $("adminPass").value;
-
       try {
         await signInWithEmailAndPassword(auth, email, pass);
       } catch (err) {
@@ -937,19 +906,20 @@
 
       await loadConfig();
       await loadUsers();
+      await carregarResSummary();
+    });
+
+    async function carregarResSummary() {
       await carregarResumoAdmin();
       await carregarHistoricoProcessamentos();
       await carregarJogosGerados();
-    });
+    }
 
     function atualizarExibicaoLinhasVazias() {
       const modoLinhasVazias = document.getElementById("modoLinhasVazias");
       const linhasVaziasManuais = document.getElementById("linhasVaziasManuais");
-
       if (!modoLinhasVazias || !linhasVaziasManuais) return;
-
-      linhasVaziasManuais.style.display =
-        modoLinhasVazias.value === "manual" ? "grid" : "none";
+      linhasVaziasManuais.style.display = modoLinhasVazias.value === "manual" ? "grid" : "none";
     }
 
     async function loadConfig() {
@@ -967,7 +937,6 @@
 
         if (snap.exists()) {
           const data = snap.data();
-
           linhasAtivas = data.linhasAtivas || [];
           dezenasAnteriores = data.dezenasAnteriores || [];
           dezenasAtrasadas = data.dezenasAtrasadas || [];
@@ -986,7 +955,6 @@
         if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
 
         const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
-
         checkboxes.forEach(cb => {
           const numeroLinha = Number(cb.value);
           cb.checked = !linhasAtivas.includes(numeroLinha);
@@ -1014,19 +982,11 @@
         const atrasadas = parseNumsFromInputs(".atrasada");
         const resultado = parseNumsFromInputs(".resultado");
 
-        console.log("anterior =", anterior, "total =", anterior.length);
-        console.log("atrasadas =", atrasadas, "total =", atrasadas.length);
-        console.log("resultado =", resultado, "total =", resultado.length);
-
         let linhasAtivas = [];
 
         if (modoLinhasVazias === "manual") {
-          const selecionadas = Array.from(
-            document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')
-          ).map(el => Number(el.value));
-
+          const selecionadas = Array.from(document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')).map(el => Number(el.value));
           linhasAtivas = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
-
           if (linhasAtivas.length === 0) {
             toast("No modo manual, deixe pelo menos 1 linha ativa.", "error");
             return;
@@ -1039,12 +999,10 @@
           toast("Preencha as 6 dezenas do sorteio anterior.", "error");
           return;
         }
-
         if (atrasadas.length !== 5) {
           toast("Preencha as 5 dezenas mais atrasadas.", "error");
           return;
         }
-
         if (resultado.length !== 6) {
           toast("Preencha as 6 dezenas do resultado oficial.", "error");
           return;
@@ -1072,9 +1030,10 @@
     $("btnProcessarResultado").addEventListener("click", processarResultadoOficial);
     $("btnSaveConfig").addEventListener("click", saveConfig);
     $("btnReloadUsers").addEventListener("click", loadUsers);
-// 
+
     async function loadUsers(){
       const tbody = $("usersTbody");
+      if(!tbody) return;
       tbody.innerHTML = '<tr><td colspan="8" class="small">Carregando...</td></tr>';
 
       try{
@@ -1088,7 +1047,6 @@
         for(const u of docs){
           const email = normEmail(u.email);
           if(!email) continue;
-
           const ts = Number(u.updatedAt || u.createdAt || 0);
 
           if(!map.has(email)){
@@ -1101,13 +1059,11 @@
           }
         }
 
-        const uniqueUsers = [...map.values()]
-          .sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
-
-        $("dupInfo").textContent =
-          duplicatesHidden > 0
-            ? "Aviso: " + duplicatesHidden + " duplicado(s) ocultado(s) por e-mail"
-            : "Sem duplicações detectadas.";
+        const uniqueUsers = [...map.values()].sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
+        const dupEl = $("dupInfo");
+        if(dupEl) {
+          dupEl.textContent = duplicatesHidden > 0 ? "Aviso: " + duplicatesHidden + " duplicado(s) ocultado(s) por e-mail" : "Sem duplicações detectadas.";
+        }
 
         if (uniqueUsers.length === 0) {
           tbody.innerHTML = '<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>';
@@ -1121,11 +1077,7 @@
           const phone = (u.telefone || u.phone || "").toString();
           const plano = formatarPlano(u.plan || "");
           const pagamento = formatarPagamento(u.paymentStatus || "");
-          const vencimento = formatarData(
-            u.paymentStatus === "paid"
-              ? (u.expiresAt || u.accessExpiresAt || null)
-              : (u.trialFim || null)
-          );
+          const vencimento = formatarData(u.paymentStatus === "paid" ? (u.expiresAt || u.accessExpiresAt || null) : (u.trialFim || null));
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -1148,7 +1100,6 @@
                         data-granted="${granted}">
                   ${granted ? "Bloquear" : "Liberar"}
                 </button>
-
                 <div class="acoes-dias">
                   <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
                   <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
@@ -1201,7 +1152,6 @@
     async function liberarPlano(userDocId, planoNome){
       try{
         const agora = Date.now();
-
         let plan = "basico";
         let maxDezenas = 6;
         let maxCotas = 1;
@@ -1241,10 +1191,9 @@
           updatedAt: agora
         });
 
-        toast("Plano atualizado com sucesso.", "ok");
+        toast("Plano updated.", "ok");
         await loadUsers();
         await carregarResumoAdmin();
-
       } catch(err){
         console.error(err);
         toast("Erro ao liberar plano.", "error");
@@ -1253,15 +1202,13 @@
 
     async function carregarJogosGerados() {
       const tbody = $("jogosTbody");
+      if(!tbody) return;
       tbody.innerHTML = '<tr><td colspan="10" class="small">Carregando...</td></tr>';
 
       try {
         const snap = await getDocs(collection(db, "jogosGerados"));
         const jogos = [];
-
-        snap.forEach((docItem) => {
-          jogos.push(docItem.data());
-        });
+        snap.forEach((docItem) => { jogos.push(docItem.data()); });
 
         jogos.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
@@ -1285,9 +1232,7 @@
           const data = formatarDataHora(dados.createdAt);
 
           const tr = document.createElement("tr");
-          const tipoHtml = tipoAposta === "bolao"
-            ? '<span class="tag-bolao">Bolão</span>'
-            : '<span class="tag-simples">Simples</span>';
+          const tipoHtml = tipoAposta === "bolao" ? '<span class="tag-bolao">Bolão</span>' : '<span class="tag-simples">Simples</span>';
 
           tr.innerHTML =
             "<td>" + escapeHtml(nome) + "</td>" +
@@ -1311,11 +1256,8 @@
 
     document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      atualizarExibicaoLinhasVazias();
-    });
     // ==========================================
-    // NOVA FUNÇÃO: SINCRONIZAÇÃO VIA API CAIXA
+    // FUNÇÃO DE SINCRONIZAÇÃO VIA API
     // ==========================================
     async function sincronizarMegaSenaApi() {
       const statusTxt = document.getElementById("apiStatusTxt");
@@ -1359,8 +1301,10 @@
       }
     }
 
-    // Vincula o evento de clique de forma segura
-    document.getElementById("btnSincronizarApi")?.addEventListener("click", sincronizarMegaSenaApi);
+    window.addEventListener("DOMContentLoaded", async () => {
+      atualizarExibicaoLinhasVazias();
+      document.getElementById("btnSincronizarApi")?.addEventListener("click", sincronizarMegaSenaApi);
+    });
   </script>
 </body>
 </html>
