@@ -1284,8 +1284,8 @@
         setInputsFromArray(".anterior", dezenasNumericas);
         setInputsFromArray(".resultado", dezenasNumericas);
 
-        statusTxt.innerHTML = <span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>;
-        toast(Dados do Concurso ${dados.concurso} carregados!, "ok");
+        statusTxt.innerHTML = '<span style="color: var(--green); font-weight: bold;">✓ Concurso n° ' + dados.concurso + ' (' + dados.data + ') importado!</span>';
+        toast('Dados do Concurso ' + dados.concurso + ' carregados!', "ok");
 
       } catch (error) {
         console.error("Erro na busca da API:", error);
