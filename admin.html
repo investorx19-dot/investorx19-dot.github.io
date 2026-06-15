@@ -1072,56 +1072,7 @@
     $("btnProcessarResultado").addEventListener("click", processarResultadoOficial);
     $("btnSaveConfig").addEventListener("click", saveConfig);
     $("btnReloadUsers").addEventListener("click", loadUsers);
-// ==========================================
-    // NOVA FUNÇÃO: SINCRONIZAÇÃO VIA API CAIXA
-    // ==========================================
-    async function sincronizarMegaSenaApi() {
-      const statusTxt = $("apiStatusTxt");
-      const btn = $("btnSincronizarApi");
-
-      if (!statusTxt || !btn) return;
-
-      btn.disabled = true;
-      const textoOriginalBtn = btn.innerText;
-      btn.innerText = "Buscando...";
-      statusTxt.innerHTML = '<span style="color: #2d6cff;">Conectando à API das Loterias Caixa...</span>';
-
-      try {
-        const response = await fetch('https://loteriascaixa-api.herokuapp.com/api/megasena/latest');
-        
-        if (!response.ok) {
-          throw new Error('Servidor da API retornou um erro.');
-        }
-
-        const dados = await response.json();
-        
-        // Valida se vieram as dezenas de forma correta
-        if (!dados.dezenas || dados.dezenas.length !== 6) {
-          throw new Error('Formato de dezenas inválido retornado pela API.');
-        }
-
-        // Converte o array de strings ["02", "15"...] para números inteiros [2, 15...]
-        const dezenasNumericas = dados.dezenas.map(num => Number(num));
-
-        // Alimenta automaticamente os inputs do Sorteio Anterior e do Resultado Oficial
-        setInputsFromArray(".anterior", dezenasNumericas);
-        setInputsFromArray(".resultado", dezenasNumericas);
-
-        statusTxt.innerHTML = <span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado com sucesso!</span>;
-        toast(Dados do Concurso ${dados.concurso} carregados!, "ok");
-
-      } catch (error) {
-        console.error("Erro na busca da API:", error);
-        statusTxt.innerHTML = <span style="color: var(--red);">Erro: ${error.message}</span>;
-        toast("Falha ao buscar dados automáticos.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.innerText = textoOriginalBtn;
-      }
-    }
-
-    // Vincula a função ao clique do novo botão criado no HTML
-    document.getElementById("btnSincronizarApi")?.addEventListener("click", sincronizarMegaSenaApi)
+// 
     async function loadUsers(){
       const tbody = $("usersTbody");
       tbody.innerHTML = '<tr><td colspan="8" class="small">Carregando...</td></tr>';
@@ -1363,6 +1314,53 @@
     window.addEventListener("DOMContentLoaded", async () => {
       atualizarExibicaoLinhasVazias();
     });
+    // ==========================================
+    // NOVA FUNÇÃO: SINCRONIZAÇÃO VIA API CAIXA
+    // ==========================================
+    async function sincronizarMegaSenaApi() {
+      const statusTxt = document.getElementById("apiStatusTxt");
+      const btn = document.getElementById("btnSincronizarApi");
+
+      if (!statusTxt || !btn) return;
+
+      btn.disabled = true;
+      const textoOriginalBtn = btn.innerText;
+      btn.innerText = "Buscando...";
+      statusTxt.innerHTML = '<span style="color: #2d6cff;">Conectando à API das Loterias Caixa...</span>';
+
+      try {
+        const response = await fetch('https://loteriascaixa-api.herokuapp.com/api/megasena/latest');
+        
+        if (!response.ok) {
+          throw new Error('Servidor da API retornou um erro.');
+        }
+
+        const dados = await response.json();
+        
+        if (!dados.dezenas || dados.dezenas.length !== 6) {
+          throw new Error('Formato de dezenas inválido.');
+        }
+
+        const dezenasNumericas = dados.dezenas.map(num => Number(num));
+
+        setInputsFromArray(".anterior", dezenasNumericas);
+        setInputsFromArray(".resultado", dezenasNumericas);
+
+        statusTxt.innerHTML = <span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>;
+        toast(Dados do Concurso ${dados.concurso} carregados!, "ok");
+
+      } catch (error) {
+        console.error("Erro na busca da API:", error);
+        statusTxt.innerHTML = <span style="color: var(--red);">Erro: ${error.message}</span>;
+        toast("Falha ao buscar dados.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = textoOriginalBtn;
+      }
+    }
+
+    // Vincula o evento de clique de forma segura
+    document.getElementById("btnSincronizarApi")?.addEventListener("click", sincronizarMegaSenaApi);
   </script>
 </body>
 </html>
