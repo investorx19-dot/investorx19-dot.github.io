@@ -1297,9 +1297,16 @@
       }
     }
 
+    document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
+
     window.addEventListener("DOMContentLoaded", async () => {
       atualizarExibicaoLinhasVazias();
-      document.getElementById("btnSincronizarApi")?.addEventListener("click", sincronizarMegaSenaApi);
+      
+      // Forma tradicional de vincular o clique (remove o ?. que causava o erro na coluna 31)
+      const botaoApi = document.getElementById("btnSincronizarApi");
+      if (botaoApi) {
+        botaoApi.addEventListener("click", sincronizarMegaSenaApi);
+      }
     });
   </script>
 </body>
