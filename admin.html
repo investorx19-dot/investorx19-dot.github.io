@@ -1299,10 +1299,58 @@
 
     document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
 
-    window.addEventListener("DOMContentLoaded", async () => {
+    // ... continuação do seu código antigo (veio lá do carregarJogosGerados)
+    document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
+
+    // ==========================================
+    // FUNÇÃO DE SINCRONIZAÇÃO VIA API (ISOLADA)
+    // ==========================================
+    async function sincronizarMegaSenaApi() {
+      const statusTxt = document.getElementById("apiStatusTxt");
+      const btn = document.getElementById("btnSincronizarApi");
+
+      if (!statusTxt || !btn) return;
+
+      btn.disabled = true;
+      const textoOriginalBtn = btn.innerText;
+      btn.innerText = "Buscando...";
+      statusTxt.innerHTML = '<span style="color: #2d6cff;">Conectando à API das Loterias Caixa...</span>';
+
+      try {
+        const response = await fetch('https://loteriascaixa-api.herokuapp.com/api/megasena/latest');
+        
+        if (!response.ok) {
+          throw new Error('Servidor da API retornou um erro.');
+        }
+
+        const dados = await response.json();
+        
+        if (!dados.dezenas || dados.dezenas.length !== 6) {
+          throw new Error('Formato de dezenas inválido.');
+        }
+
+        const dezenasNumericas = dados.dezenas.map(num => Number(num));
+
+        setInputsFromArray(".anterior", dezenasNumericas);
+        setInputsFromArray(".resultado", dezenasNumericas);
+
+        statusTxt.innerHTML = <span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>;
+        toast(Dados do Concurso ${dados.concurso} carregados!, "ok");
+
+      } catch (error) {
+        console.error("Erro na busca da API:", error);
+        statusTxt.innerHTML = <span style="color: var(--red);">Erro: ${error.message}</span>;
+        toast("Falha ao buscar dados.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = textoOriginalBtn;
+      }
+    }
+
+    // Vincula os eventos assim que a página terminar de carregar o HTML
+    window.addEventListener("DOMContentLoaded", () => {
       atualizarExibicaoLinhasVazias();
       
-      // Forma tradicional de vincular o clique (remove o ?. que causava o erro na coluna 31)
       const botaoApi = document.getElementById("btnSincronizarApi");
       if (botaoApi) {
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
