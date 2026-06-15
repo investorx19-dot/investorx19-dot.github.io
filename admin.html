@@ -1256,7 +1256,7 @@
 
     document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
 
-    // ==========================================
+   // ==========================================
     // FUNÇÃO DE SINCRONIZAÇÃO VIA API
     // ==========================================
     async function sincronizarMegaSenaApi() {
@@ -1288,18 +1288,20 @@
         setInputsFromArray(".anterior", dezenasNumericas);
         setInputsFromArray(".resultado", dezenasNumericas);
 
-        statusTxt.innerHTML = <span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>;
+        statusTxt.innerHTML = <span style='color: var(--green); font-weight: bold;'>✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>;
         toast(Dados do Concurso ${dados.concurso} carregados!, "ok");
 
       } catch (error) {
         console.error("Erro na busca da API:", error);
-        statusTxt.innerHTML = <span style="color: var(--red);">Erro: ${error.message}</span>;
+        statusTxt.innerHTML = <span style='color: var(--red);'>Erro: ${error.message}</span>;
         toast("Falha ao buscar dados.", "error");
       } finally {
         btn.disabled = false;
         btn.innerText = textoOriginalBtn;
       }
     }
+
+    document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
 
     window.addEventListener("DOMContentLoaded", async () => {
       atualizarExibicaoLinhasVazias();
