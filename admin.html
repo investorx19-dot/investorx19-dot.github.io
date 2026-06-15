@@ -1289,7 +1289,7 @@
 
       } catch (error) {
         console.error("Erro na busca da API:", error);
-        statusTxt.innerHTML = <span style="color: var(--red);">Erro: ${error.message}</span>;
+        statusTxt.innerHTML = '<span style="color: var(--red);">Erro: ' + error.message + '</span>';
         toast("Falha ao buscar dados.", "error");
       } finally {
         btn.disabled = false;
