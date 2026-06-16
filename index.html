@@ -645,9 +645,11 @@
       <h2>Cartão Virtual</h2>
       <div id="cartao"></div>
 
-      <p class="centro">
-        <strong>Acertos no último sorteio:</strong>
-        <span id="acertos">0</span>
+      <p class="centro" style="font-size: 18px; margin: 20px 0;">
+        <strong style="color: var(--text);">Estimativa de prêmio para o próximo sorteio:</strong><br>
+        <span id="estimativaPremio" style="color: var(--green); font-size: 28px; font-weight: 800; display: inline-block; margin-top: 5px;">
+          Carregando...
+        </span>
       </p>
 
       <div class="potencial-ganho">
@@ -1079,7 +1081,6 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
   atualizarUsuarioLogado();
   aplicarLimitesDoPlano(usuarioAtual);
   renderCartao([]);
-  elAcertos.textContent = "0";
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1716,6 +1717,7 @@ function ehMultiploDe3(num) {
 async function buscarResultadoAPILoteria() {
   const elNumeros = document.getElementById("numerosSorteioReal");
   const elInfo = document.getElementById("infoConcurso");
+  const elPremio = document.getElementById("estimativaPremio"); // Pega o novo campo do HTML
 
   if (!elNumeros || !elInfo) return;
 
@@ -1723,30 +1725,31 @@ async function buscarResultadoAPILoteria() {
     const resposta = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
     
     if (!resposta.ok) {
-      throw new Error("Erro ao consultar a API");
+      throw new Error("Erro na API");
     }
 
     const dados = await resposta.json();
-    
     const concurso = dados.concurso;
     const dataSorteio = dados.data;
     const dezenas = dados.dezenas;
+    
+    // Pega o valor estimado vindo da API da Caixa
+    const valorEstimado = dados.valorEstimadoProximoConcurso; 
 
-    // Atualiza a legenda para explicar as cores ao usuário
+    // 1. Atualiza a legenda das dezenas do sorteio anterior
     elInfo.innerHTML = "Concurso nº " + concurso + " • " + dataSorteio + "<br>" +
                        "<span style='color:#a855f7; font-weight:bold;'>■ Fibonacci</span> " +
                        "<span style='color:#ec4899; font-weight:bold; margin:0 8px;'>■ Primos</span> " +
                        "<span style='color:#06b6d4; font-weight:bold;'>■ Múltiplos de 3</span>";
 
+    // 2. Renderiza os números coloridos na tela
     elNumeros.innerHTML = "";
-    
     dezenas.forEach(function(dezenaStr) {
       const num = parseInt(dezenaStr, 10);
       const span = document.createElement("span");
-      span.className = "numero"; // Classe base estrutural do seu CSS
+      span.className = "numero";
       span.textContent = dezenaStr;
 
-      // Regra de prioridade para aplicar as cores de destaque
       if (ehFibonacci(num)) {
         span.classList.add("fibonacci");
       } else if (ehPrimo(num)) {
@@ -1754,16 +1757,26 @@ async function buscarResultadoAPILoteria() {
       } else if (ehMultiploDe3(num)) {
         span.classList.add("multiplo3");
       } else {
-        // Caso não seja nenhum deles, mantém a cor amarela original (padrão)
         span.classList.add("selecionado");
       }
 
       elNumeros.appendChild(span);
     });
 
+    // 3. Formata e exibe o valor do próximo prêmio estimado
+    if (elPremio && valorEstimado) {
+      elPremio.textContent = valorEstimado.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    } else if (elPremio) {
+      elPremio.textContent = "Acumulado!";
+    }
+
   } catch (erro) {
-    console.error("Erro ao buscar dados da API externa:", erro);
+    console.error("Erro na API externa:", erro);
     elInfo.textContent = "Não foi possível carregar o último sorteio automaticamente.";
+    if (elPremio) elPremio.textContent = "Consulte o site da Caixa";
   }
 }
 
