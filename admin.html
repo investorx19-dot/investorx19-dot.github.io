@@ -371,12 +371,17 @@
             </div>
           </div>
 
-          <div class="card" style="margin-top:18px;">
-            <h3>Histórico de Processamentos</h3>
-            <div id="historicoProcessamentosLista" class="historico-lista">
-              <div class="muted">Nenhum processamento ainda.</div>
-            </div>
-          </div>
+          <!-- Seção de Grandes Acertos (Substituindo o Histórico) -->
+<div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mt-6">
+    <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        🏆 Grandes Acertos (Sena, Quina e Quadra)
+    </h3>
+    
+    <!-- Contêiner onde o JS vai injetar os jogos premiados -->
+    <div id="container-grandes-acertos" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+        <p class="text-gray-400 text-sm text-center py-4">Buscando jogos premiados...</p>
+    </div>
+</div>
 
           <div class="sub">Mark6 • Firebase Auth + Firestore</div>
         </div>
@@ -597,6 +602,9 @@
       query,
       where,
       addDoc
+      orderBy,
+      limit,
+      onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -751,8 +759,42 @@
             if(resultadoOficial.includes(numero)) acertos++;
           });
 
+          let totalAcertosSomados = 0;
+        let totalJogosProcessados = 0;
+
+        for(const jogoDoc of jogosSnap.docs){
+          const dados = jogoDoc.data();
+          const jogo = Array.isArray(dados.jogo) ? dados.jogo : [];
+
+          let acertos = 0;
+          jogo.forEach(numero => {
+            if(resultadoOficial.includes(numero)) acertos++;
+          });
+
           totalAcertosSomados += acertos;
           totalJogosProcessados++;
+
+          // ===================================================================
+          // GATILHO DE GRANDES ACERTOS: SE FOR QUADRA, QUINA OU SENA, SALVA!
+          // ===================================================================
+          if (acertos >= 4) {
+            await addDoc(collection(db, "grandes_acertos"), {
+              usuarioEmail: dados.email || "Usuário Mark6",
+              dezenas: jogo,           // Salva a array de números apostados [5, 6, 17...]
+              acertos: acertos,        // Salva se foi 4, 5 ou 6
+              concurso: config.concurso || "Atual", // Puxa o número do concurso se houver na config
+              dataPremio: Date.now()   // Grava o timestamp do momento do prêmio
+            });
+          }
+          // ===================================================================
+
+          await updateDoc(doc(db, "jogosGerados", jogoDoc.id), {
+            processado: true,
+            acertos: acertos,
+            resultadoReferencia: resultadoOficial.join("-"),
+            processadoEm: Date.now()
+          });
+        }
 
           await updateDoc(doc(db, "jogosGerados", jogoDoc.id), {
             processado: true,
@@ -1251,7 +1293,64 @@
     }
 
     document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
+    // ==========================================
+    // FUNÇÃO PARA MONITORAR E RENDERIZAR GRANDES ACERTOS
+    // ==========================================
+    function monitorarGrandesAcertos() {
+      const container = document.getElementById('container-grandes-acertos');
+      if (!container) return;
 
+      const q = query(
+        collection(db, "grandes_acertos"),
+        where("acertos", ">=", 4),
+        orderBy("dataPremio", "desc"), // Mostra os prêmios mais recentes primeiro
+        limit(10)
+      );
+
+      onSnapshot(q, (querySnapshot) => {
+        if (querySnapshot.empty) {
+          container.innerHTML = '<div class="muted">Nenhuma Quadra, Quina ou Sena registrada recentemente.</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+
+        querySnapshot.forEach((docSnap) => {
+          const dado = docSnap.data();
+          
+          let badgeClass = "tag-simples"; 
+          let nomePremio = "Quadra";
+          
+          if (dado.acertos === 5) {
+            badgeClass = "tag-bolao"; 
+            nomePremio = "Quina";
+          } else if (dado.acertos === 6) {
+            badgeClass = "tag-bolao"; // Você pode criar classes customizadas de estilo depois se preferir
+            nomePremio = "Sena";
+          }
+
+          const dezenasFormatadas = dado.dezenas ? dado.dezenas.join(" - ") : "N/A";
+          const dataFormatada = formatarDataHora(dado.dataPremio);
+
+          const cardHTML = `
+            <div class="historico-item" style="margin-bottom: 8px; border-left: 4px solid ${dado.acertos === 6 ? 'var(--green)' : 'var(--blue)'};">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>${nomePremio} (${dado.acertos} acertos)</strong>
+                <span class="${badgeClass}">${nomePremio}</span>
+              </div>
+              <div class="mono" style="font-size: 16px; color: var(--green); margin: 6px 0; font-weight: bold;">
+                ${escapeHtml(dezenasFormatadas)}
+              </div>
+              <div class="small">
+                <span>Usuário: ${escapeHtml(dado.usuarioEmail)}</span><br>
+                <span>Processado em: ${escapeHtml(dataFormatada)}</span>
+              </div>
+            </div>
+          `;
+          container.insertAdjacentHTML('beforeend', cardHTML);
+        });
+      });
+    }
     // ==========================================
     // FUNÇÃO DE SINCRONIZAÇÃO VIA API
     // ==========================================
