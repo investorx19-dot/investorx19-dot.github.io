@@ -895,7 +895,6 @@ function aplicarLimitesDoPlano(usuario) {
     const elApp = document.getElementById("app");
     const elUsuarioLogado = document.getElementById("usuarioLogado");
     const elCartao = document.getElementById("cartao");
-    const elAcertos = document.getElementById("acertos");
     const elTotalAcertosGlobal = document.getElementById("totalAcertosGlobal");
 
     const btnCadastrar = document.getElementById("btnCadastrar");
@@ -1770,11 +1769,6 @@ async function buscarResultadoAPILoteria() {
     if (elPremio) elPremio.textContent = "Consulte o site da Caixa";
   }
 }
-
-// Executa a função ao iniciar a página
-buscarResultadoAPILoteria();
-      span.className = "numero selecionado"; 
-      /* Cores de destaque para a análise do último sorteio */
 
 // Chamar a função para rodar assim que a página abrir
 buscarResultadoAPILoteria();
