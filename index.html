@@ -992,7 +992,7 @@ async function carregarPlanoUsuario(userId) {
 }
     async function carregarTotalGlobal() {
       try {
-        const ref = doc(db, "stats", "global");
+        const ref = doc(db, "config", "global");
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
