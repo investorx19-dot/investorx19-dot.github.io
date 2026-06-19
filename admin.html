@@ -770,7 +770,40 @@
           jogo.forEach(numero => {
             if(resultadoOficial.includes(numero)) acertos++;
           });
+        // [FIM DO LOOP FOR] - Fecha a chave do laço dos jogos docs
+        } 
 
+        // ===================================================================
+        // 🚀 CORREÇÃO: ATUALIZAR OS ACERTOS ACUMULADOS NO FIREBASE
+        // ===================================================================
+        if (totalJogosProcessados > 0) {
+          try {
+            // 1. Busca os dados globais atuais (onde fica o seu contador de 2711)
+            const configRef = doc(db, "config", "global");
+            const configSnap = await getDoc(configRef);
+            
+            if (configSnap.exists()) {
+              const dadosAtuais = configSnap.data();
+              
+              // 2. Soma os acertos antigos com os novos acertos calculados hoje
+              const antigosAcertos = Number(dadosAtuais.acertosAcumulados) || 0;
+              const novoTotalGeral = antigosAcertos + totalAcertosSomados;
+
+              // 3. Salva o novo valor somado direto no Firebase
+              await updateDoc(configRef, {
+                acertosAcumulados: novoTotalGeral
+              });
+              
+              console.log(📊 Estatísticas atualizadas! +${totalAcertosSomados} acertos somados ao total.);
+            }
+          } catch (erroContador) {
+            console.error("Erro ao atualizar o contador de acertos acumulados:", erroContador);
+          }
+        }
+        // ===================================================================
+
+        // Aqui continua o restante do seu código (os alertas de sucesso, etc)
+        alert(Sucesso! ${totalJogosProcessados} jogos foram processados.);
           totalAcertosSomados += acertos;
           totalJogosProcessados++;
 
