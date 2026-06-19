@@ -371,17 +371,12 @@
             </div>
           </div>
 
-          <!-- Seção de Grandes Acertos (Substituindo o Histórico) -->
-<div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mt-6">
-    <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        🏆 Grandes Acertos (Sena, Quina e Quadra)
-    </h3>
-    
-    <!-- Contêiner onde o JS vai injetar os jogos premiados -->
-    <div id="container-grandes-acertos" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-        <p class="text-gray-400 text-sm text-center py-4">Buscando jogos premiados...</p>
-    </div>
-</div>
+          <div class="card" style="margin-top:18px;">
+            <h3>🏆 Grandes Acertos (Sena, Quina e Quadra)</h3>
+            <div id="container-grandes-acertos" class="historico-lista" style="margin-top:10px; max-h:300px; overflow-y:auto;">
+              <div class="muted">Buscando jogos premiados...</div>
+            </div>
+          </div>
 
           <div class="sub">Mark6 • Firebase Auth + Firestore</div>
         </div>
@@ -782,59 +777,44 @@
 
         if (totalJogosProcessados > 0) {
           try {
-            const configRef = doc(db, "config", "global");
-            const configSnap = await getDoc(configRef);
-
-            if (configSnap.exists()) {
-              const dadosAtuais = configSnap.data();
+            const snapGlobal = await getDoc(configRef);
+            if (snapGlobal.exists()) {
+              const dadosAtuais = snapGlobal.data();
               const antigosAcertos = Number(dadosAtuais.acertosAcumulados) || 0;
               const novoTotalGeral = antigosAcertos + totalAcertosSomados;
 
               await updateDoc(configRef, {
                 acertosAcumulados: novoTotalGeral
               });
-
-              console.log(`📊 Estatísticas atualizadas! +${totalAcertosSomados} acertos somados ao total.`);
+              console.log("Estatisticas acumuladas atualizadas com sucesso!");
             }
           } catch (erroContador) {
-            console.error("Erro ao atualizar o contador de acertos acumulados:", erroContador);
+            console.error("Erro ao atualizar contador acumulado:", erroContador);
+          }
+
+          try {
+            await addDoc(collection(db, "historicoProcessamentos"), {
+              resultado: resultadoOficial,
+              resultadoTexto: resultadoOficial.join(" - "),
+              jogosProcessados: totalJogosProcessados,
+              acertosSomados: totalAcertosSomados,
+              createdAt: Date.now()
+            });
+          } catch (erroHist) {
+            console.error("Erro ao gravar historico de processamento:", erroHist);
           }
         }
-
-        const statsRef = doc(db, "stats", "global");
-        const statsSnap = await getDoc(statsRef);
-
-        let totalAtual = 1826;
-        if(statsSnap.exists()){
-          const statsData = statsSnap.data();
-          totalAtual = Number(statsData.totalAcertosV2 ?? statsData.totalAcertos ?? 1826);
-        }
-
-        const novoTotal = totalAtual + totalAcertosSomados;
-
-        await setDoc(statsRef, {
-          totalAcertosV2: novoTotal,
-          updatedAt: Date.now()
-        }, { merge: true });
-
-        await addDoc(collection(db, "historicoProcessamentos"), {
-          resultado: resultadoOficial,
-          resultadoTexto: resultadoOficial.join(" - "),
-          jogosProcessados: totalJogosProcessados,
-          acertosSomados: totalAcertosSomados,
-          createdAt: Date.now()
-        });
 
         toast("Processamento concluído. " + totalJogosProcessados + " jogo(s) processado(s) e " + totalAcertosSomados + " acerto(s).", "ok");
 
         await carregarResumoAdmin();
-        await carregarHistoricoProcessamentos();
         await carregarJogosGerados();
       } catch (err) {
         console.error(err);
         toast("Erro ao processar resultado oficial.", "error");
       }
-    
+    }
+
     async function carregarResumoAdmin() {
       try {
         const elUsuarios = $("statUsuarios");
@@ -845,7 +825,7 @@
         const usersSnap = await getDocs(collection(db, "users"));
         const jogosSnap = await getDocs(collection(db, "jogosGerados"));
         const pendentesSnap = await getDocs(query(collection(db, "jogosGerados"), where("processado", "==", false)));
-        const statsSnap = await getDoc(doc(db, "stats", "global"));
+        const statsSnap = await getDoc(doc(db, "config", "global"));
 
         let usuariosAtivos = 0;
         usersSnap.forEach((docItem) => {
@@ -853,10 +833,10 @@
           if (dados.accessGranted) usuariosAtivos++;
         });
 
-        let totalAcertos = 1826;
+        let totalAcertos = 2711;
         if (statsSnap.exists()) {
           const statsData = statsSnap.data();
-          totalAcertos = Number(statsData.totalAcertosV2 ?? statsData.totalAcertos ?? 1826);
+          totalAcertos = Number(statsData.acertosAcumulados ?? 2711);
         }
 
         if(elUsuarios) elUsuarios.textContent = usuariosAtivos.toLocaleString("pt-BR");
@@ -868,37 +848,60 @@
       }
     }
 
-    async function carregarHistoricoProcessamentos() {
-      try {
-        const box = document.getElementById("historicoProcessamentosLista");
-        if (!box) return;
+    function monitorarGrandesAcertos() {
+      const container = document.getElementById('container-grandes-acertos');
+      if (!container) return;
 
-        box.innerHTML = "";
-        const querySnapshot = await getDocs(collection(db, "historicoProcessamentos"));
-        const items = [];
+      const q = query(
+        collection(db, "grandes_acertos"),
+        where("acertos", ">=", 4),
+        orderBy("dataPremio", "desc"),
+        limit(10)
+      );
 
-        querySnapshot.forEach(docItem => { items.push(docItem.data()); });
-        items.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-
-        if (!items.length) {
-          box.innerHTML = '<div class="muted">Nenhum processamento ainda.</div>';
+      onSnapshot(q, (querySnapshot) => {
+        if (querySnapshot.empty) {
+          container.innerHTML = '<div class="muted">Nenhuma Quadra, Quina ou Sena registrada recentemente.</div>';
           return;
         }
 
-        items.slice(0, 10).forEach((item) => {
-          const div = document.createElement("div");
-          div.className = "historico-item";
-          div.innerHTML = `
-            <div><strong>Resultado:</strong> ${escapeHtml(item.resultadoTexto || "")}</div>
-            <div class="small">Jogos processados: ${Number(item.jogosProcessados || 0)}</div>
-            <div class="small">Acertos somados: ${Number(item.acertosSomados || 0)}</div>
-            <div class="small">Data: ${escapeHtml(formatarDataHora(item.createdAt))}</div>
+        container.innerHTML = '';
+
+        querySnapshot.forEach((docSnap) => {
+          const dado = docSnap.data();
+          
+          let badgeClass = "tag-simples"; 
+          let nomePremio = "Quadra";
+          
+          if (dado.acertos === 5) {
+            badgeClass = "tag-bolao"; 
+            nomePremio = "Quina";
+          } else if (dado.acertos === 6) {
+            badgeClass = "tag-bolao";
+            nomePremio = "Sena";
+          }
+
+          const dezenasFormatadas = dado.dezenas ? dado.dezenas.join(" - ") : "N/A";
+          const dataFormatada = formatarDataHora(dado.dataPremio);
+
+          const cardHTML = `
+            <div class="historico-item" style="margin-bottom: 8px; border-left: 4px solid ${dado.acertos === 6 ? 'var(--green)' : 'var(--blue)'};">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>${nomePremio} (${dado.acertos} acertos)</strong>
+                <span class="${badgeClass}">${nomePremio}</span>
+              </div>
+              <div class="mono" style="font-size: 16px; color: var(--green); margin: 6px 0; font-weight: bold;">
+                ${escapeHtml(dezenasFormatadas)}
+              </div>
+              <div class="small">
+                <span>Usuário: ${escapeHtml(dado.usuarioEmail)}</span><br>
+                <span>Processado em: ${escapeHtml(dataFormatada)}</span>
+              </div>
+            </div>
           `;
-          box.appendChild(div);
+          container.insertAdjacentHTML('beforeend', cardHTML);
         });
-      } catch (err) {
-        console.error("Erro ao carregar histórico:", err);
-      }
+      });
     }
 
     $("btnLogin").addEventListener("click", async () => {
@@ -919,7 +922,6 @@
 
     $("btnReload").addEventListener("click", () => location.reload());
 
-    // Garante que o estado de autenticação seja monitorado corretamente
     onAuthStateChanged(auth, async (user) => {
       if(!user){
         $("who").textContent = "Não autenticado";
@@ -946,7 +948,7 @@
       await loadUsers();
       await carregarResumoAdmin();
       await carregarJogosGerados();
-    }); // <== FECHA O ONAUTHSTATECHANGED CORRETAMENTE
+    });
 
     function atualizarExibicaoLinhasVazias() {
       const modoLinhasVazias = document.getElementById("modoLinhasVazias");
@@ -955,11 +957,338 @@
       linhasVaziasManuais.style.display = modoLinhasVazias.value === "manual" ? "grid" : "none";
     }
 
-    document.getElementById("modoLinhasVazias")?.addEventListener("change", atualizarExibicaoLinhasVazias);
+    async function loadConfig() {
+      try {
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
 
-    // ==========================================
-    // FUNÇÃO DE SINCRONIZAÇÃO VIA API (ISOLADA)
-    // ==========================================
+        let linhasAtivas = [];
+        let dezenasAnteriores = [];
+        let dezenasAtrasadas = [];
+        let resultadoOficial = [];
+        let modoLinhasVazias = "automatico";
+        let repeticaoUltimoConcurso = "automatico";
+        let modoAtrasadas = "nenhum";
+
+        if (snap.exists()) {
+          const data = snap.data();
+          linhasAtivas = data.linhasAtivas || [];
+          dezenasAnteriores = data.dezenasAnteriores || [];
+          dezenasAtrasadas = data.dezenasAtrasadas || [];
+          resultadoOficial = data.resultadoOficial || [];
+          modoLinhasVazias = data.modoLinhasVazias || "automatico";
+          repeticaoUltimoConcurso = String(data.repeticaoUltimoConcurso ?? "automatico");
+          modoAtrasadas = data.modoAtrasadas || "nenhum";
+        }
+
+        const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
+        const elRepeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso");
+        const elModoAtrasadas = document.getElementById("modoAtrasadas");
+
+        if (elModoLinhasVazias) elModoLinhasVazias.value = modoLinhasVazias;
+        if (elRepeticaoUltimoConcurso) elRepeticaoUltimoConcurso.value = repeticaoUltimoConcurso;
+        if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
+
+        const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          const numeroLinha = Number(cb.value);
+          cb.checked = !linhasAtivas.includes(numeroLinha);
+        });
+
+        setInputsFromArray(".anterior", dezenasAnteriores);
+        setInputsFromArray(".atrasada", dezenasAtrasadas);
+        setInputsFromArray(".resultado", resultadoOficial);
+
+        atualizarExibicaoLinhasVazias();
+        toast("Config carregada.", "ok");
+      } catch (err) {
+        console.error(err);
+        toast("Erro ao carregar config.", "error");
+      }
+    }
+
+    async function saveConfig() {
+      try {
+        const modoLinhasVazias = document.getElementById("modoLinhasVazias")?.value || "automatico";
+        const repeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso")?.value || "automatico";
+        const modoAtrasadas = document.getElementById("modoAtrasadas")?.value || "nenhum";
+
+        const anterior = parseNumsFromInputs(".anterior");
+        const atrasadas = parseNumsFromInputs(".atrasada");
+        const resultado = parseNumsFromInputs(".resultado");
+
+        let linesAct = [];
+
+        if (modoLinhasVazias === "manual") {
+          const selecionadas = Array.from(document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]:checked')).map(el => Number(el.value));
+          linesAct = [1, 2, 3, 4, 5, 6].filter(l => !selecionadas.includes(l));
+          if (linesAct.length === 0) {
+            toast("No modo manual, deixe pelo menos 1 linha ativa.", "error");
+            return;
+          }
+        } else {
+          linesAct = [1, 2, 3, 4, 5, 6];
+        }
+
+        if (anterior.length !== 6) {
+          toast("Preencha as 6 dezenas do sorteio anterior.", "error");
+          return;
+        }
+        if (atrasadas.length !== 5) {
+          toast("Preencha as 5 dezenas mais atrasadas.", "error");
+          return;
+        }
+        if (resultado.length !== 6) {
+          toast("Preencha as 6 dezenas do resultado oficial.", "error");
+          return;
+        }
+
+        await setDoc(doc(db, "config", "global"), {
+          linhasAtivas: linesAct,
+          modoLinhasVazias,
+          repeticaoUltimoConcurso,
+          modoAtrasadas,
+          dezenasAnteriores: anterior,
+          dezenasAtrasadas: atrasadas,
+          resultadoOficial: resultado,
+          updatedAt: Date.now()
+        }, { merge: true });
+
+        toast("Config salva com sucesso.", "ok");
+      } catch (err) {
+        console.error(err);
+        toast("Erro ao salvar config.", "error");
+      }
+    }
+
+    $("btnLoadConfig").addEventListener("click", loadConfig);
+    $("btnProcessarResultado").addEventListener("click", processarResultadoOficial);
+    $("btnSaveConfig").addEventListener("click", saveConfig);
+    $("btnReloadUsers").addEventListener("click", loadUsers);
+
+    async function loadUsers(){
+      const tbody = $("usersTbody");
+      if(!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="8" class="small">Carregando...</td></tr>';
+
+      try{
+        const snap = await getDocs(collection(db, "users"));
+        const docs = [];
+        snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+        const map = new Map();
+        let duplicatesHidden = 0;
+
+        for(const u of docs){
+          const email = normEmail(u.email);
+          if(!email) continue;
+          const ts = Number(u.updatedAt || u.createdAt || 0);
+
+          if(!map.has(email)){
+            map.set(email, u);
+          }else{
+            const cur = map.get(email);
+            const curTs = Number(cur.updatedAt || cur.createdAt || 0);
+            if(ts >= curTs) map.set(email, u);
+            duplicatesHidden++;
+          }
+        }
+
+        const uniqueUsers = [...map.values()].sort((a,b) => normEmail(a.email).localeCompare(normEmail(b.email)));
+        const dupEl = $("dupInfo");
+        if(dupEl) {
+          dupEl.textContent = duplicatesHidden > 0 ? "Aviso: " + duplicatesHidden + " duplicado(s) ocultado(s) por e-mail" : "Sem duplicações detectadas.";
+        }
+
+        if (uniqueUsers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+
+        for(const u of uniqueUsers){
+          const granted = !!u.accessGranted;
+          const phone = (u.telefone || u.phone || "").toString();
+          const plano = formatarPlano(u.plan || "");
+          const pagamento = formatarPagamento(u.paymentStatus || "");
+          const vencimento = formatarData(u.paymentStatus === "paid" ? (u.expiresAt || u.accessExpiresAt || null) : (u.trialFim || null));
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
+            <td class="mono">${escapeHtml(u.email || "")}</td>
+            <td class="mono">${escapeHtml(phone || "-")}</td>
+            <td>${escapeHtml(plano)}</td>
+            <td>${escapeHtml(pagamento)}</td>
+            <td class="mono">${escapeHtml(vencimento)}</td>
+            <td class="right">
+              <span class="status">
+                <span class="dot ${granted ? "green" : "red"}"></span>
+                ${granted ? "Liberado" : "Bloqueado"}
+              </span>
+            </td>
+            <td class="right">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
+                <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-granted="${granted}">
+                  ${granted ? "Bloquear" : "Liberar"}
+                </button>
+                <div class="acoes-dias">
+                  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
+                  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
+                  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
+                </div>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+        tbody.querySelectorAll(".btn-toggle-access").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const granted = btn.getAttribute("data-granted") === "true";
+            await toggleAccess(userId, !granted);
+          });
+        });
+
+        tbody.querySelectorAll("button[data-plano]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const plano = btn.getAttribute("data-plano");
+            await liberarPlano(userId, plano);
+          });
+        });
+
+      } catch(err){
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="8" class="small">Erro ao carregar usuários.</td></tr>';
+        toast("Erro ao carregar usuários.", "error");
+      }
+    }
+
+    async function toggleAccess(userDocId, newValue){
+      try{
+        await updateDoc(doc(db, "users", userDocId), {
+          accessGranted: newValue,
+          updatedAt: Date.now()
+        });
+        toast(newValue ? "Usuário liberado." : "Usuário bloqueado.", "ok");
+        await loadUsers();
+        await carregarResumoAdmin();
+      }catch(err){
+        console.error(err);
+        toast("Falha ao alterar acesso.", "error");
+      }
+    }
+
+    async function liberarPlano(userDocId, planoNome){
+      try{
+        const agora = Date.now();
+        let plan = "basico";
+        let maxDezenas = 6;
+        let maxCotas = 1;
+        let limiteJogosDia = 10;
+        let preco = 19.90;
+
+        if (planoNome === "intermediario") {
+          plan = "intermediario";
+          maxDezenas = 10;
+          maxCotas = 10;
+          limiteJogosDia = 30;
+          preco = 39.90;
+        }
+
+        if (planoNome === "premium") {
+          plan = "premium";
+          maxDezenas = 15;
+          maxCotas = 9999;
+          limiteJogosDia = 9999;
+          preco = 79.90;
+        }
+
+        const trintaDias = 30 * 24 * 60 * 60 * 1000;
+        const vencimentoPlano = agora + trintaDias;
+
+        await updateDoc(doc(db, "users", userDocId), {
+          accessGranted: true,
+          paymentStatus: "paid",
+          trialAtivo: false,
+          plan: plan,
+          maxDezenas: maxDezenas,
+          maxCotas: maxCotas,
+          limiteJogosDia: limiteJogosDia,
+          valorPlano: preco,
+          paidAt: agora,
+          expiresAt: vencimentoPlano,
+          updatedAt: agora
+        });
+
+        toast("Plano updated.", "ok");
+        await loadUsers();
+        await carregarResumoAdmin();
+      } catch(err){
+        console.error(err);
+        toast("Erro ao liberar plano.", "error");
+      }
+    }
+
+    async function carregarJogosGerados() {
+      const tbody = $("jogosTbody");
+      if(!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="10" class="small">Carregando...</td></tr>';
+
+      try {
+        const snap = await getDocs(collection(db, "jogosGerados"));
+        const jogos = [];
+        snap.forEach((docItem) => { jogos.push(docItem.data()); });
+
+        jogos.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+        if (!jogos.length) {
+          tbody.innerHTML = '<tr><td colspan="10" class="small">Nenhum jogo encontrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+
+        jogos.forEach((dados) => {
+          const nome = dados.nome || "";
+          const email = dados.email || "";
+          const jogo = Array.isArray(dados.jogo) ? dados.jogo.join(" - ") : "";
+          const tipoAposta = dados.tipoAposta || "simples";
+          const qtdDezenas = dados.qtdDezenas || 6;
+          const qtdCotas = dados.qtdCotas || 1;
+          const valorTotal = Number(dados.valorTotal || 0);
+          const valorPorPessoa = Number(dados.valorPorPessoa || 0);
+          const acertos = Number(dados.acertos || 0);
+          const data = formatarDataHora(dados.createdAt);
+
+          const tr = document.createElement("tr");
+          const tipoHtml = tipoAposta === "bolao" ? '<span class="tag-bolao">Bolão</span>' : '<span class="tag-simples">Simples</span>';
+
+          tr.innerHTML =
+            "<td>" + escapeHtml(nome) + "</td>" +
+            '<td class="mono">' + escapeHtml(email) + "</td>" +
+            '<td class="mono">' + escapeHtml(jogo) + "</td>" +
+            "<td>" + tipoHtml + "</td>" +
+            "<td>" + escapeHtml(String(qtdDezenas)) + "</td>" +
+            "<td>" + escapeHtml(String(qtdCotas)) + "</td>" +
+            "<td>" + escapeHtml(formatarMoeda(valorTotal)) + "</td>" +
+            "<td>" + escapeHtml(formatarMoeda(valorPorPessoa)) + "</td>" +
+            "<td>" + escapeHtml(String(acertos)) + "</td>" +
+            "<td>" + escapeHtml(data) + "</td>";
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Erro ao carregar jogos gerados:", err);
+        tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
+      }
+    }
+
     async function sincronizarMegaSenaApi() {
       const statusTxt = document.getElementById("apiStatusTxt");
       const btn = document.getElementById("btnSincronizarApi");
@@ -983,19 +1312,18 @@
         setInputsFromArray(".anterior", dezenasNumericas);
         setInputsFromArray(".resultado", dezenasNumericas);
 
-        statusTxt.innerHTML = `<span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>`;
-        toast(`Dados do Concurso ${dados.concurso} carregados!`, "ok");
+        statusTxt.innerHTML = <span style="color: var(--green); font-weight: bold;">✓ Concurso n° ${dados.concurso} (${dados.data}) importado!</span>;
+        toast(Dados do Concurso ${dados.concurso} carregados!, "ok");
       } catch (error) {
         console.error("Erro na busca da API:", error);
-        statusTxt.innerHTML = `<span style="color: var(--red);">Erro: ${error.message}</span>`;
+        statusTxt.innerHTML = <span style="color: var(--red);">Erro: ${error.message}</span>;
         toast("Falha ao buscar dados.", "error");
       } finally {
         btn.disabled = false;
         btn.innerText = textoOriginalBtn;
       }
-    } // <== FECHA A FUNÇÃO SINCRONIZARMEGASENAAPI
+    }
 
-    // Inicializa os eventos da página após o carregamento completo do HTML
     window.addEventListener("DOMContentLoaded", async () => {
       atualizarExibicaoLinhasVazias();
       monitorarGrandesAcertos();
@@ -1004,7 +1332,7 @@
       if (botaoApi) {
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
       }
-    }); // <== FECHA O WINDOW ADDEVENTLISTENER
+    });
   </script>
 </body>
 </html>
