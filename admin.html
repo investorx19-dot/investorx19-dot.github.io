@@ -759,89 +759,52 @@
             if(resultadoOficial.includes(numero)) acertos++;
           });
 
-          let totalAcertosSomados = 0;
-        let totalJogosProcessados = 0;
+          totalAcertosSomados += acertos;
+          totalJogosProcessados++;
 
-        for(const jogoDoc of jogosSnap.docs){
-          const dados = jogoDoc.data();
-          const jogo = Array.isArray(dados.jogo) ? dados.jogo : [];
+          if (acertos >= 4) {
+            await addDoc(collection(db, "grandes_acertos"), {
+              usuarioEmail: dados.email || "Usuário Mark6",
+              dezenas: jogo,
+              acertos: acertos,
+              concurso: config.concurso || "Atual",
+              dataPremio: Date.now()
+            });
+          }
 
-          let acertos = 0;
-          jogo.forEach(numero => {
-            if(resultadoOficial.includes(numero)) acertos++;
+          await updateDoc(doc(db, "jogosGerados", jogoDoc.id), {
+            processado: true,
+            acertos: acertos,
+            resultadoReferencia: resultadoOficial.join("-"),
+            processadoEm: Date.now()
           });
-        // [FIM DO LOOP FOR] - Fecha a chave do laço dos jogos docs
-        } 
+        }
 
-        // ===================================================================
-        // 🚀 CORREÇÃO: ATUALIZAR OS ACERTOS ACUMULADOS NO FIREBASE
-        // ===================================================================
         if (totalJogosProcessados > 0) {
           try {
-            // 1. Busca os dados globais atuais (onde fica o seu contador de 2711)
             const configRef = doc(db, "config", "global");
             const configSnap = await getDoc(configRef);
-            
+
             if (configSnap.exists()) {
               const dadosAtuais = configSnap.data();
-              
-              // 2. Soma os acertos antigos com os novos acertos calculados hoje
               const antigosAcertos = Number(dadosAtuais.acertosAcumulados) || 0;
               const novoTotalGeral = antigosAcertos + totalAcertosSomados;
 
-              // 3. Salva o novo valor somado direto no Firebase
               await updateDoc(configRef, {
                 acertosAcumulados: novoTotalGeral
               });
-              
+
               console.log(`📊 Estatísticas atualizadas! +${totalAcertosSomados} acertos somados ao total.`);
             }
           } catch (erroContador) {
             console.error("Erro ao atualizar o contador de acertos acumulados:", erroContador);
           }
         }
-        // ===================================================================
-
-        // Aqui continua o restante do seu código (os alertas de sucesso, etc)
-        alert(`Sucesso! ${totalJogosProcessados} jogos foram processados.`);
-          totalAcertosSomados += acertos;
-          totalJogosProcessados++;
-
-          // ===================================================================
-          // GATILHO DE GRANDES ACERTOS: SE FOR QUADRA, QUINA OU SENA, SALVA!
-          // ===================================================================
-          if (acertos >= 4) {
-            await addDoc(collection(db, "grandes_acertos"), {
-              usuarioEmail: dados.email || "Usuário Mark6",
-              dezenas: jogo,           // Salva a array de números apostados [5, 6, 17...]
-              acertos: acertos,        // Salva se foi 4, 5 ou 6
-              concurso: config.concurso || "Atual", // Puxa o número do concurso se houver na config
-              dataPremio: Date.now()   // Grava o timestamp do momento do prêmio
-            });
-          }
-          // ===================================================================
-
-          await updateDoc(doc(db, "jogosGerados", jogoDoc.id), {
-            processado: true,
-            acertos: acertos,
-            resultadoReferencia: resultadoOficial.join("-"),
-            processadoEm: Date.now()
-          });
-        }
-
-          await updateDoc(doc(db, "jogosGerados", jogoDoc.id), {
-            processado: true,
-            acertos: acertos,
-            resultadoReferencia: resultadoOficial.join("-"),
-            processadoEm: Date.now()
-          });
-        }
 
         const statsRef = doc(db, "stats", "global");
         const statsSnap = await getDoc(statsRef);
 
         let totalAtual = 1826;
-
         if(statsSnap.exists()){
           const statsData = statsSnap.data();
           totalAtual = Number(statsData.totalAcertosV2 ?? statsData.totalAcertos ?? 1826);
@@ -871,8 +834,7 @@
         console.error(err);
         toast("Erro ao processar resultado oficial.", "error");
       }
-    }
-
+    
     async function carregarResumoAdmin() {
       try {
         const elUsuarios = $("statUsuarios");
