@@ -993,9 +993,9 @@
         btn.disabled = false;
         btn.innerText = textoOriginalBtn;
       }
-    }
+    } // <== FECHA A FUNÇÃO SINCRONIZARMEGASENAAPI
 
-    // Inicializa os eventos da página após o carregamento do HTML
+    // Inicializa os eventos da página após o carregamento completo do HTML
     window.addEventListener("DOMContentLoaded", async () => {
       atualizarExibicaoLinhasVazias();
       monitorarGrandesAcertos();
@@ -1004,8 +1004,7 @@
       if (botaoApi) {
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
       }
-    });
-  }
+    }); // <== FECHA O WINDOW ADDEVENTLISTENER
   </script>
 </body>
 </html>
