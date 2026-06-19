@@ -990,24 +990,39 @@ async function carregarPlanoUsuario(userId) {
     console.error("Erro ao carregar plano do usuário:", erro);
   }
 }
+    // 🚀 CORREÇÃO DEFINITIVA: Sincroniza o contador do utilizador com o Admin
     async function carregarTotalGlobal() {
-  try {
-    const ref = doc(db, "config", "global");
-    const snap = await getDoc(ref);
+      try {
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      elTotalAcertosGlobal.textContent = "2.724";
-      return;
+        // Se o documento não for encontrado por algum motivo, define o padrão correto atual
+        if (!snap.exists()) {
+          if (typeof elTotalAcertosGlobal !== 'undefined' && elTotalAcertosGlobal) {
+            elTotalAcertosGlobal.textContent = "2.724";
+          }
+          return;
+        }
+
+        const dados = snap.data();
+        
+        // 🎯 IMPORTANTE: LÊ O CAMPO EXATO QUE O ADMIN ATUALIZA ("acertosAcumulados")
+        const total = Number(dados.acertosAcumulados ?? 2724);
+        
+        // Atualiza o elemento de texto na tela do utilizador
+        if (typeof elTotalAcertosGlobal !== 'undefined' && elTotalAcertosGlobal) {
+          elTotalAcertosGlobal.textContent = total.toLocaleString("pt-BR");
+        } else {
+          // Caso a variável global tenha outro nome no seu arquivo, tenta pelo ID direto:
+          const elContador = document.getElementById("totalAcertosGlobal") || document.getElementById("statAcertos");
+          if (elContador) {
+            elContador.textContent = total.toLocaleString("pt-BR");
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar o contador global de acertos:", e);
+      }
     }
-
-    const dados = snap.data();
-    // 🚀 CORREÇÃO: Lê o campo exato que o painel admin atualiza e salvou os 2724
-    const total = Number(dados.acertosAcumulados ?? 2724);
-    elTotalAcertosGlobal.textContent = total.toLocaleString("pt-BR");
-  } catch (e) {
-    console.error("Erro contador:", e);
-  }
-}
 
     let usuarioAtual = null;
 
