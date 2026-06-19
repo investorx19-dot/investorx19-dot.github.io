@@ -991,22 +991,23 @@ async function carregarPlanoUsuario(userId) {
   }
 }
     async function carregarTotalGlobal() {
-      try {
-        const ref = doc(db, "config", "global");
-        const snap = await getDoc(ref);
+  try {
+    const ref = doc(db, "config", "global");
+    const snap = await getDoc(ref);
 
-        if (!snap.exists()) {
-          elTotalAcertosGlobal.textContent = "1.826";
-          return;
-        }
-
-        const dados = snap.data();
-        const total = Number(dados.totalAcertosV2 ?? dados.totalAcertos ?? 1826);
-        elTotalAcertosGlobal.textContent = total.toLocaleString("pt-BR");
-      } catch (e) {
-        console.error("Erro contador:", e);
-      }
+    if (!snap.exists()) {
+      elTotalAcertosGlobal.textContent = "2.724";
+      return;
     }
+
+    const dados = snap.data();
+    // 🚀 CORREÇÃO: Lê o campo exato que o painel admin atualiza e salvou os 2724
+    const total = Number(dados.acertosAcumulados ?? 2724);
+    elTotalAcertosGlobal.textContent = total.toLocaleString("pt-BR");
+  } catch (e) {
+    console.error("Erro contador:", e);
+  }
+}
 
     let usuarioAtual = null;
 
