@@ -1740,36 +1740,36 @@ function ehMultiploDe3(num) {
 }
 
 async function buscarResultadoAPILoteria() {
-  const elNumeros = document.getElementById("numerosSorteioReal");
-  const elInfo = document.getElementById("infoConcurso");
-  const elPremio = document.getElementById("estimativaPremio"); // Pega o novo campo do HTML
-
-  if (!elNumeros || !elInfo) return;
-
   try {
-    const resposta = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
-    // Dentro do bloco 'try' onde você recebe os 'dados' da API da Mega-Sena:
-if (dados.premiacoes && dados.premiacoes.length >= 3) {
-  // A API costuma retornar um array onde:
-  // Index 0 = Sena (6 acertos), Index 1 = Quina (5 acertos), Index 2 = Quadra (4 acertos)
-  
-  const senaDados = dados.premiacoes.find(p => p.descricao === "6 acertos") || dados.premiacoes[0];
-  const quinaDados = dados.premiacoes.find(p => p.descricao === "5 acertos") || dados.premiacoes[1];
-  const quadraDados = dados.premiacoes.find(p => p.descricao === "4 acertos") || dados.premiacoes[2];
+    const ref = doc(db, "config", "global");
+    const snap = await getDoc(ref);
 
-  if (document.getElementById("premioSena")) {
-    document.getElementById("premioSena").textContent = senaDados.valorPremio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-  if (document.getElementById("premioQuina")) {
-    document.getElementById("premioQuina").textContent = quinaDados.valorPremio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-  if (document.getElementById("premioQuadra")) {
-    document.getElementById("premioQuadra").textContent = quadraDados.valorPremio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    if (!snap.exists()) return;
+    const dadosConfig = snap.data();
+
+    // 1. Atualiza as premiações se existirem no banco
+    if (dadosConfig.ultimaPremiacao && dadosConfig.ultimaPremiacao.length >= 3) {
+      const senaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "6 acertos") || dadosConfig.ultimaPremiacao[0];
+      const quinaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "5 acertos") || dadosConfig.ultimaPremiacao[1];
+      const quadraDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "4 acertos") || dadosConfig.ultimaPremiacao[2];
+
+      const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoeda(senaDados.valorPremio);
+      if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoeda(quinaDados.valorPremio);
+      if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
+    }
+
+    // Se houver lógica de dezenas oficiais para preencher os círculos do último sorteio na tela do usuário, use o dadosConfig:
+    if (dadosConfig.resultadoOficial) {
+      // Exemplo: preencher as dezenas na tela se seu código já fazia isso antes usando 'dados.dezenas'
+      // renderizarDezenasOficiais(dadosConfig.resultadoOficial);
+    }
+
+  } catch (err) {
+    console.error("Erro ao carregar dados do resultado:", err);
   }
 }
-    if (!resposta.ok) {
-      throw new Error("Erro na API");
-    }
 
     const dados = await resposta.json();
     const concurso = dados.concurso;
