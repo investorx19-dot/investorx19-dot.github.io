@@ -1051,6 +1051,7 @@
           dezenasAnteriores: anterior,
           dezenasAtrasadas: atrasadas,
           resultadoOficial: resultado,
+          ultimaPremiacao: premiacoesTemporarias,
           updatedAt: Date.now()
         }, { merge: true });
 
@@ -1288,7 +1289,7 @@
         tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
       }
     }
-
+let premiacoesTemporarias = null; // <== Adicione esta variável para segurar os prêmios na memória
     async function sincronizarMegaSenaApi() {
       const statusTxt = document.getElementById("apiStatusTxt");
       const btn = document.getElementById("btnSincronizarApi");
@@ -1308,6 +1309,9 @@
         if (!dados.dezenas || dados.dezenas.length !== 6) throw new Error('Formato de dezenas inválido.');
 
         const dezenasNumericas = dados.dezenas.map(num => Number(num));
+
+        // 🚀 ADICIONE ESTA LINHA ABAIXO: Guarda os prêmios da API na variável global temporária
+        premiacoesTemporarias = dados.premiacoes || null; 
 
         setInputsFromArray(".anterior", dezenasNumericas);
         setInputsFromArray(".resultado", dezenasNumericas);
