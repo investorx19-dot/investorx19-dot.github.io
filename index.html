@@ -641,7 +641,28 @@
         <div id="totalAcertosGlobal" class="contador-numero">1.826</div>
         <div class="contador-texto">Total acumulado de dezenas acertadas pela comunidade Mark6</div>
       </div>
-
+<div class="card" style="margin-top: 14px; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08);">
+  <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--muted); text-align: center;">
+    💰 Rateio Oficial da Caixa
+  </h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 8px; border-radius: 10px;">
+      <div style="font-size: 11px; font-weight: bold; color: #fde68a;">SENA</div>
+      <div class="mono" id="premioSena" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
+    </div>
+    
+    <div style="background: rgba(45, 108, 255, 0.1); border: 1px solid rgba(45, 108, 255, 0.2); padding: 8px; border-radius: 10px;">
+      <div style="font-size: 11px; font-weight: bold; color: #cfe0ff;">QUINA</div>
+      <div class="mono" id="premioQuina" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
+    </div>
+    
+    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 8px; border-radius: 10px;">
+      <div style="font-size: 11px; font-weight: bold; color: #bbf7d0;">QUADRA</div>
+      <div class="mono" id="premioQuadra" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
+    </div>
+  </div>
+</div>
       <h2>Cartão Virtual</h2>
       <div id="cartao"></div>
 
@@ -1727,7 +1748,25 @@ async function buscarResultadoAPILoteria() {
 
   try {
     const resposta = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
-    
+    // Dentro do bloco 'try' onde você recebe os 'dados' da API da Mega-Sena:
+if (dados.premiacoes && dados.premiacoes.length >= 3) {
+  // A API costuma retornar um array onde:
+  // Index 0 = Sena (6 acertos), Index 1 = Quina (5 acertos), Index 2 = Quadra (4 acertos)
+  
+  const senaDados = dados.premiacoes.find(p => p.descricao === "6 acertos") || dados.premiacoes[0];
+  const quinaDados = dados.premiacoes.find(p => p.descricao === "5 acertos") || dados.premiacoes[1];
+  const quadraDados = dados.premiacoes.find(p => p.descricao === "4 acertos") || dados.premiacoes[2];
+
+  if (document.getElementById("premioSena")) {
+    document.getElementById("premioSena").textContent = senaDados.valorPremio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+  if (document.getElementById("premioQuina")) {
+    document.getElementById("premioQuina").textContent = quinaDados.valorPremio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+  if (document.getElementById("premioQuadra")) {
+    document.getElementById("premioQuadra").textContent = quadraDados.valorPremio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+}
     if (!resposta.ok) {
       throw new Error("Erro na API");
     }
