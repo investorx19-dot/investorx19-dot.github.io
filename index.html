@@ -1760,10 +1760,12 @@ async function buscarResultadoAPILoteria() {
       });
     };
 
-    // 🚀 BUSCA DIRETA DA API DA CAIXA (Garante dezenas, valores, ganhadores e estimativa atualizados)
+    console.log("Iniciando requisição para a API das Loterias...");
+    // 🚀 BUSCA DIRETA DA API DA CAIXA
     const response = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
     if (!response.ok) throw new Error("Erro ao conectar na API");
     const apiData = await response.json();
+    console.log("Dados recebidos da API com sucesso:", apiData);
 
     // 1. Atualiza o número do concurso e cabeçalho
     const elInfoConcurso = document.getElementById("infoConcurso") || document.getElementById("elInfo");
@@ -1823,22 +1825,16 @@ async function buscarResultadoAPILoteria() {
 
   } catch (err) {
     console.error("Erro ao carregar dados da API das Loterias:", err);
-    
-    // Fallback: Se a API falhar por completo, tenta ler o Firestore como plano B
-    try {
-      const ref = doc(db, "config", "global");
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const dadosConfig = snap.data();
-        const elEstimativa = document.getElementById("estimativaProximo");
-        if (elEstimativa && dadosConfig.valorEstimadoProximo) {
-          elEstimativa.textContent = "R$ " + Number(dadosConfig.valorEstimadoProximo).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-        }
-      }
-    } catch (fsErr) {
-      console.error("Erro no plano B (Firestore):", fsErr);
-    }
   }
+}
+
+// 🚀 DISPARO ROBUSTO COM TIMEOUT DE CONTEXTO MODULAR
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(buscarResultadoAPILoteria, 500);
+  });
+} else {
+  setTimeout(buscarResultadoAPILoteria, 500);
 }
 // 🚀 GATILHO DE INICIALIZAÇÃO DEFINITIVO
 window.addEventListener("DOMContentLoaded", () => {
