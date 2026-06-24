@@ -1739,66 +1739,68 @@ function ehMultiploDe3(num) {
   return num % 3 === 0;
 }
 
-function buscarResultadoAPILoteria(dadosConfig) {
-  // 1. Garante que temos os dados do Firestore para o Concurso e Dezenas Oficiais
-  if (!dadosConfig) {
-    console.warn("Dados de configuração do Firestore não encontrados.");
-    return;
-  }
+async function buscarResultadoAPILoteria() {
+      try {
+        // 1. Mantém a leitura original estável do Firestore para o Rateio Oficial
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
 
-  // Renderiza o número do concurso (Ex: 2.828) se o elemento existir
-  // Altere 'numeroConcurso' para o ID correto que exibe o número se necessário
-  const elConcurso = document.getElementById("numeroConcurso");
-  if (elConcurso && dadosConfig.concurso) {
-    elConcurso.textContent = dadosConfig.concurso;
-  }
+        if (!snap.exists()) return;
+        const dadosConfig = snap.data();
 
-  // Renderiza as dezenas oficiais se existirem no Firestore
-  if (dadosConfig.resultadoOficial && Array.isArray(dadosConfig.resultadoOficial)) {
-    if (typeof renderizarDezenasOficiais === "function") {
-      renderizarDezenasOficiais(dadosConfig.resultadoOficial);
-    } else {
-      const bolas = document.querySelectorAll(".resultado-oficial-bola") || document.querySelectorAll(".bola-oficial");
-      if (bolas.length === 6) {
-        dadosConfig.resultadoOficial.forEach((num, idx) => {
-          bolas[idx].textContent = String(num).padStart(2, "0");
-        });
-      }
-    }
-  }
-
-  // 2. Busca Isolada da Estimativa (Sem travar o código acima se falhar)
-  const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
-  
-  if (elEstimativa) {
-    fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest")
-      .then(response => {
-        if (!response.ok) throw new Error("Resposta da API inválida");
-        return response.json();
-      })
-      .then(apiData => {
-        const valorOriginal = apiData.valorEstimadoProximoConcurso;
-        if (valorOriginal) {
-          elEstimativa.textContent = "R$ " + Number(valorOriginal).toLocaleString("pt-BR", {
+        const formatarMoedaLocal = (valor) => {
+          return "R$ " + Number(valor || 0).toLocaleString("pt-BR", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           });
-        } else {
-          elEstimativa.textContent = "Consulte o site da Caixa";
+        };
+
+        // Renderiza o Rateio (Sena, Quina, Quadra) vindo do banco
+        if (dadosConfig.ultimaPremiacao && dadosConfig.ultimaPremiacao.length >= 3) {
+          const senaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "6 acertos") || dadosConfig.ultimaPremiacao[0];
+          const quinaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "5 acertos") || dadosConfig.ultimaPremiacao[1];
+          const quadraDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "4 acertos") || dadosConfig.ultimaPremiacao[2];
+
+          if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoedaLocal(senaDados.valorPremio);
+          if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoedaLocal(quinaDados.valorPremio);
+          if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoedaLocal(quadraDados.valorPremio);
         }
-      })
-      .catch(err => {
-        console.error("Erro na API de estimativa, usando fallback do Firestore:", err);
-        // Plano B: Se a API falhar, tenta usar o que estiver salvo no banco
-        const valorFallback = dadosConfig.valorEstimadoProximo || dadosConfig.estimativaProximo;
-        if (valorFallback && !isNaN(valorFallback)) {
-          elEstimativa.textContent = "R$ " + Number(valorFallback).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-        } else {
-          elEstimativa.textContent = "Consulte o site da Caixa";
+
+        // Renderiza o texto informativo se houver
+        const elInfoConcurso = document.getElementById("infoConcurso") || document.getElementById("elInfo");
+        if (elInfoConcurso) {
+          elInfoConcurso.textContent = "Dados oficiais sincronizados";
         }
-      });
-  }
-}
+
+        // 2. 🚀 BUSCA ISOLADA DA ESTIMATIVA VIA API (Totalmente protegida por try/catch interno)
+        const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
+        if (elEstimativa) {
+          try {
+            const response = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
+            if (response.ok) {
+              const apiData = await response.json();
+              if (apiData && apiData.valorEstimadoProximoConcurso) {
+                elEstimativa.textContent = formatarMoedaLocal(apiData.valorEstimadoProximoConcurso);
+              } else {
+                elEstimativa.textContent = "Consulte o site da Caixa";
+              }
+            } else {
+              throw new Error("API Offline");
+            }
+          } catch (apiErr) {
+            console.warn("Falha na API de estimativa, usando banco:", apiErr);
+            if (dadosConfig.valorEstimadoProximo) {
+              elEstimativa.textContent = formatarMoedaLocal(dadosConfig.valorEstimadoProximo);
+            } else {
+              elEstimativa.textContent = "Consulte o site da Caixa";
+            }
+          }
+        }
+
+      } catch (err) {
+        console.error("Erro geral na busca do resultado:", err);
+      }
+    }
 </script>
 </body>
 </html>
