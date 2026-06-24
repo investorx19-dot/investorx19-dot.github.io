@@ -1764,11 +1764,11 @@ async function buscarResultadoAPILoteria() {
     const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
     
     if (elEstimativa) {
-      // 🚀 LÊ A CHAVE EXATA QUE O ADMIN SALVA NO BANCO: valorEstimadoProximo
+      // 1. Pega o valor correto do banco de dados
       const valorEstimado = dadosConfig.valorEstimadoProximo;
       
       if (valorEstimado) {
-        // Usa a sua função já existente para formatar a moeda
+        // 🚀 2. CORREÇÃO: Passa a variável correta ('valorEstimado') para o formatador
         elEstimativa.textContent = formatarMoeda(valorEstimado);
       } else {
         elEstimativa.textContent = "Consulte o site da Caixa";
