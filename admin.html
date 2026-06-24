@@ -615,11 +615,15 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // 🚀 VARIÁVEIS GLOBAIS TEMPORÁRIAS PARA SEGURAR OS DADOS DA API NA MEMÓRIA
+    let premiacoesTemporarias = null;
+    let estimativaProximoTemporaria = null;
+
     const $ = (id) => document.getElementById(id);
     const toastEl = $("toast");
 
-    $("adminEmailHint").textContent = ADMIN_EMAIL;
-    $("adminEmail").placeholder = ADMIN_EMAIL;
+    if ($("adminEmailHint")) $("adminEmailHint").textContent = ADMIN_EMAIL;
+    if ($("adminEmail")) $("adminEmail").placeholder = ADMIN_EMAIL;
 
     function toast(msg, type="ok"){
       if (!toastEl) return;
@@ -979,6 +983,10 @@
           modoLinhasVazias = data.modoLinhasVazias || "automatico";
           repeticaoUltimoConcurso = String(data.repeticaoUltimoConcurso ?? "automatico");
           modoAtrasadas = data.modoAtrasadas || "nenhum";
+          
+          // Preserva na memória o que já está salvo caso o admin clique em Salvar sem sincronizar a API antes
+          premiacoesTemporarias = data.ultimaPremiacao || null;
+          estimativaProximoTemporaria = data.valorEstimadoProximo || null;
         }
 
         const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
@@ -1043,6 +1051,7 @@
           return;
         }
 
+        // 🚀 SALVANDO COM AS CHAVES DA API SINCRONIZADAS NO FIRESTORE
         await setDoc(doc(db, "config", "global"), {
           linhasAtivas: linesAct,
           modoLinhasVazias,
@@ -1052,6 +1061,7 @@
           dezenasAtrasadas: atrasadas,
           resultadoOficial: resultado,
           ultimaPremiacao: premiacoesTemporarias,
+          valorEstimadoProximo: estimativaProximoTemporaria,
           updatedAt: Date.now()
         }, { merge: true });
 
@@ -1289,7 +1299,7 @@
         tbody.innerHTML = '<tr><td colspan="10" class="small">Erro ao carregar jogos gerados.</td></tr>';
       }
     }
-let premiacoesTemporarias = null; // <== Adicione esta variável para segurar os prêmios na memória
+
     async function sincronizarMegaSenaApi() {
       const statusTxt = document.getElementById("apiStatusTxt");
       const btn = document.getElementById("btnSincronizarApi");
@@ -1310,14 +1320,15 @@ let premiacoesTemporarias = null; // <== Adicione esta variável para segurar os
 
         const dezenasNumericas = dados.dezenas.map(num => Number(num));
 
-        // 🚀 ADICIONE ESTA LINHA ABAIXO: Guarda os prêmios da API na variável global temporária
+        // 🚀 CAPTURA AMBOS OS CAMPOS DIRETAMENTE DA API DA CAIXA
         premiacoesTemporarias = dados.premiacoes || null; 
+        estimativaProximoTemporaria = dados.valorEstimadoProximoConcurso || null;
 
         setInputsFromArray(".anterior", dezenasNumericas);
         setInputsFromArray(".resultado", dezenasNumericas);
 
         statusTxt.innerHTML = '<span style="color: var(--green); font-weight: bold;">✓ Concurso n° ' + dados.concurso + ' (' + dados.data + ') importado!</span>';
-      toast('Dados do Concurso ' + dados.concurso + ' carregados!', "ok");
+        toast('Dados do Concurso ' + dados.concurso + ' carregados!', "ok");
       } catch (error) {
         console.error("Erro na busca da API:", error);
         statusTxt.innerHTML = '<span style="color: var(--red);">Erro: ' + error.message + '</span>';
@@ -1337,6 +1348,6 @@ let premiacoesTemporarias = null; // <== Adicione esta variável para segurar os
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
       }
     });
-  </script>
+</script>
 </body>
 </html>
