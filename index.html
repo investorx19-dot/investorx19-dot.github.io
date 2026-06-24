@@ -629,11 +629,18 @@
         <button id="btnGerar" type="button">GERAR JOGO</button>
       </div>
 
+    <!-- Bloco do Concurso Oficial Atualizado com Legenda -->
       <div id="blocoResultadoReal" class="linha" style="text-align: center; margin-top: 20px;">
         <h3 style="margin-bottom: 5px; color: var(--yellow);">✨ Último Concurso Oficial (Mega-Sena)</h3>
         <p id="infoConcurso" style="font-size: 13px; color: var(--muted); margin: 0 0 12px 0;">Carregando dados...</p>
-        <div id="numerosSorteioReal">
-          </div>
+        <div id="numerosSorteioReal" style="margin-bottom: 12px;"></div>
+        
+        <!-- Legenda de Cores das Dezenas -->
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-size: 11px; font-weight: bold; margin-top: 8px;">
+          <div style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:12px; height:12px; background:#a855f7; border-radius:3px;"></span> Fibonacci</div>
+          <div style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:12px; height:12px; background:#ec4899; border-radius:3px;"></span> Primos</div>
+          <div style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:12px; height:12px; background:#06b6d4; border-radius:3px;"></span> Múltiplos de 3</div>
+        </div>
       </div>
 
       <div class="contador-global">
@@ -641,28 +648,34 @@
         <div id="totalAcertosGlobal" class="contador-numero">1.826</div>
         <div class="contador-texto">Total acumulado de dezenas acertadas pela comunidade Mark6</div>
       </div>
-<div class="card" style="margin-top: 14px; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08);">
-  <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--muted); text-align: center;">
-    💰 Rateio Oficial da Caixa
-  </h3>
-  
-  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
-    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 8px; border-radius: 10px;">
-      <div style="font-size: 11px; font-weight: bold; color: #fde68a;">SENA</div>
-      <div class="mono" id="premioSena" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
-    </div>
-    
-    <div style="background: rgba(45, 108, 255, 0.1); border: 1px solid rgba(45, 108, 255, 0.2); padding: 8px; border-radius: 10px;">
-      <div style="font-size: 11px; font-weight: bold; color: #cfe0ff;">QUINA</div>
-      <div class="mono" id="premioQuina" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
-    </div>
-    
-    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 8px; border-radius: 10px;">
-      <div style="font-size: 11px; font-weight: bold; color: #bbf7d0;">QUADRA</div>
-      <div class="mono" id="premioQuadra" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
-    </div>
-  </div>
-</div>
+
+      <!-- Card do Rateio Atualizado para Incluir Ganhadores -->
+      <div class="card" style="margin-top: 14px; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08);">
+        <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--muted); text-align: center;">
+          💰 Rateio Oficial da Caixa
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 8px; border-radius: 10px;">
+            <div style="font-size: 11px; font-weight: bold; color: #fde68a;">SENA</div>
+            <div class="mono" id="premioSena" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
+            <div id="senaGanhadores" style="font-size: 10px; color: var(--muted); margin-top: 2px;">0 ganhadores</div>
+          </div>
+          
+          <div style="background: rgba(45, 108, 255, 0.1); border: 1px solid rgba(45, 108, 255, 0.2); padding: 8px; border-radius: 10px;">
+            <div style="font-size: 11px; font-weight: bold; color: #cfe0ff;">QUINA</div>
+            <div class="mono" id="premioQuina" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
+            <div id="quinaGanhadores" style="font-size: 10px; color: var(--muted); margin-top: 2px;">0 ganhadores</div>
+          </div>
+          
+          <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 8px; border-radius: 10px;">
+            <div style="font-size: 11px; font-weight: bold; color: #bbf7d0;">QUADRA</div>
+            <div class="mono" id="premioQuadra" style="font-size: 13px; font-weight: bold; margin-top: 4px; color: #fff;">R$ 0,00</div>
+            <div id="quadraGanhadores" style="font-size: 10px; color: var(--muted); margin-top: 2px;">0 ganhadores</div>
+          </div>
+        </div>
+      </div>
+
       <h2>Cartão Virtual</h2>
       <div id="cartao"></div>
 
@@ -1740,7 +1753,6 @@ function ehMultiploDe3(num) {
 
 async function buscarResultadoAPILoteria() {
   try {
-    // 1. Busca os dados do Firestore para Rateio e Dezenas Oficiais
     const ref = doc(db, "config", "global");
     const snap = await getDoc(ref);
 
@@ -1754,21 +1766,21 @@ async function buscarResultadoAPILoteria() {
       });
     };
 
-    // Atualiza o Cabeçalho com o Número do Concurso real
+    // Atualiza o texto informativo
     const elInfoConcurso = document.getElementById("infoConcurso") || document.getElementById("elInfo");
     if (elInfoConcurso && dadosConfig.resultadoOficial) {
       elInfoConcurso.textContent = "Concurso Oficial Sincronizado";
     }
 
-    // 🚀 NOVIDADE: Renderiza as dezenas oficiais (as bolinhas no topo) direto do banco
+    // Renderiza as dezenas oficiais aplicando os estilos de destaque
     const containerBolas = document.getElementById("numerosSorteioReal");
     if (containerBolas && dadosConfig.resultadoOficial && Array.isArray(dadosConfig.resultadoOficial)) {
-      containerBolas.innerHTML = ""; // Limpa texto de carregamento
+      containerBolas.innerHTML = "";
       dadosConfig.resultadoOficial.forEach(num => {
         const spanBola = document.createElement("span");
         spanBola.className = "numero";
         
-        // Aplica os destaques matemáticos que você configurou no CSS
+        // Aplica as classes baseadas nos padrões matemáticos
         if (ehFibonacci(num)) spanBola.classList.add("fibonacci");
         else if (ehPrimo(num)) spanBola.classList.add("primo");
         else if (ehMultiploDe3(num)) spanBola.classList.add("multiplo3");
@@ -1778,18 +1790,33 @@ async function buscarResultadoAPILoteria() {
       });
     }
 
-    // Renderiza o Rateio Oficial (Sena, Quina, Quadra) vindo do banco
+    // Renderiza o Rateio Oficial e a Quantidade de Vencedores
     if (dadosConfig.ultimaPremiacao && dadosConfig.ultimaPremiacao.length >= 3) {
       const senaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "6 acertos") || dadosConfig.ultimaPremiacao[0];
       const quinaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "5 acertos") || dadosConfig.ultimaPremiacao[1];
       const quadraDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "4 acertos") || dadosConfig.ultimaPremiacao[2];
 
+      // Atualiza Valores dos Prêmios
       if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoedaLocal(senaDados.valorPremio);
       if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoedaLocal(quinaDados.valorPremio);
       if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoedaLocal(quadraDados.valorPremio);
+
+      // 🚀 ATUALIZAÇÃO: Injeta o número de ganhadores mapeado do banco
+      if (document.getElementById("senaGanhadores")) {
+        const gSena = senaDados.quantidadeGanhadores ?? 0;
+        document.getElementById("senaGanhadores").textContent = gSena + (gSena === 1 ? " ganhador" : " ganhadores");
+      }
+      if (document.getElementById("quinaGanhadores")) {
+        const gQuina = quinaDados.quantidadeGanhadores ?? 0;
+        document.getElementById("quinaGanhadores").textContent = gQuina + (gQuina === 1 ? " ganhador" : " ganhadores");
+      }
+      if (document.getElementById("quadraGanhadores")) {
+        const gQuadra = quadraDados.quantidadeGanhadores ?? 0;
+        document.getElementById("quadraGanhadores").textContent = gQuadra + (gQuadra === 1 ? " ganhador" : " ganhadores");
+      }
     }
 
-    // 2. Busca Isolada da Estimativa via API Pública (Blindada)
+    // Busca Isolada da Estimativa via API Pública
     const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
     if (elEstimativa) {
       try {
@@ -1818,7 +1845,6 @@ async function buscarResultadoAPILoteria() {
     console.error("Erro geral na busca do resultado:", err);
   }
 }
-
 // 🚀 GATILHO DE INICIALIZAÇÃO DEFINITIVO
 window.addEventListener("DOMContentLoaded", () => {
   // Roda imediatamente ao carregar a página
