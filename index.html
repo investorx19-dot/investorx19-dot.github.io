@@ -1803,15 +1803,15 @@ async function buscarResultadoAPILoteria() {
 
       // 🚀 ATUALIZAÇÃO: Injeta o número de ganhadores mapeado do banco
       if (document.getElementById("senaGanhadores")) {
-        const gSena = senaDados.quantidadeGanhadores ?? 0;
+        const gSena = senaDados.numeroDeGanhadores ?? 0;
         document.getElementById("senaGanhadores").textContent = gSena + (gSena === 1 ? " ganhador" : " ganhadores");
       }
       if (document.getElementById("quinaGanhadores")) {
-        const gQuina = quinaDados.quantidadeGanhadores ?? 0;
+        const gQuina = quinaDados.numeroDeGanhadores ?? 0;
         document.getElementById("quinaGanhadores").textContent = gQuina + (gQuina === 1 ? " ganhador" : " ganhadores");
       }
       if (document.getElementById("quadraGanhadores")) {
-        const gQuadra = quadraDados.quantidadeGanhadores ?? 0;
+        const gQuadra = quadraDados.numeroDeGanhadores ?? 0;
         document.getElementById("quadraGanhadores").textContent = gQuadra + (gQuadra === 1 ? " ganhador" : " ganhadores");
       }
     }
