@@ -1753,6 +1753,18 @@ function ehMultiploDe3(num) {
 
 async function buscarResultadoAPILoteria() {
   try {
+    // 🧮 FUNÇÕES MATEMÁTICAS EMBUTIDAS (Evita quebras de escopo em scripts do tipo module)
+    const ehFibonacci = (n) => [1, 2, 3, 5, 8, 13, 21, 34, 55].includes(Number(n));
+    const ehPrimo = (n) => {
+      const num = Number(n);
+      if (num < 2) return false;
+      for (let i = 2; i <= Math.sqrt(num); i++) {
+        if (num % i === 0) return false;
+      }
+      return true;
+    };
+    const ehMultiploDe3 = (n) => Number(n) % 3 === 0;
+
     const formatarMoedaLocal = (valor) => {
       return "R$ " + Number(valor || 0).toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
@@ -1761,19 +1773,21 @@ async function buscarResultadoAPILoteria() {
     };
 
     console.log("Iniciando requisição para a API das Loterias...");
-    // 🚀 BUSCA DIRETA DA API DA CAIXA
+    
+    // 🚀 REQUISIÇÃO DIRETA DA API DA CAIXA
     const response = await fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest");
-    if (!response.ok) throw new Error("Erro ao conectar na API");
+    if (!response.ok) throw new Error("Erro ao conectar na API externa");
     const apiData = await response.json();
-    console.log("Dados recebidos da API com sucesso:", apiData);
+    
+    console.log("Dados recebidos com sucesso da API:", apiData);
 
-    // 1. Atualiza o número do concurso e cabeçalho
+    // 1. Número do concurso e cabeçalho
     const elInfoConcurso = document.getElementById("infoConcurso") || document.getElementById("elInfo");
     if (elInfoConcurso && apiData.concurso) {
       elInfoConcurso.textContent = "Concurso n° " + apiData.concurso + " (" + apiData.data + ") Sincronizado";
     }
 
-    // 2. Renderiza as Dezenas Oficiais Coloridas com os padrões matemáticos
+    // 2. Renderização das Dezenas Oficiais Coloridas
     const containerBolas = document.getElementById("numerosSorteioReal");
     if (containerBolas && apiData.dezenas && Array.isArray(apiData.dezenas)) {
       containerBolas.innerHTML = "";
@@ -1782,6 +1796,7 @@ async function buscarResultadoAPILoteria() {
         const spanBola = document.createElement("span");
         spanBola.className = "numero";
         
+        // Aplicação das classes CSS com as funções embutidas
         if (ehFibonacci(num)) spanBola.classList.add("fibonacci");
         else if (ehPrimo(num)) spanBola.classList.add("primo");
         else if (ehMultiploDe3(num)) spanBola.classList.add("multiplo3");
@@ -1791,18 +1806,18 @@ async function buscarResultadoAPILoteria() {
       });
     }
 
-    // 3. Renderiza os Prêmios e Ganhadores Reais do Rateio
+    // 3. Renderização dos Prêmios e Ganhadores Reais do Rateio
     if (apiData.premiacoes && apiData.premiacoes.length >= 3) {
       const senaDados = apiData.premiacoes.find(p => p.descricao === "6 acertos") || apiData.premiacoes[0];
       const quinaDados = apiData.premiacoes.find(p => p.descricao === "5 acertos") || apiData.premiacoes[1];
       const quadraDados = apiData.premiacoes.find(p => p.descricao === "4 acertos") || apiData.premiacoes[2];
 
-      // Valores monetários
+      // Atualização dos valores em tela
       if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoedaLocal(senaDados.valorPremio);
       if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoedaLocal(quinaDados.valorPremio);
       if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoedaLocal(quadraDados.valorPremio);
 
-      // Quantidade de Ganhadores Reais da API
+      // Quantidade de Ganhadores Corretos vindos da API
       if (document.getElementById("senaGanhadores")) {
         const gSena = senaDados.numeroDeGanhadores ?? 0;
         document.getElementById("senaGanhadores").textContent = gSena + (gSena === 1 ? " ganhador" : " ganhadores");
@@ -1817,24 +1832,22 @@ async function buscarResultadoAPILoteria() {
       }
     }
 
-    // 4. Renderiza a Estimativa do Próximo Sorteio
+    // 4. Renderização da Estimativa do Próximo Sorteio
     const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
     if (elEstimativa && apiData.valorEstimadoProximoConcurso) {
       elEstimativa.textContent = formatarMoedaLocal(apiData.valorEstimadoProximoConcurso);
     }
 
   } catch (err) {
-    console.error("Erro ao carregar dados da API das Loterias:", err);
+    console.error("Erro interno ao processar dados da API:", err);
   }
 }
 
-// 🚀 DISPARO ROBUSTO COM TIMEOUT DE CONTEXTO MODULAR
+// 🚀 DISPARADOR GARANTIDO
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(buscarResultadoAPILoteria, 500);
-  });
+  document.addEventListener("DOMContentLoaded", () => setTimeout(buscarResultadoAPILoteria, 400));
 } else {
-  setTimeout(buscarResultadoAPILoteria, 500);
+  setTimeout(buscarResultadoAPILoteria, 400);
 }
 // 🚀 GATILHO DE INICIALIZAÇÃO DEFINITIVO
 window.addEventListener("DOMContentLoaded", () => {
