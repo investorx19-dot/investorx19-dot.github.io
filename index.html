@@ -1760,37 +1760,23 @@ async function buscarResultadoAPILoteria() {
           if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
         }
 
-      // Renderiza a Estimativa do Próximo Concurso de forma independente
-    const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
-    
-    if (elEstimativa) {
-      // 🚀 Busca direto da API pública para não depender do Firestore nesta linha
-      fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest")
-        .then(response => response.json())
-        .then(apiData => {
-          // Captura o valor estimado para o próximo concurso vindo da API
-          const valorOriginal = apiData.valorEstimadoProximoConcurso;
-          
-          if (valorOriginal) {
-            const valorFormatado = "R$ " + Number(valorOriginal).toLocaleString("pt-BR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            });
-            elEstimativa.textContent = valorFormatado;
+      // 2. 🔥 RENDERIZAÇÃO DAS DEZENAS DO RESULTADO OFICIAL
+        if (dadosConfig.resultadoOficial && Array.isArray(dadosConfig.resultadoOficial)) {
+          // Se o seu código já possui uma função nativa para desenhar as dezenas:
+          if (typeof renderizarDezenasOficiais === "function") {
+            renderizarDezenasOficiais(dadosConfig.resultadoOficial);
           } else {
-            elEstimativa.textContent = "Consulte o site da Caixa";
+            // Caso contrário, injetamos diretamente nos elementos HTML das dezenas do topo.
+            // Procure os elementos que mostram as dezenas (geralmente uma classe como '.bola' ou IDs específicos)
+            // Exemplo genérico se o seu layout usar classes para as dezenas oficiais:
+            const bolas = document.querySelectorAll(".resultado-oficial-bola") || document.querySelectorAll(".bola-oficial");
+            if (bolas.length === 6) {
+              dadosConfig.resultadoOficial.forEach((num, idx) => {
+                bolas[idx].textContent = String(num).padStart(2, "0");
+              });
+            }
           }
-        })
-        .catch(err => {
-          console.error("Erro ao buscar estimativa direto da API:", err);
-          // Se a API falhar, tenta usar o valor do Firebase como plano B (Fallback)
-          if (dadosConfig && dadosConfig.valorEstimadoProximo) {
-            elEstimativa.textContent = "R$ " + Number(dadosConfig.valorEstimadoProximo).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-          } else {
-            elEstimativa.textContent = "Consulte o site da Caixa";
-          }
-        });
-    }
+        }
 
         // 3. Atualização segura de textos informativos (concurso, data, etc)
         // Caso seu código antigo usasse elementos como elInfo, tratamos aqui sem quebrar:
