@@ -1760,27 +1760,36 @@ async function buscarResultadoAPILoteria() {
           if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
         }
 
-      // Renderiza a Estimativa do Próximo Concurso de forma blindada
+      // Renderiza a Estimativa do Próximo Concurso de forma independente
     const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
     
     if (elEstimativa) {
-      // 🚀 Tenta ler todas as variações possíveis para garantir compatibilidade com o banco
-      const valorOriginal = dadosConfig.valorEstimadoProximo ?? 
-                            dadosConfig.valorEstimadoProximoConcurso ?? 
-                            dadosConfig.estimativaProximo ??
-                            dadosConfig.valorEstimado;
-      
-      if (valorOriginal && !isNaN(valorOriginal)) {
-        // Formatação direta garantida
-        const valorFormatado = "R$ " + Number(valorOriginal).toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
+      // 🚀 Busca direto da API pública para não depender do Firestore nesta linha
+      fetch("https://loteriascaixa-api.herokuapp.com/api/megasena/latest")
+        .then(response => response.json())
+        .then(apiData => {
+          // Captura o valor estimado para o próximo concurso vindo da API
+          const valorOriginal = apiData.valorEstimadoProximoConcurso;
+          
+          if (valorOriginal) {
+            const valorFormatado = "R$ " + Number(valorOriginal).toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+            elEstimativa.textContent = valorFormatado;
+          } else {
+            elEstimativa.textContent = "Consulte o site da Caixa";
+          }
+        })
+        .catch(err => {
+          console.error("Erro ao buscar estimativa direto da API:", err);
+          // Se a API falhar, tenta usar o valor do Firebase como plano B (Fallback)
+          if (dadosConfig && dadosConfig.valorEstimadoProximo) {
+            elEstimativa.textContent = "R$ " + Number(dadosConfig.valorEstimadoProximo).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+          } else {
+            elEstimativa.textContent = "Consulte o site da Caixa";
+          }
         });
-        elEstimativa.textContent = valorFormatado;
-      } else {
-        // Caso ainda não tenha o campo populado no registro atual do banco:
-        elEstimativa.textContent = "Consulte o site da Caixa";
-      }
     }
 
         // 3. Atualização segura de textos informativos (concurso, data, etc)
