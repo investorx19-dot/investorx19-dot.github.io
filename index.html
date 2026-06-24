@@ -1760,17 +1760,17 @@ async function buscarResultadoAPILoteria() {
           if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
         }
 
-        // 2. Renderiza a Estimativa do Próximo Concurso de forma garantida
+       // Renderiza a Estimativa do Próximo Concurso buscando a chave do Admin
     const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
     
     if (elEstimativa) {
-      // Tenta ler o campo de estimativa de todas as formas possíveis que a API ou o Firebase salvam
-      const valorEstimado = dadosConfig.valorEstimadoProximo ?? dadosConfig.valorEstimadoProximoConcurso ?? dadosConfig.estimativaProximo;
+      // 🚀 LÊ A CHAVE EXATA QUE O ADMIN SALVA NO BANCO: valorEstimadoProximo
+      const valorEstimado = dadosConfig.valorEstimadoProximo;
       
       if (valorEstimado) {
+        // Usa a sua função já existente para formatar a moeda
         elEstimativa.textContent = formatarMoeda(valorEstimado);
       } else {
-        // Se ainda assim o banco estiver em branco por falta de sincronismo, mostra um valor aproximado padrão para não ficar feio
         elEstimativa.textContent = "Consulte o site da Caixa";
       }
     }
