@@ -1760,21 +1760,25 @@ async function buscarResultadoAPILoteria() {
           if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
         }
 
-      // Renderiza a Estimativa do Próximo Concurso buscando a chave do Admin
+      // Renderiza a Estimativa do Próximo Concurso de forma blindada
     const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
     
     if (elEstimativa) {
-      const valorOriginal = dadosConfig.valorEstimadoProximo;
+      // 🚀 Tenta ler todas as variações possíveis para garantir compatibilidade com o banco
+      const valorOriginal = dadosConfig.valorEstimadoProximo ?? 
+                            dadosConfig.valorEstimadoProximoConcurso ?? 
+                            dadosConfig.estimativaProximo ??
+                            dadosConfig.valorEstimado;
       
-      if (valorOriginal) {
-        // 🚀 FORMATAÇÃO DIRETA: Transforma o número em Real sem depender de funções externas
+      if (valorOriginal && !isNaN(valorOriginal)) {
+        // Formatação direta garantida
         const valorFormatado = "R$ " + Number(valorOriginal).toLocaleString("pt-BR", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         });
-        
         elEstimativa.textContent = valorFormatado;
       } else {
+        // Caso ainda não tenha o campo populado no registro atual do banco:
         elEstimativa.textContent = "Consulte o site da Caixa";
       }
     }
