@@ -1740,36 +1740,30 @@ function ehMultiploDe3(num) {
 }
 
 async function buscarResultadoAPILoteria() {
-  try {
-    const ref = doc(db, "config", "global");
-    const snap = await getDoc(ref);
+      try {
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
 
-    if (!snap.exists()) return;
-    const dadosConfig = snap.data();
+        if (!snap.exists()) return;
+        const dadosConfig = snap.data();
 
-    // 1. Atualiza as premiações se existirem no banco
-    if (dadosConfig.ultimaPremiacao && dadosConfig.ultimaPremiacao.length >= 3) {
-      const senaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "6 acertos") || dadosConfig.ultimaPremiacao[0];
-      const quinaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "5 acertos") || dadosConfig.ultimaPremiacao[1];
-      const quadraDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "4 acertos") || dadosConfig.ultimaPremiacao[2];
+        // 1. Atualiza as premiações se existirem no banco
+        if (dadosConfig.ultimaPremiacao && dadosConfig.ultimaPremiacao.length >= 3) {
+          const senaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "6 acertos") || dadosConfig.ultimaPremiacao[0];
+          const quinaDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "5 acertos") || dadosConfig.ultimaPremiacao[1];
+          const quadraDados = dadosConfig.ultimaPremiacao.find(p => p.descricao === "4 acertos") || dadosConfig.ultimaPremiacao[2];
 
-      const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          const formatarMoeda = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoeda(senaDados.valorPremio);
-      if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoeda(quinaDados.valorPremio);
-      if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
-    }
+          if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoeda(senaDados.valorPremio);
+          if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoeda(quinaDados.valorPremio);
+          if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
+        }
 
-    // Se houver lógica de dezenas oficiais para preencher os círculos do último sorteio na tela do usuário, use o dadosConfig:
-    if (dadosConfig.resultadoOficial) {
-      // Exemplo: preencher as dezenas na tela se seu código já fazia isso antes usando 'dados.dezenas'
-      // renderizarDezenasOficiais(dadosConfig.resultadoOficial);
-    }
-
-  } catch (err) {
-    console.error("Erro ao carregar dados do resultado:", err);
-  }
-}
+        // 2. Se houver lógica de preencher os círculos das dezenas na tela do usuário:
+        if (dadosConfig.resultadoOficial && typeof atualizarDezenasInterface === "function") {
+          atualizarDezenasInterface(dadosConfig.resultadoOficial);
+        }
 
     const dados = await resposta.json();
     const concurso = dados.concurso;
