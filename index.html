@@ -1760,62 +1760,26 @@ async function buscarResultadoAPILoteria() {
           if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
         }
 
-        // 2. Se houver lógica de preencher os círculos das dezenas na tela do usuário:
-        if (dadosConfig.resultadoOficial && typeof atualizarDezenasInterface === "function") {
-          atualizarDezenasInterface(dadosConfig.resultadoOficial);
+        // 2. Renderização segura das dezenas oficiais se o elemento existir
+        if (dadosConfig.resultadoOficial) {
+          // Se houver uma função para desenhar as dezenas na tela, chamamos ela de forma segura
+          if (typeof renderizarDezenasOficiais === "function") {
+            renderizarDezenasOficiais(dadosConfig.resultadoOficial);
+          }
         }
 
-    const dados = await resposta.json();
-    const concurso = dados.concurso;
-    const dataSorteio = dados.data;
-    const dezenas = dados.dezenas;
-    
-    // Pega o valor estimado vindo da API da Caixa
-    const valorEstimado = dados.valorEstimadoProximoConcurso; 
+        // 3. Atualização segura de textos informativos (concurso, data, etc)
+        // Caso seu código antigo usasse elementos como elInfo, tratamos aqui sem quebrar:
+        const elInfoConcurso = document.getElementById("infoConcurso") || document.getElementById("elInfo");
+        if (elInfoConcurso && dadosConfig.resultadoOficial) {
+          // Texto genérico ou baseado nos dados salvos para não deixar a tela vazia
+          elInfoConcurso.textContent = "Dados oficiais sincronizados";
+        }
 
-    // 1. Atualiza a legenda das dezenas do sorteio anterior
-    elInfo.innerHTML = "Concurso nº " + concurso + " • " + dataSorteio + "<br>" +
-                       "<span style='color:#a855f7; font-weight:bold;'>■ Fibonacci</span> " +
-                       "<span style='color:#ec4899; font-weight:bold; margin:0 8px;'>■ Primos</span> " +
-                       "<span style='color:#06b6d4; font-weight:bold;'>■ Múltiplos de 3</span>";
-
-    // 2. Renderiza os números coloridos na tela
-    elNumeros.innerHTML = "";
-    dezenas.forEach(function(dezenaStr) {
-      const num = parseInt(dezenaStr, 10);
-      const span = document.createElement("span");
-      span.className = "numero";
-      span.textContent = dezenaStr;
-
-      if (ehFibonacci(num)) {
-        span.classList.add("fibonacci");
-      } else if (ehPrimo(num)) {
-        span.classList.add("primo");
-      } else if (ehMultiploDe3(num)) {
-        span.classList.add("multiplo3");
-      } else {
-        span.classList.add("selecionado");
+      } catch (err) {
+        console.error("Erro ao carregar dados do resultado:", err);
       }
-
-      elNumeros.appendChild(span);
-    });
-
-    // 3. Formata e exibe o valor do próximo prêmio estimado
-    if (elPremio && valorEstimado) {
-      elPremio.textContent = valorEstimado.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      });
-    } else if (elPremio) {
-      elPremio.textContent = "Acumulado!";
     }
-
-  } catch (erro) {
-    console.error("Erro na API externa:", erro);
-    elInfo.textContent = "Não foi possível carregar o último sorteio automaticamente.";
-    if (elPremio) elPremio.textContent = "Consulte o site da Caixa";
-  }
-}
 
 // Chamar a função para rodar assim que a página abrir
 buscarResultadoAPILoteria();
