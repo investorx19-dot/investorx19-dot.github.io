@@ -1760,13 +1760,20 @@ async function buscarResultadoAPILoteria() {
           if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoeda(quadraDados.valorPremio);
         }
 
-        // 2. Renderização segura das dezenas oficiais se o elemento existir
-        if (dadosConfig.resultadoOficial) {
-          // Se houver uma função para desenhar as dezenas na tela, chamamos ela de forma segura
-          if (typeof renderizarDezenasOficiais === "function") {
-            renderizarDezenasOficiais(dadosConfig.resultadoOficial);
-          }
-        }
+        // 2. Renderiza a Estimativa do Próximo Concurso de forma garantida
+    const elEstimativa = document.getElementById("estimativaProximo") || document.getElementById("estimativaPremio"); 
+    
+    if (elEstimativa) {
+      // Tenta ler o campo de estimativa de todas as formas possíveis que a API ou o Firebase salvam
+      const valorEstimado = dadosConfig.valorEstimadoProximo ?? dadosConfig.valorEstimadoProximoConcurso ?? dadosConfig.estimativaProximo;
+      
+      if (valorEstimado) {
+        elEstimativa.textContent = formatarMoeda(valorEstimado);
+      } else {
+        // Se ainda assim o banco estiver em branco por falta de sincronismo, mostra um valor aproximado padrão para não ficar feio
+        elEstimativa.textContent = "Consulte o site da Caixa";
+      }
+    }
 
         // 3. Atualização segura de textos informativos (concurso, data, etc)
         // Caso seu código antigo usasse elementos como elInfo, tratamos aqui sem quebrar:
