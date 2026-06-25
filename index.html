@@ -562,11 +562,13 @@
       color: #ffffff !important;
     }
 
-    .numero.primo {
-      background: #ec4899 !important; /* Rosa/Carmim */
-      color: #ffffff !important;
-    }
-
+    /* Garante a aplicação do amarelo tanto para a classe 'primo' quanto 'primos' */
+.numero.primos,
+.numero.primo {
+  background: #facc15 !important;
+  background-image: none !important; /* Remove possíveis gradientes que bloqueiam a cor */
+  color: #111827 !important; /* Mantém o texto escuro para dar leitura no fundo amarelo */
+}
     .numero.multiplo3 {
       background: #06b6d4 !important; /* Azul Ciano */
       color: #ffffff !important;
