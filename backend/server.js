@@ -368,7 +368,6 @@ const TELEGRAM_TOKEN = '208804639515:AAEbyi3EHPtXKHUxqR4FYPFXONAisBZ41Gg';
 const TELEGRAM_CHAT_ID = '-1007061053404'; //  Pronto! Com o prefixo oficial de canais
 
 function enviarMensagemTelegram(texto) {
-  // Ajustado com crases corretas para interpolação da variável
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
   const dados = JSON.stringify({
     chat_id: TELEGRAM_CHAT_ID,
@@ -385,11 +384,21 @@ function enviarMensagemTelegram(texto) {
   };
 
   const req = https.request(url, opcoes, (res) => {
-    res.on('data', () => {});
+    let respostaCorpo = '';
+    res.on('data', (chunk) => { respostaCorpo += chunk; });
+    
+    res.on('end', () => {
+      if (res.statusCode !== 200) {
+        console.error(`❌ FALHA NO TELEGRAM! Status: ${res.statusCode}`);
+        console.error(`Resposta da API do Telegram: ${respostaCorpo}`);
+      } else {
+        console.log('✅ Notificação enviada ao Telegram com sucesso!');
+      }
+    });
   });
 
   req.on('error', (erro) => {
-    console.error('Erro na notificação do Telegram:', erro);
+    console.error('Erro de rede na notificação do Telegram:', erro);
   });
 
   req.write(dados);
