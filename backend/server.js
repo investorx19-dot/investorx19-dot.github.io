@@ -3,6 +3,7 @@ const cors = require("cors");
 const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
 const admin = require("firebase-admin");
 const fs = require("fs");
+const https = require("https"); // Módulo movido definitivamente para o topo
 
 console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
@@ -260,7 +261,7 @@ app.post("/criar-pagamento", async function (req, res) {
 
     return res.status(500).json({
       erro: erro.message || "Erro ao criar pagamento.",
-      detalhes: erro.cause || null
+      details: erro.cause || null
     });
   }
 });
@@ -349,7 +350,7 @@ app.post("/webhook-mercadopago", async function (req, res) {
       updatedAt: Date.now()
     }, { merge: true });
 
-    console.log("Usuário atualizado com sucesso:", userId, dadosPlano.plan, dadosPlano.periodo);
+    console.log("Usuário updated com sucesso:", userId, dadosPlano.plan, dadosPlano.periodo);
 
     return res.sendStatus(200);
   } catch (erro) {
@@ -361,14 +362,14 @@ app.post("/webhook-mercadopago", async function (req, res) {
 });
 
 const PORT = process.env.PORT || 3001;
-const https = require('https');
 
 // --- CONFIGURAÇÃO DO TELEGRAM ---
 const TELEGRAM_TOKEN = '208804639515:AAEbyi3EHPtXKHUxqR4FYPFXONAisBZ41Gg';
 const TELEGRAM_CHAT_ID = '-7061053404'; // Com o sinal de menos obrigatório
 
 function enviarMensagemTelegram(texto) {
-  const url = https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage;
+  // Ajustado com crases corretas para interpolação da variável
+  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
   const dados = JSON.stringify({
     chat_id: TELEGRAM_CHAT_ID,
     text: texto,
@@ -396,7 +397,6 @@ function enviarMensagemTelegram(texto) {
 }
 
 // --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO) ---
-// Certifique-se de que a variável "db" do seu Firestore Admin está disponível aqui
 const dbFirestore = admin.firestore();
 
 dbFirestore.collection('users').onSnapshot((snapshot) => {
@@ -405,7 +405,6 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
     if (change.type === 'added') {
       const usuario = change.doc.data();
       
-      // Evita disparar histórico antigo na inicialização verificando se foi criado recentemente (ex: últimos 5 minutos)
       const criadoEm = usuario.createdAt || Date.now();
       if (Date.now() - criadoEm < 5 * 60 * 1000) {
         const msgCadastro = `🔔 *Novo Cadastro no Mark6!*\n\n` +
@@ -421,7 +420,6 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
       const usuarioAtual = change.doc.data();
       const usuarioAntes = change.docBeforeChange ? change.docBeforeChange.data() : null;
 
-      // Se o status mudou para pago AGORA
       const foiPagoAgora = (usuarioAtual.paymentStatus === 'paid' || usuarioAtual.paymentStatus === 'Pago') && 
                            (!usuarioAntes || (usuarioAntes.paymentStatus !== 'paid' && usuarioAntes.paymentStatus !== 'Pago'));
 
@@ -439,8 +437,9 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
     }
   });
 }, (erro) => {
-    console.error("Erro ao monitorar a coleção users:", erro);
+  console.error("Erro ao monitorar a coleção users:", erro);
 });
+
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
