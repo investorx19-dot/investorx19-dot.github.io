@@ -396,23 +396,30 @@ function enviarMensagemTelegram(texto) {
   req.end();
 }
 
-// --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO) ---
+// --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO CORRIGIDO) ---
 const dbFirestore = admin.firestore();
+let inicializado = false;
+
+// Faz uma leitura rápida inicial apenas para marcar os usuários que já existem
+dbFirestore.collection('users').get().then(() => {
+  inicializado = true;
+  console.log("🔥 Monitoramento do Telegram Ativo e Pronto para novos eventos!");
+});
 
 dbFirestore.collection('users').onSnapshot((snapshot) => {
+  // Só processa se a leitura inicial do banco já tiver terminado
+  if (!inicializado) return;
+
   snapshot.docChanges().forEach((change) => {
-    // 🔔 DETECTA UM NOVO CADASTRO
+    // 🔔 DETECTA UM NOVO CADASTRO REAL (SÓ DEPOIS QUE O SERVIDOR LIGOU)
     if (change.type === 'added') {
       const usuario = change.doc.data();
       
-      const criadoEm = usuario.createdAt || Date.now();
-      if (Date.now() - criadoEm < 5 * 60 * 1000) {
-        const msgCadastro = `🔔 *Novo Cadastro no Mark6!*\n\n` +
-                            `👤 *Nome:* ${usuario.nome || usuario.name || 'Sem nome'}\n` +
-                            `📧 *E-mail:* ${usuario.email || 'Sem e-mail'}\n` +
-                            `📱 *Telefone:* ${usuario.telefone || usuario.phone || '-'}`;
-        enviarMensagemTelegram(msgCadastro);
-      }
+      const msgCadastro = `🔔 *Novo Cadastro no Mark6!*\n\n` +
+                          `👤 *Nome:* ${usuario.nome || usuario.name || 'Sem nome'}\n` +
+                          `📧 *E-mail:* ${usuario.email || 'Sem e-mail'}\n` +
+                          `📱 *Telefone:* ${usuario.telefone || usuario.phone || '-'}`;
+      enviarMensagemTelegram(msgCadastro);
     }
 
     // 💰 DETECTA UMA ATUALIZAÇÃO DE PAGAMENTO (VENDA)
