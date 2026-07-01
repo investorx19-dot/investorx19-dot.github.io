@@ -364,8 +364,8 @@ app.post("/webhook-mercadopago", async function (req, res) {
 const PORT = process.env.PORT || 3001;
 
 // --- CONFIGURAÇÃO DO TELEGRAM ---
-const TELEGRAM_TOKEN = '8804639515:AAEbyi3EHPtXKHUxqR4FYPFXONAisBZ41Gg';
-const TELEGRAM_CHAT_ID = '-1004376289809'; //  Pronto! Com o prefixo oficial de canais
+const TELEGRAM_TOKEN = '8772206224:AAEh4L0F6MnGUCfMaRwXg-oGsENTRnvMKDQ';
+const TELEGRAM_CHAT_ID = '-1004350126258';
 
 function enviarMensagemTelegram(texto) {
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
