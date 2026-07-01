@@ -365,7 +365,7 @@ const PORT = process.env.PORT || 3001;
 
 // --- CONFIGURAÇÃO DO TELEGRAM ---
 const TELEGRAM_TOKEN = '8804639515:AAEbyi3EHPtXKHUxqR4FYPFXONAisBZ41Gg';
-const TELEGRAM_CHAT_ID = '-1007061053404'; //  Pronto! Com o prefixo oficial de canais
+const TELEGRAM_CHAT_ID = '-1005311609201'; //  Pronto! Com o prefixo oficial de canais
 
 function enviarMensagemTelegram(texto) {
   const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
