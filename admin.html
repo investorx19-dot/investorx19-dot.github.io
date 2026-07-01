@@ -1123,26 +1123,25 @@
           const phone = (u.telefone || u.phone || "").toString();
           const plano = formatarPlano(u.plan || "");
           const pagamento = formatarPagamento(u.paymentStatus || "");
-          // --- CORREÇÃO DO CÁLCULO DE VENCIMENTO DINÂMICO ---
+         // --- CORREÇÃO DEFINITIVA DO VENCIMENTO ---
           let vencimento = "-";
 
-          if (u.paymentStatus === "paid" || u.paymentStatus === "Pago") {
+          // Se o usuário tem uma data de pagamento registrada (independente do texto do status)
+          if (u.paidAt) {
             if (u.expiresAt || u.accessExpiresAt) {
               vencimento = formatarData(u.expiresAt || u.accessExpiresAt);
-            } else if (u.paidAt) {
-              // Caso não exista o campo expiresAt, calcula com base no paidAt vindo do Firebase
+            } else {
+              // Calcula dinamicamente com base no paidAt (timestamp)
               const dataCalculada = new Date(u.paidAt);
               const diasAdicionais = u.periodoPlano === "semestral" ? 180 : 30;
               dataCalculada.setDate(dataCalculada.getDate() + diasAdicionais);
               vencimento = dataCalculada.toLocaleDateString("pt-BR");
-            } else {
-              vencimento = "Sem data";
             }
-          } else {
-            // Se for trial ou expirado, exibe o trialFim
-            vencimento = formatarData(u.trialFim || null);
+          } else if (u.trialFim) {
+            // Se nunca pagou e tem fim de trial, mostra a data do trial
+            vencimento = formatarData(u.trialFim);
           }
-          // --------------------------------------------------
+          // -----------------------------------------
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
