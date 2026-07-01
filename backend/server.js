@@ -361,7 +361,86 @@ app.post("/webhook-mercadopago", async function (req, res) {
 });
 
 const PORT = process.env.PORT || 3001;
+const https = require('https');
 
+// --- CONFIGURAÇÃO DO TELEGRAM ---
+const TELEGRAM_TOKEN = '208804639515:AAEbyi3EHPtXKHUxqR4FYPFXONAisBZ41Gg';
+const TELEGRAM_CHAT_ID = '-7061053404'; // Com o sinal de menos obrigatório
+
+function enviarMensagemTelegram(texto) {
+  const url = https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage;
+  const dados = JSON.stringify({
+    chat_id: TELEGRAM_CHAT_ID,
+    text: texto,
+    parse_mode: 'Markdown'
+  });
+
+  const opcoes = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': dados.length
+    }
+  };
+
+  const req = https.request(url, opcoes, (res) => {
+    res.on('data', () => {});
+  });
+
+  req.on('error', (erro) => {
+    console.error('Erro na notificação do Telegram:', erro);
+  });
+
+  req.write(dados);
+  req.end();
+}
+
+// --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO) ---
+// Certifique-se de que a variável "db" do seu Firestore Admin está disponível aqui
+const dbFirestore = admin.firestore();
+
+dbFirestore.collection('users').onSnapshot((snapshot) => {
+  snapshot.docChanges().forEach((change) => {
+    // 🔔 DETECTA UM NOVO CADASTRO
+    if (change.type === 'added') {
+      const usuario = change.doc.data();
+      
+      // Evita disparar histórico antigo na inicialização verificando se foi criado recentemente (ex: últimos 5 minutos)
+      const criadoEm = usuario.createdAt || Date.now();
+      if (Date.now() - criadoEm < 5 * 60 * 1000) {
+        const msgCadastro = `🔔 *Novo Cadastro no Mark6!*\n\n` +
+                            `👤 *Nome:* ${usuario.nome || usuario.name || 'Sem nome'}\n` +
+                            `📧 *E-mail:* ${usuario.email || 'Sem e-mail'}\n` +
+                            `📱 *Telefone:* ${usuario.telefone || usuario.phone || '-'}`;
+        enviarMensagemTelegram(msgCadastro);
+      }
+    }
+
+    // 💰 DETECTA UMA ATUALIZAÇÃO DE PAGAMENTO (VENDA)
+    if (change.type === 'modified') {
+      const usuarioAtual = change.doc.data();
+      const usuarioAntes = change.docBeforeChange ? change.docBeforeChange.data() : null;
+
+      // Se o status mudou para pago AGORA
+      const foiPagoAgora = (usuarioAtual.paymentStatus === 'paid' || usuarioAtual.paymentStatus === 'Pago') && 
+                           (!usuarioAntes || (usuarioAntes.paymentStatus !== 'paid' && usuarioAntes.paymentStatus !== 'Pago'));
+
+      if (foiPagoAgora) {
+        let nomePlano = 'Básico';
+        if (usuarioAtual.plan === 'intermediario') nomePlano = 'Intermediário';
+        if (usuarioAtual.plan === 'premium') nomePlano = 'Premium';
+
+        const msgVenda = `💰 *Venda Confirmada no Mark6!*\n\n` +
+                         `📧 *Usuário:* ${usuarioAtual.email}\n` +
+                         `📦 *Plano:* ${nomePlano}\n` +
+                         `💵 *Valor:* R$ ${usuarioAtual.valorPlano || '-'}`;
+        enviarMensagemTelegram(msgVenda);
+      }
+    }
+  });
+}, (erro) => {
+    console.error("Erro ao monitorar a coleção users:", erro);
+});
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
