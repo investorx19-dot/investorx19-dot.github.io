@@ -360,7 +360,53 @@ app.post("/webhook-mercadopago", async function (req, res) {
     return res.sendStatus(500);
   }
 });
+/**
+ * VALIDAÇÃO DE ACESSO (7 DIAS GRÁTIS OU PLANO ATIVO)
+ */
+app.post("/verificar-acesso", async (req, res) => {
+  try {
+    const { userId } = req.body;
 
+    if (!userId) {
+      return res.status(400).json({ autorizado: false, erro: "userId é obrigatório." });
+    }
+
+    // Busca o usuário no Firestore
+    const userDoc = await db.collection("users").doc(userId).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ autorizado: false, erro: "Usuário não encontrado." });
+    }
+
+    const usuario = userDoc.data();
+
+    // 1. Se ele tiver o plano pago ativo, acesso liberado na hora
+    if (usuario.paymentStatus === "paid" || usuario.paymentStatus === "Pago") {
+      return res.json({ autorizado: true, motivo: "Plano ativo" });
+    }
+
+    // 2. Se não for pago, verifica os 7 dias grátis usando o timestamp de cadastro
+    // Usamos o 'paidAt' se não houver 'createdAt', ou a data atual como limite seguro
+    const dataCriacao = usuario.createdAt || usuario.paidAt || Date.now();
+    const seteDiasEmMilissegundos = 7 * 24 * 60 * 60 * 1000;
+    const tempoExpiracao = dataCriacao + seteDiasEmMilissegundos;
+
+    if (Date.now() > tempoExpiracao) {
+      // Período de testes expirou e não tem plano pago
+      return res.json({ 
+        autorizado: false, 
+        mensagem: "Seu período de 7 dias grátis terminou. Escolha um plano para continuar gerando jogos!" 
+      });
+    }
+
+    // Caso ainda esteja dentro dos 7 dias grátis
+    return res.json({ autorizado: true, motivo: "Período de teste ativo" });
+
+  } catch (erro) {
+    console.error("Erro ao verificar acesso:", erro);
+    return res.status(500).json({ autorizado: false, erro: "Erro interno no servidor." });
+  }
+});
 const PORT = process.env.PORT || 3001;
 
 // --- CONFIGURAÇÃO DO TELEGRAM ---

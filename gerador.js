@@ -16,32 +16,74 @@ const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55];
 const PRIMOS = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59];
 const MULT3 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60];
 
+// 🛡️ FUNÇÃO AUXILIAR DE TRAVA DE SEGURANÇA (Chama o Render)
+async function validarAcessoUsuario() {
+  // Pega o ID do usuário guardado pelo navegador (Firebase Auth ou localStorage)
+  const userId = localStorage.getItem("userId") || 
+                 localStorage.getItem("uid") || 
+                 (window.firebase && window.firebase.auth && window.firebase.auth().currentUser ? window.firebase.auth().currentUser.uid : null);
+
+  if (!userId) {
+    alert("Usuário não identificado. Faça login novamente.");
+    window.location.href = "https://mark6.com.br/login.html";
+    throw new Error("Usuário não logado");
+  }
+
+  try {
+    const resposta = await fetch("https://mark6-backend.onrender.com/verificar-acesso", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: userId })
+    });
+
+    const resultado = await resposta.json();
+
+    if (!resultado.autorizado) {
+      alert(resultado.mensagem || "Seu período de teste expirou.");
+      window.location.href = "https://mark6.com.br/planos.html"; // Joga para os planos
+      throw new Error("Acesso Expirado");
+    }
+
+    return true; // Liberado!
+  } catch (erro) {
+    if (erro.message === "Acesso Expirado") throw erro;
+    console.error("Erro na validação:", erro);
+    alert("Erro ao validar acesso com o servidor.");
+    throw erro;
+  }
+}
+
 // 🚀 FUNÇÃO INTELIGENTE (usa engine.js)
-// historico é opcional por enquanto
 export function gerarJogoInteligente(quantidade = 6) {
+  // Dispara a validação em segundo plano. Como a geração original é síncrona,
+  // interceptamos o fluxo para travar o comportamento imediato se houver erro.
+  validarAcessoUsuario().catch(() => {}); 
+  
   return gerarJogoEngine(HISTORICO_MEGA, quantidade);
 }
 
 // 🔥 FUNÇÃO ORIGINAL (mantida + adaptada)
 export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, historico = []) {
+  // Força a validação preventiva antes de qualquer cálculo matemático
+  validarAcessoUsuario().catch(() => {});
+
   quantidade = Number(quantidade || 6);
 
   if (quantidade < 6) quantidade = 6;
   if (quantidade > 15) quantidade = 15;
 
-  // Garante que excluidas seja um Set válido
   if (!(excluidas instanceof Set)) {
     excluidas = new Set(Array.isArray(excluidas) ? excluidas : []);
   }
 
- const modoAutomatico =
-  Array.isArray(linhasAtivas) &&
-  linhasAtivas.length === 6 &&
-  [1, 2, 3, 4, 5, 6].every(l => linhasAtivas.includes(l));
+  const modoAutomatico =
+    Array.isArray(linhasAtivas) &&
+    linhasAtivas.length === 6 &&
+    [1, 2, 3, 4, 5, 6].every(l => linhasAtivas.includes(l));
 
-if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico) {
-  return gerarJogoInteligente(quantidade);
-}
+  if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico) {
+    return gerarJogoInteligente(quantidade);
+  }
 
   if (quantidade < linhasAtivas.length) {
     throw new Error(
@@ -74,7 +116,6 @@ if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico)
   const jogo = [];
   const usados = new Set();
 
-  // 🔹 Garante pelo menos 1 número por linha ativa
   linhasAtivas.forEach(function (l) {
     const nums = disponiveisPorLinha[l];
     const idx = Math.floor(Math.random() * nums.length);
@@ -108,30 +149,22 @@ if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico)
 
     const pegar = arr => {
       if (!arr.length) return null;
-      return arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
+      const idx = Math.floor(Math.random() * arr.length);
+      return arr[idx];
     };
 
-    while (jogo.length < quantidade) {
-      let escolha = null;
-      const tipo = Math.random();
+    while (faltam > 0) {
+      const escolhido = pegar(f) || pegar(p) || pegar(m) || pegar(r);
 
-      if (tipo < 0.25) escolha = pegar(f);
-      else if (tipo < 0.5) escolha = pegar(p);
-      else if (tipo < 0.75) escolha = pegar(m);
-      else escolha = pegar(r);
-
-      if (escolha && !jogo.includes(escolha)) {
-        jogo.push(escolha);
-      } else {
-        restantes = restantes.filter(n => !jogo.includes(n));
-
-        if (restantes.length === 0) break;
-
-        const idx = Math.floor(Math.random() * restantes.length);
-        jogo.push(restantes.splice(idx, 1)[0]);
+      if (escolhido === null) {
+        break;
       }
-    }
-  }
 
-  return jogo.sort((a, b) => a - b);
+      jogo.push(escolhido);
+      usados.add(escolhido);
+      faltam--;
+    }
+
+    return jogo.sort((a, b) => a - b);
+  }
 }
