@@ -414,7 +414,26 @@ tbody td {
     overflow: hidden;
     text-overflow: ellipsis; /* Se o e-mail for gigante, ele coloca ... em vez de quebrar a linha */
 }
+/* Força a Configuração Global e o Controle de Acesso a ficarem um abaixo do outro */
+.row {
+    display: flex;
+    flex-direction: column !important;
+    width: 100% !important;
+}
 
+.row > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+}
+
+/* Deixa a tabela ajustar o tamanho das colunas sem espremer o texto */
+table {
+    table-layout: auto !important; 
+}
+tbody td {
+    white-space: normal !important; /* Permite que textos longos quebrem linha se precisar */
+}
 /* ==========================================================================
    DEFINIÇÃO EXATA DE LARGURA PARA AS COLUNAS (FIM DO DESALINHAMENTO)
    ========================================================================== */
