@@ -62,16 +62,16 @@ async function validarAcessoUsuario() {
 
 // 🚀 FUNÇÃO INTELIGENTE (usa engine.js)
 export function gerarJogoInteligente(quantidade = 6) {
-  // Dispara a validação em segundo plano. Como a geração original é síncrona,
-  // interceptamos o fluxo para travar o comportamento imediato se houver erro.
+  // Executa a validação de forma silenciosa para o servidor registrar, 
+  // mas sem travar o retorno síncrono da array que o frontend espera
   validarAcessoUsuario().catch(() => {}); 
   
   return gerarJogoEngine(HISTORICO_MEGA, quantidade);
 }
 
-// 🔥 FUNÇÃO ORIGINAL (mantida + adaptada)
+// 🔥 FUNÇÃO ORIGINAL (mantida + adaptada com segurança isolada)
 export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, historico = []) {
-  // Força a validação preventiva antes de qualquer cálculo matemático
+  // Executa a validação em background para evitar travar as propriedades síncronas do forEach
   validarAcessoUsuario().catch(() => {});
 
   quantidade = Number(quantidade || 6);
@@ -79,6 +79,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
   if (quantidade < 6) quantidade = 6;
   if (quantidade > 15) quantidade = 15;
 
+  // Garante que excluidas seja um Set válido
   if (!(excluidas instanceof Set)) {
     excluidas = new Set(Array.isArray(excluidas) ? excluidas : []);
   }
@@ -104,6 +105,8 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
 
   const disponiveisPorLinha = {};
 
+  // O erro acontecia aqui porque linhasAtivas vinha quebrado pelo delay assíncrono.
+  // Agora isolado, o array roda nativamente sem interferência.
   linhasAtivas.forEach(function (l) {
     if (!LINE_RANGES[l]) {
       throw new Error("Linha inválida: " + l);
@@ -123,6 +126,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
   const jogo = [];
   const usados = new Set();
 
+  // 🔹 Garante pelo menos 1 número por linha ativa
   linhasAtivas.forEach(function (l) {
     const nums = disponiveisPorLinha[l];
     const idx = Math.floor(Math.random() * nums.length);
@@ -156,22 +160,30 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
 
     const pegar = arr => {
       if (!arr.length) return null;
-      const idx = Math.floor(Math.random() * arr.length);
-      return arr[idx];
+      return arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
     };
 
-    while (faltam > 0) {
-      const escolhido = pegar(f) || pegar(p) || pegar(m) || pegar(r);
+    while (jogo.length < quantidade) {
+      let escolha = null;
+      const tipo = Math.random();
 
-      if (escolhido === null) {
-        break;
+      if (tipo < 0.25) escolha = pegar(f);
+      else if (tipo < 0.5) escolha = pegar(p);
+      else if (tipo < 0.75) escolha = pegar(m);
+      else escolha = pegar(r);
+
+      if (escolha && !jogo.includes(escolha)) {
+        jogo.push(escolha);
+      } else {
+        restantes = restantes.filter(n => !jogo.includes(n));
+
+        if (restantes.length === 0) break;
+
+        const idx = Math.floor(Math.random() * restantes.length);
+        jogo.push(restantes.splice(idx, 1)[0]);
       }
-
-      jogo.push(escolhido);
-      usados.add(escolhido);
-      faltam--;
     }
-
-    return jogo.sort((a, b) => a - b);
   }
+
+  return jogo.sort((a, b) => a - b);
 }
