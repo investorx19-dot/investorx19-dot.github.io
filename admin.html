@@ -7,43 +7,48 @@
   <style>
     :root{
       --bg: #0b1220;
-      --card: rgba(255,255,255,.06);
+      --card: #16162a;
       --card2: rgba(255,255,255,.08);
-      --text: #eaf0ff;
+      --text: #e2e8f0;
       --muted: rgba(234,240,255,.75);
-      --line: rgba(255,255,255,.10);
+      --line: #242447;
       --blue: #2d6cff;
       --green:#22c55e;
       --red:#ef4444;
       --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --radius: 18px;
+      --radius: 14px;
     }
 
     *{box-sizing:border-box}
 
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background:
         radial-gradient(900px 500px at 20% 10%, rgba(45,108,255,.25), transparent 60%),
         radial-gradient(900px 500px at 80% 20%, rgba(245,158,11,.12), transparent 55%),
         linear-gradient(180deg, #061024 0%, #030712 100%);
       color: var(--text);
       min-height:100vh;
+      padding: 24px 0;
     }
 
-    .wrap{max-width:1160px;margin:0 auto;padding:26px 18px 60px}
+    .wrap{
+      max-width: 1400px; /* Expandido para dar mais espaço visual */
+      margin:0 auto;
+      padding: 0 24px 60px;
+    }
 
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:18px;
+      margin-bottom:24px;
       flex-wrap:wrap;
     }
 
-    .brand{display:flex;align-items:flex-start;gap:12px}
+    .brand{display:flex;align-items:flex-start;gap:12px; width: 100%;}
 
     .brand .logo{
       width:44px;
@@ -56,8 +61,8 @@
       flex-shrink:0;
     }
 
-    h1{margin:0;font-size:24px;letter-spacing:.2px}
-    h2{margin:0 0 10px;font-size:16px}
+    h1{margin:0;font-size:24px;letter-spacing:.2px; color: #ffffff;}
+    h2{margin:0 0 14px;font-size:18px; color: #818cf8; font-weight: 700;}
     h3{margin:0 0 10px;font-size:15px}
     .sub{margin:8px 0 0;color:var(--muted);font-size:13px}
 
@@ -97,25 +102,24 @@
       font-size:13px;
     }
 
+    /* 🔥 MODIFICADO: Layout agora empilha os blocos verticalmente em 100% da largura */
     .grid{
-      display:grid;
-      gap:14px;
-      grid-template-columns:1fr;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 100%;
     }
 
-    @media (min-width:980px){
-      .grid{grid-template-columns:1fr 1fr}
+    .card {
+      background: var(--card) !important;
+      border: 1px solid var(--line) !important;
+      border-radius: var(--radius) !important;
+      box-shadow: var(--shadow) !important;
+      padding: 24px !important;
+      width: 100% !important;
     }
 
-    .card{
-      background: var(--card);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding:16px;
-    }
-
-    .sep{height:1px;background: var(--line);margin:12px 0}
+    .sep{height:1px;background: var(--line);margin:16px 0}
     .small{font-size:12px;color: var(--muted)}
 
     label{
@@ -209,45 +213,79 @@
       color: rgba(255,255,255,.95);
     }
 
-    table{
-      width:100%;
-      border-collapse: collapse;
-      overflow:hidden;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
+    /* 💎 ULTRA HARMONIZAÇÃO DAS TABELAS COM CORREÇÃO DE TAMANHO */
+    .table-responsive {
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: #111122;
     }
 
-    th, td{
-      padding: 10px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      text-align:left;
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin: 0 !important;
+      table-layout: fixed; /* Força colunas perfeitamente proporcionais */
+    }
+
+    th, td {
+      padding: 14px 16px !important;
       font-size: 13px;
-      vertical-align: top;
+      vertical-align: middle !important;
+      text-align: left;
     }
 
-    th{
-      color: rgba(234,240,255,.85);
-      font-weight:800;
-      background: rgba(255,255,255,.04);
+    th {
+      background-color: #1e1e38 !important;
+      color: #818cf8 !important;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--line) !important;
     }
+
+    tbody tr {
+      border-bottom: 1px solid var(--line);
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background-color: #1a1a35 !important;
+    }
+
+    tbody td {
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; /* Evita quebra feia de e-mails longos */
+    }
+
+    /* 🛠️ ALINHAMENTO CIRÚRGICO DA LARGURA DAS COLUNAS (FIM DO EMBOLADO) */
+    table:not(#jogosTbody parent table) th:nth-child(1), table:not(#jogosTbody parent table) td:nth-child(1) { width: 18%; } /* Nome */
+    table:not(#jogosTbody parent table) th:nth-child(2), table:not(#jogosTbody parent table) td:nth-child(2) { width: 24%; } /* E-mail */
+    table:not(#jogosTbody parent table) th:nth-child(3), table:not(#jogosTbody parent table) td:nth-child(3) { width: 14%; } /* Telefone */
+    table:not(#jogosTbody parent table) th:nth-child(4), table:not(#jogosTbody parent table) td:nth-child(4) { width: 12%; } /* Plano */
+    table:not(#jogosTbody parent table) th:nth-child(5), table:not(#jogosTbody parent table) td:nth-child(5) { width: 10%; } /* Pagamento */
+    table:not(#jogosTbody parent table) th:nth-child(6), table:not(#jogosTbody parent table) td:nth-child(6) { width: 11%; } /* Vencimento */
+    table:not(#jogosTbody parent table) th:nth-child(7), table:not(#jogosTbody parent table) td:nth-child(7) { width: 11%; } /* Acesso */
+    table:not(#jogosTbody parent table) th:nth-child(8), table:not(#jogosTbody parent table) td:nth-child(8) { width: 22%; } /* Ações */
 
     .right{text-align:right}
 
     .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace
     }
 
     .status{
-      font-weight:900;
+      font-weight:700;
       display:inline-flex;
       align-items:center;
-      gap:8px;
+      gap:6px;
     }
 
     .dot{
-      width:10px;
-      height:10px;
+      width:8px;
+      height:8px;
       border-radius:999px;
       display:inline-block;
     }
@@ -259,19 +297,21 @@
 
     .acoes-dias{
       display:flex;
-      gap:8px;
-      justify-content:center;
+      gap:4px;
+      justify-content:flex-end;
       flex-wrap:wrap;
+      margin-top: 4px;
     }
 
     .acoes-dias button{
-      padding:4px 8px;
-      font-size:12px;
+      padding:3px 6px;
+      font-size:11px;
       background:#1f2937;
       border:1px solid #374151;
       color:#fff;
-      border-radius:8px;
+      border-radius:6px;
       cursor:pointer;
+      transition: 0.15s;
     }
 
     .acoes-dias button:hover{
@@ -283,11 +323,12 @@
       grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
       gap:14px;
       margin:18px 0 22px;
+      width: 100%;
     }
 
     .stat-card{
-      background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
       border-radius:16px;
       padding:16px;
       box-shadow:0 10px 30px rgba(0,0,0,0.18);
@@ -339,138 +380,6 @@
       border:1px solid rgba(45,108,255,.35);
       color:#cfe0ff;
     }
-    /* ==========================================================================
-   CONFIGURAÇÃO DA ESTRUTURA GLOBAL E CARDS
-   ========================================================================== */
-body {
-    background-color: #0f0f1a; /* Mantendo o tom escuro do Mark6 */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #e2e8f0;
-    padding: 24px;
-}
-
-/* Container principal com margens confortáveis */
-.container-fluid, .main-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 16px;
-}
-
-/* Padronização dos blocos/cards do painel */
-.card, .panel-bloco {
-    background: #16162a !important;
-    border: 1px solid #242447 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    margin-bottom: 24px;
-    padding: 20px;
-}
-
-/* ==========================================================================
-   TABELAS ULTRA HARMONIZADAS E ALINHADAS
-   ========================================================================== */
-.table-responsive {
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #242447;
-    background: #111122;
-}
-
-table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    margin: 0 !important;
-    table-layout: fixed; /* Força o alinhamento perfeito das colunas */
-}
-
-/* Estilização do cabeçalho da tabela */
-thead th {
-    background-color: #1e1e38 !important;
-    color: #818cf8 !important; /* Tom roxo/azul destacado */
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 14px 16px !important;
-    border-bottom: 2px solid #242447 !important;
-    text-align: left;
-}
-
-/* Linhas e Células */
-tbody tr {
-    border-bottom: 1px solid #1e1e38;
-    transition: background 0.2s ease;
-}
-
-tbody tr:hover {
-    background-color: #1a1a35 !important; /* Efeito hover elegante */
-}
-
-tbody td {
-    padding: 12px 16px !important;
-    font-size: 0.9rem;
-    color: #cbd5e1;
-    vertical-align: middle !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Se o e-mail for gigante, ele coloca ... em vez de quebrar a linha */
-}
-/* Força a Configuração Global e o Controle de Acesso a ficarem um abaixo do outro */
-.row {
-    display: flex;
-    flex-direction: column !important;
-    width: 100% !important;
-}
-
-.row > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: 0 0 100% !important;
-}
-
-/* Deixa a tabela ajustar o tamanho das colunas sem espremer o texto */
-table {
-    table-layout: auto !important; 
-}
-tbody td {
-    white-space: normal !important; /* Permite que textos longos quebrem linha se precisar */
-}
-/* ==========================================================================
-   DEFINIÇÃO EXATA DE LARGURA PARA AS COLUNAS (FIM DO DESALINHAMENTO)
-   ========================================================================== */
-
-/* Na tabela de Controle de Acesso de Usuários */
-#tabela-usuarios th:nth-child(1), #tabela-usuarios td:nth-child(1) { width: 20%; } /* Nome */
-#tabela-usuarios th:nth-child(2), #tabela-usuarios td:nth-child(2) { width: 25%; } /* E-mail */
-#tabela-usuarios th:nth-child(3), #tabela-usuarios td:nth-child(3) { width: 15%; } /* Telefone */
-#tabela-usuarios th:nth-child(4), #tabela-usuarios td:nth-child(4) { width: 12%; } /* Plano */
-#tabela-usuarios th:nth-child(5), #tabela-usuarios td:nth-child(5) { width: 10%; } /* Status */
-#tabela-usuarios th:nth-child(6), #tabela-usuarios td:nth-child(6) { width: 18%; } /* Ações */
-
-/* Na tabela de Jogos Gerados */
-#tabela-jogos th:nth-child(1), #tabela-jogos td:nth-child(1) { width: 18%; } /* Nome */
-#tabela-jogos th:nth-child(2), #tabela-jogos td:nth-child(2) { width: 22%; } /* E-mail */
-#tabela-jogos th:nth-child(3), #tabela-jogos td:nth-child(3) { width: 18%; } /* Jogo */
-#tabela-jogos th:nth-child(4), #tabela-jogos td:nth-child(4) { width: 10%; } /* Tipo */
-#tabela-jogos th:nth-child(5), #tabela-jogos td:nth-child(5) { width: 8%; }  /* Dez. */
-#tabela-jogos th:nth-child(6), #tabela-jogos td:nth-child(6) { width: 12%; } /* Valor */
-#tabela-jogos th:nth-child(7), #tabela-jogos td:nth-child(7) { width: 12%; } /* Data */
-
-/* ==========================================================================
-   BOTÕES E BADGES (STATUS)
-   ========================================================================= */
-.badge {
-    padding: 6px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.75rem;
-}
-
-/* Alinhamento dos mini botões de plano abaixo do Bloquear */
-.btn-group-sm .btn, .btn-mini-plano {
-    font-size: 0.75rem !important;
-    padding: 2px 6px !important;
-    margin: 2px 1px;
-}
   </style>
 </head>
 <body>
