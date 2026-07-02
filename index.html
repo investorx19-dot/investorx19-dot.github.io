@@ -1369,32 +1369,47 @@ const qtdCotas = Number(elQtdCotas ? elQtdCotas.value : 0);
 }
 async function gerarJogoUsuario() {
   try {
+    if (!usuarioAtual) {
+      alert("Faça login para gerar seu jogo.");
+      mostrarLogin();
+      return;
+    }
+
+    // 🛡️ TRAVA ASSÍNCRONA DEFINITIVA - BATE DIRETO NO BACKEND ANTES DE EXECUTAR A ENGINE
+    try {
+      const respostaAcesso = await fetch("https://mark6-backend.onrender.com/verificar-acesso", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: usuarioAtual.id || usuarioAtual.uid })
+      });
+
+      const validacao = await respostaAcesso.json();
+
+      if (!validacao.autorizado) {
+        alert(validacao.mensagem || "Seu período de teste expirou. Escolha um plano abaixo.");
+        
+        // Mantém o painel do app aberto para ele clicar nos planos, mas aborta a geração matemática
+        window.scrollTo({
+          top: document.querySelector(".planos-container").offsetTop,
+          behavior: "smooth"
+        });
+        return; // Bloqueio total! O código morre aqui e o cartão virtual fica vazio.
+      }
+    } catch (errVerificacao) {
+      console.warn("Falha ao consultar validação remota, aplicando trava local preventiva:", errVerificacao);
+      
+      // Fallback local caso o backend esteja offline (Garante que o expired local bloqueie de qualquer forma)
+      if (usuarioAtual.paymentStatus === "expired" || usuarioAtual.trialAtivo === false) {
+        alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo.");
+        return;
+      }
+    }
+
     if (!validarLimitesPlano()) {
       return;
     }
 
-    if (!usuarioAtual) {
-      alert("Faça login para gerar seu jogo.");
-      return;
-    }
-
-    // --- VALIDAÇÃO DE ACESSO CORRIGIDA E LIMPA ---
-    const planoAtivo = usuarioAtual.plan;
-    const statusPagamento = usuarioAtual.paymentStatus;
-
-    // Se o usuário NÃO tiver nenhum plano pago ativo, aplicamos as travas do Trial
-    if (planoAtivo !== "basico" && planoAtivo !== "intermediario" && planoAtivo !== "premium") {
-      
-      // Bloqueia se o status for expirado ou se o trial foi desativado
-      if (statusPagamento === "expired" || usuarioAtual.trialAtivo === false) {
-        alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo e gerar novos jogos.");
-        return;
-      }
-    }
-    // -------------------------------------
-
     const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
-    // ... o restante do código continua igual abaixo
 
     if (!usuarioAtualizado) {
       alert("Usuário não encontrado.");
@@ -1435,8 +1450,7 @@ async function gerarJogoUsuario() {
     const config = configSnap.data();
     const linhasAtivas = config.linhasAtivas || [];
     const anteriores = config.dezenasAnteriores || [];
-    const atrasadas = config.dezenasAtrasadas || [];
-    const resultadoOficial = config.resultadoOficial || [];
+    const atrasadas = config.dezenasA
 
     if (linhasAtivas.length === 0) {
       alert("O administrador ainda não configurou as linhas ativas.");
