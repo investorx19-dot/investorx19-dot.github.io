@@ -339,6 +339,119 @@
       border:1px solid rgba(45,108,255,.35);
       color:#cfe0ff;
     }
+    /* ==========================================================================
+   CONFIGURAÇÃO DA ESTRUTURA GLOBAL E CARDS
+   ========================================================================== */
+body {
+    background-color: #0f0f1a; /* Mantendo o tom escuro do Mark6 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e2e8f0;
+    padding: 24px;
+}
+
+/* Container principal com margens confortáveis */
+.container-fluid, .main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Padronização dos blocos/cards do painel */
+.card, .panel-bloco {
+    background: #16162a !important;
+    border: 1px solid #242447 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    margin-bottom: 24px;
+    padding: 20px;
+}
+
+/* ==========================================================================
+   TABELAS ULTRA HARMONIZADAS E ALINHADAS
+   ========================================================================== */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #242447;
+    background: #111122;
+}
+
+table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    table-layout: fixed; /* Força o alinhamento perfeito das colunas */
+}
+
+/* Estilização do cabeçalho da tabela */
+thead th {
+    background-color: #1e1e38 !important;
+    color: #818cf8 !important; /* Tom roxo/azul destacado */
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 16px !important;
+    border-bottom: 2px solid #242447 !important;
+    text-align: left;
+}
+
+/* Linhas e Células */
+tbody tr {
+    border-bottom: 1px solid #1e1e38;
+    transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+    background-color: #1a1a35 !important; /* Efeito hover elegante */
+}
+
+tbody td {
+    padding: 12px 16px !important;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    vertical-align: middle !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Se o e-mail for gigante, ele coloca ... em vez de quebrar a linha */
+}
+
+/* ==========================================================================
+   DEFINIÇÃO EXATA DE LARGURA PARA AS COLUNAS (FIM DO DESALINHAMENTO)
+   ========================================================================== */
+
+/* Na tabela de Controle de Acesso de Usuários */
+#tabela-usuarios th:nth-child(1), #tabela-usuarios td:nth-child(1) { width: 20%; } /* Nome */
+#tabela-usuarios th:nth-child(2), #tabela-usuarios td:nth-child(2) { width: 25%; } /* E-mail */
+#tabela-usuarios th:nth-child(3), #tabela-usuarios td:nth-child(3) { width: 15%; } /* Telefone */
+#tabela-usuarios th:nth-child(4), #tabela-usuarios td:nth-child(4) { width: 12%; } /* Plano */
+#tabela-usuarios th:nth-child(5), #tabela-usuarios td:nth-child(5) { width: 10%; } /* Status */
+#tabela-usuarios th:nth-child(6), #tabela-usuarios td:nth-child(6) { width: 18%; } /* Ações */
+
+/* Na tabela de Jogos Gerados */
+#tabela-jogos th:nth-child(1), #tabela-jogos td:nth-child(1) { width: 18%; } /* Nome */
+#tabela-jogos th:nth-child(2), #tabela-jogos td:nth-child(2) { width: 22%; } /* E-mail */
+#tabela-jogos th:nth-child(3), #tabela-jogos td:nth-child(3) { width: 18%; } /* Jogo */
+#tabela-jogos th:nth-child(4), #tabela-jogos td:nth-child(4) { width: 10%; } /* Tipo */
+#tabela-jogos th:nth-child(5), #tabela-jogos td:nth-child(5) { width: 8%; }  /* Dez. */
+#tabela-jogos th:nth-child(6), #tabela-jogos td:nth-child(6) { width: 12%; } /* Valor */
+#tabela-jogos th:nth-child(7), #tabela-jogos td:nth-child(7) { width: 12%; } /* Data */
+
+/* ==========================================================================
+   BOTÕES E BADGES (STATUS)
+   ========================================================================= */
+.badge {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+/* Alinhamento dos mini botões de plano abaixo do Bloquear */
+.btn-group-sm .btn, .btn-mini-plano {
+    font-size: 0.75rem !important;
+    padding: 2px 6px !important;
+    margin: 2px 1px;
+}
   </style>
 </head>
 <body>
@@ -373,7 +486,7 @@
 
           <div class="card" style="margin-top:18px;">
             <h3>🏆 Grandes Acertos (Sena, Quina e Quadra)</h3>
-            <div id="container-grandes-acertos" class="historico-lista" style="margin-top:10px; max-h:300px; overflow-y:auto;">
+            <div id="container-grandes-acertos" class="historico-lista" style="margin-top:10px; max-height:300px; overflow-y:auto;">
               <div class="muted">Buscando jogos premiados...</div>
             </div>
           </div>
