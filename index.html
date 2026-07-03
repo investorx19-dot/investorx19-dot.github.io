@@ -1061,7 +1061,8 @@ async function carregarPlanoUsuario(userId) {
     }
 
     let usuarioAtual = null;
-
+// Adicione esta linha aqui para criar o repositório global do resultado oficial
+let resultadoOficial = [];
     function normalizarEmail(email) {
       return String(email || "").trim().toLowerCase();
     }
@@ -1800,11 +1801,12 @@ async function buscarResultadoAPILoteria() {
     
     console.log("Dados recebidos com sucesso da API:", apiData);
 
-    // 1. Número do concurso e cabeçalho
-    const elInfoConcurso = document.getElementById("infoConcurso") || document.getElementById("elInfo");
-    if (elInfoConcurso && apiData.concurso) {
-      elInfoConcurso.textContent = "Concurso n° " + apiData.concurso + " (" + apiData.data + ") Sincronizado";
+    // Salva os números da API na variável global convertendo de String para Number
+    if (apiData.dezenas && Array.isArray(apiData.dezenas)) {
+      resultadoOficial = apiData.dezenas.map(numStr => Number(numStr));
     }
+
+    // 1. Número do concurso e cabeçalho
 
     // 2. Renderização das Dezenas Oficiais Coloridas
     const containerBolas = document.getElementById("numerosSorteioReal");
