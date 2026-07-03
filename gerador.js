@@ -1,6 +1,9 @@
-// gerador.js - Configuração Mega-Sena (01 a 60) ✅ (Versão Compatível)
+// gerador.js - Configuração Mega-Sena (01 a 60) ✅ (ES Module Oficial)
 
-const LINE_RANGES = {
+import { gerarJogo as gerarJogoEngine } from './engine.js';
+import { HISTORICO_MEGA } from './historico.js';
+
+export const LINE_RANGES = {
   1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   2: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   3: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
@@ -13,7 +16,7 @@ const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55];
 const PRIMOS = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59];
 const MULT3 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60];
 
-// 🛡️ TRAVA DE SEGURANÇA SILENCIOSA
+// 🛡️ TRAVA DE SEGURANÇA INTERNA
 async function validarAcessoUsuario() {
   const userId = localStorage.getItem("userId") || localStorage.getItem("uid") || localStorage.getItem("user_id");
   if (!userId) return;
@@ -31,27 +34,19 @@ async function validarAcessoUsuario() {
       window.location.href = "https://mark6.com.br/planos.html";
     }
   } catch (e) {
-    console.log("Validação ativa.");
+    console.log("Acesso verificado.");
   }
 }
 
-// 🚀 FUNÇÃO INTELIGENTE (Adaptada sem export interno)
-window.gerarJogoInteligente = function(quantidade = 6) {
-  validarAcessoUsuario(); 
-  
-  // Gera um jogo simples baseado nas dezenas totais caso o engine precise de fallback síncrono
-  const todosNumeros = Array.from({length: 60}, (_, i) => i + 1);
-  const jogo = [];
-  while(jogo.length < quantidade) {
-    const n = todosNumeros[Math.floor(Math.random() * todosNumeros.length)];
-    if(!jogo.includes(n)) jogo.push(n);
-  }
-  return jogo.sort((a, b) => a - b);
-};
+// 🚀 FUNÇÃO INTELIGENTE
+export function gerarJogoInteligente(quantidade = 6) {
+  validarAcessoUsuario().catch(() => {}); 
+  return gerarJogoEngine(HISTORICO_MEGA, Number(quantidade || 6));
+}
 
-// 🔥 FUNÇÃO ORIGINAL (Adaptada e globalizada para o index.html ler)
-window.gerarJogoValido = function(linhasAtivas, excluidas, quantidade = 6, historico = []) {
-  validarAcessoUsuario();
+// 🔥 FUNÇÃO ORIGINAL
+export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, historico = []) {
+  validarAcessoUsuario().catch(() => {});
 
   quantidade = Number(quantidade || 6);
   if (quantidade < 6) quantidade = 6;
@@ -61,34 +56,36 @@ window.gerarJogoValido = function(linhasAtivas, excluidas, quantidade = 6, histo
     excluidas = new Set(Array.isArray(excluidas) ? excluidas : []);
   }
 
-  const modoAutomatico =
-    Array.isArray(linhasAtivas) &&
-    linhasAtivas.length === 6 &&
-    [1, 2, 3, 4, 5, 6].every(l => linhasAtivas.includes(l));
+  // Tratamento preventivo caso linhasAtivas chegue quebrado ou nulo por delay de carregamento
+  const arrLinhas = Array.isArray(linhasAtivas) ? linhasAtivas : [];
 
-  if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico) {
-    return window.gerarJogoInteligente(quantidade);
+  const modoAutomatico =
+    arrLinhas.length === 6 &&
+    [1, 2, 3, 4, 5, 6].every(l => arrLinhas.includes(l));
+
+  if (arrLinhas.length === 0 || modoAutomatico) {
+    return gerarJogoInteligente(quantidade);
   }
 
-  if (quantidade < linhasAtivas.length) {
-    throw new Error("Não é possível gerar " + quantidade + " dezenas com " + linhasAtivas.length + " linhas ativas.");
+  if (quantidade < arrLinhas.length) {
+    throw new Error("Não é possível gerar " + quantidade + " dezenas com " + arrLinhas.length + " linhas ativas.");
   }
 
   const disponiveisPorLinha = {};
 
-  linhasAtivas.forEach(function (l) {
+  arrLinhas.forEach(function (l) {
     if (!LINE_RANGES[l]) throw new Error("Linha inválida: " + l);
     disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
   });
 
-  for (const l of linhasAtivas) {
+  for (const l of arrLinhas) {
     if (disponiveisPorLinha[l].length === 0) throw new Error("Linha " + l + " sem números disponíveis.");
   }
 
   const jogo = [];
   const usados = new Set();
 
-  linhasAtivas.forEach(function (l) {
+  arrLinhas.forEach(function (l) {
     const nums = disponiveisPorLinha[l];
     const idx = Math.floor(Math.random() * nums.length);
     const n = nums[idx];
@@ -101,7 +98,7 @@ window.gerarJogoValido = function(linhasAtivas, excluidas, quantidade = 6, histo
 
   if (faltam > 0) {
     let restantes = [];
-    linhasAtivas.forEach(l => restantes.push(...disponiveisPorLinha[l]));
+    arrLinhas.forEach(l => restantes.push(...disponiveisPorLinha[l]));
     restantes = [...new Set(restantes.filter(n => !usados.has(n)))];
 
     let f = restantes.filter(n => FIBONACCI.includes(n));
@@ -135,4 +132,4 @@ window.gerarJogoValido = function(linhasAtivas, excluidas, quantidade = 6, histo
   }
 
   return jogo.sort((a, b) => a - b);
-};
+}
