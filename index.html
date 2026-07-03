@@ -1448,24 +1448,27 @@ async function gerarJogoUsuario() {
     }
 
     const config = configSnap.data();
-    const linhasAtivas = config.linhasAtivas || [];
-    const anteriores = config.dezenasAnteriores || [];
-    const atrasadas = config.dezenasA
+const linhasAtivas = config.linhasAtivas || [];
+const anteriores = config.dezenasAnteriores || [];
 
-    if (linhasAtivas.length === 0) {
-      alert("O administrador ainda não configurou as linhas ativas.");
-      return;
-    }
+// 1. CORREÇÃO: Ajuste o nome da propriedade para o que está salvo no seu Firestore (ex: dezenasAtrasadas)
+// 2. SEGURANÇA: Adicionamos o "|| []" para garantir que, se estiver vazio no banco, vire uma lista vazia e não quebre.
+const atrasadas = config.dezenasAtrasadas || []; 
 
-    const excluidas = new Set();
+if (linhasAtivas.length === 0) {
+  alert("O administrador ainda não configurou as linhas ativas.");
+  return;
+}
 
-    anteriores.forEach(function(numero) {
-      excluidas.add(numero);
-    });
+const excluidas = new Set();
 
-    atrasadas.forEach(function(numero) {
-      excluidas.add(numero);
-    });
+anteriores.forEach(function(numero) {
+  excluidas.add(numero);
+});
+
+atrasadas.forEach(function(numero) {
+  excluidas.add(numero);
+});
 
     const quantidade = parseInt(elQtdDezenas ? elQtdDezenas.value : "6");
     const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
