@@ -1,4 +1,4 @@
-// gerador.js - Configuração Mega-Sena (01 a 60) ✅ (ES Module Oficial)
+// gerador.js - Configuração Mega-Sena (01 a 60) ✅ (ES Module Oficial Protegido)
 
 import { gerarJogo as gerarJogoEngine } from './engine.js';
 import { HISTORICO_MEGA } from './historico.js';
@@ -44,7 +44,7 @@ export function gerarJogoInteligente(quantidade = 6) {
   return gerarJogoEngine(HISTORICO_MEGA, Number(quantidade || 6));
 }
 
-// 🔥 FUNÇÃO ORIGINAL
+// 🔥 FUNÇÃO ORIGINAL PROTEGIDA CONTRA UNDEFINED
 export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, historico = []) {
   validarAcessoUsuario().catch(() => {});
 
@@ -52,40 +52,48 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
   if (quantidade < 6) quantidade = 6;
   if (quantidade > 15) quantidade = 15;
 
-  if (!(excluidas instanceof Set)) {
-    excluidas = new Set(Array.isArray(excluidas) ? excluidas : []);
+  // 🛡️ Proteção de ouro: Garante que excluidas seja um Set válido mesmo se vier null/undefined
+  let conjuntoExcluidas = excluidas;
+  if (!(conjuntoExcluidas instanceof Set)) {
+    conjuntoExcluidas = new Set(Array.isArray(excluidas) ? excluidas : []);
   }
 
-  // Tratamento preventivo caso linhasAtivas chegue quebrado ou nulo por delay de carregamento
-  const arrLinhas = Array.isArray(linhasAtivas) ? linhasAtivas : [];
-
-  const modoAutomatico =
-    arrLinhas.length === 6 &&
-    [1, 2, 3, 4, 5, 6].every(l => arrLinhas.includes(l));
-
-  if (arrLinhas.length === 0 || modoAutomatico) {
+  // 🛡️ Proteção de ouro: Se linhasAtivas não for uma array ou estiver vazia, gera o inteligente direto sem dar erro
+  if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0) {
+    console.warn("Aviso: linhasAtivas veio indefinido ou vazio. Usando fallback inteligente.");
     return gerarJogoInteligente(quantidade);
   }
 
-  if (quantidade < arrLinhas.length) {
-    throw new Error("Não é possível gerar " + quantidade + " dezenas com " + arrLinhas.length + " linhas ativas.");
+  const modoAutomatico =
+    linhasAtivas.length === 6 &&
+    [1, 2, 3, 4, 5, 6].every(l => linhasAtivas.includes(l));
+
+  if (modoAutomatico) {
+    return gerarJogoInteligente(quantidade);
+  }
+
+  if (quantidade < linhasAtivas.length) {
+    throw new Error("Não é possível gerar " + quantidade + " dezenas com " + linhasAtivas.length + " linhas ativas.");
   }
 
   const disponiveisPorLinha = {};
 
-  arrLinhas.forEach(function (l) {
+  // Roda o loop com total segurança agora que garantimos que linhasAtivas é uma array real
+  linhasAtivas.forEach(function (l) {
     if (!LINE_RANGES[l]) throw new Error("Linha inválida: " + l);
-    disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !excluidas.has(n));
+    disponiveisPorLinha[l] = LINE_RANGES[l].filter(n => !conjuntoExcluidas.has(n));
   });
 
-  for (const l of arrLinhas) {
-    if (disponiveisPorLinha[l].length === 0) throw new Error("Linha " + l + " sem números disponíveis.");
+  for (const l of linhasAtivas) {
+    if (!disponiveisPorLinha[l] || disponiveisPorLinha[l].length === 0) {
+      throw new Error("Linha " + l + " sem números disponíveis.");
+    }
   }
 
   const jogo = [];
   const usados = new Set();
 
-  arrLinhas.forEach(function (l) {
+  linhasAtivas.forEach(function (l) {
     const nums = disponiveisPorLinha[l];
     const idx = Math.floor(Math.random() * nums.length);
     const n = nums[idx];
@@ -98,16 +106,19 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
 
   if (faltam > 0) {
     let restantes = [];
-    arrLinhas.forEach(l => restantes.push(...disponiveisPorLinha[l]));
+    linhasAtivas.forEach(l => {
+      if (disponiveisPorLinha[l]) restantes.push(...disponiveisPorLinha[l]);
+    });
     restantes = [...new Set(restantes.filter(n => !usados.has(n)))];
 
     let f = restantes.filter(n => FIBONACCI.includes(n));
     let p = restantes.filter(n => PRIMOS.includes(n));
-    let m = restantes.filter(n => MULT3.includes(n));
+    let m = penultimate => MULT3.includes(penultimate);
+    let mFilter = restantes.filter(n => MULT3.includes(n));
     let r = restantes.filter(n => !FIBONACCI.includes(n) && !PRIMOS.includes(n) && !MULT3.includes(n));
 
     const pegar = arr => {
-      if (!arr.length) return null;
+      if (!arr || !arr.length) return null;
       return arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
     };
 
@@ -117,7 +128,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
 
       if (tipo < 0.25) escolha = pegar(f);
       else if (tipo < 0.5) escolha = pegar(p);
-      else if (tipo < 0.75) escolha = pegar(m);
+      else if (tipo < 0.75) escolha = pegar(mFilter);
       else escolha = pegar(r);
 
       if (escolha && !jogo.includes(escolha)) {
