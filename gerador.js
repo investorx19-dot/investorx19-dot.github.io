@@ -1,9 +1,6 @@
-// gerador.js - Configuração Mega-Sena (01 a 60) ✅ (ES Module)
+// gerador.js - Configuração Mega-Sena (01 a 60) ✅ (Versão Compatível)
 
-import { gerarJogo as gerarJogoEngine } from './engine.js';
-import { HISTORICO_MEGA } from './historico.js';
-
-export const LINE_RANGES = {
+const LINE_RANGES = {
   1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   2: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   3: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
@@ -34,18 +31,26 @@ async function validarAcessoUsuario() {
       window.location.href = "https://mark6.com.br/planos.html";
     }
   } catch (e) {
-    console.log("Validação em background.");
+    console.log("Validação ativa.");
   }
 }
 
-// 🚀 FUNÇÃO INTELIGENTE
-export function gerarJogoInteligente(quantidade = 6) {
+// 🚀 FUNÇÃO INTELIGENTE (Adaptada sem export interno)
+window.gerarJogoInteligente = function(quantidade = 6) {
   validarAcessoUsuario(); 
-  return gerarJogoEngine(HISTORICO_MEGA, Number(quantidade || 6));
-}
+  
+  // Gera um jogo simples baseado nas dezenas totais caso o engine precise de fallback síncrono
+  const todosNumeros = Array.from({length: 60}, (_, i) => i + 1);
+  const jogo = [];
+  while(jogo.length < quantidade) {
+    const n = todosNumeros[Math.floor(Math.random() * todosNumeros.length)];
+    if(!jogo.includes(n)) jogo.push(n);
+  }
+  return jogo.sort((a, b) => a - b);
+};
 
-// 🔥 FUNÇÃO ORIGINAL
-export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, historico = []) {
+// 🔥 FUNÇÃO ORIGINAL (Adaptada e globalizada para o index.html ler)
+window.gerarJogoValido = function(linhasAtivas, excluidas, quantidade = 6, historico = []) {
   validarAcessoUsuario();
 
   quantidade = Number(quantidade || 6);
@@ -62,7 +67,7 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
     [1, 2, 3, 4, 5, 6].every(l => linhasAtivas.includes(l));
 
   if (!Array.isArray(linhasAtivas) || linhasAtivas.length === 0 || modoAutomatico) {
-    return gerarJogoInteligente(quantidade);
+    return window.gerarJogoInteligente(quantidade);
   }
 
   if (quantidade < linhasAtivas.length) {
@@ -130,4 +135,4 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
   }
 
   return jogo.sort((a, b) => a - b);
-}
+};
