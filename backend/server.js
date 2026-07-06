@@ -451,22 +451,20 @@ function enviarMensagemTelegram(texto) {
   req.end();
 }
 
-// --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO CORRIGIDO) ---
+// --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO CORRIGIDO SEM FALSOS POSITIVOS) ---
 const dbFirestore = admin.firestore();
-let inicializado = false;
-
-// Faz uma leitura rápida inicial apenas para marcar os usuários que já existem
-dbFirestore.collection('users').get().then(() => {
-  inicializado = true;
-  console.log("🔥 Monitoramento do Telegram Ativo e Pronto para novos eventos!");
-});
+let primeiraCargaDoSnap = true; // Nova trava nativa e síncrona
 
 dbFirestore.collection('users').onSnapshot((snapshot) => {
-  // Só processa se a leitura inicial do banco já tiver terminado
-  if (!inicializado) return;
+  // Se for a carga inicial do Firebase trazendo os dados existentes, nós ignoramos o 'added'
+  if (primeiraCargaDoSnap) {
+    primeiraCargaDoSnap = false;
+    console.log("🔥 Monitoramento do Telegram inicializado. Ignorando base histórica.");
+    return; // Mata a execução na primeira leitura de histórico
+  }
 
   snapshot.docChanges().forEach((change) => {
-    // 🔔 DETECTA UM NOVO CADASTRO REAL (SÓ DEPOIS QUE O SERVIDOR LIGOU)
+    // 🔔 DETECTA UM NOVO CADASTRO REAL (Somente inserções novas em tempo real)
     if (change.type === 'added') {
       const usuario = change.doc.data();
       
@@ -504,20 +502,4 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
 
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
-});
-
-server.on("close", () => {
-  console.log("SERVIDOR FOI FECHADO");
-});
-
-server.on("error", (err) => {
-  console.error("ERRO NO SERVIDOR:", err);
-});
-
-process.on("uncaughtException", (err) => {
-  console.error("ERRO NÃO TRATADO:", err);
-});
-
-process.on("unhandledRejection", (err) => {
-  console.error("PROMISE REJEITADA:", err);
 });

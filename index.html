@@ -1376,7 +1376,7 @@ async function gerarJogoUsuario() {
       return;
     }
 
-    // 🛡️ TRAVA ASSÍNCRONA DEFINITIVA - BATE DIRETO NO BACKEND ANTES DE EXECUTAR A ENGINE
+    // 1. Mantém apenas a trava de segurança do Backend (Evita burlar planos)
     try {
       const respostaAcesso = await fetch("https://mark6-backend.onrender.com/verificar-acesso", {
         method: "POST",
@@ -1388,58 +1388,38 @@ async function gerarJogoUsuario() {
 
       if (!validacao.autorizado) {
         alert(validacao.mensagem || "Seu período de teste expirou. Escolha um plano abaixo.");
-        
-        // Mantém o painel do app aberto para ele clicar nos planos, mas aborta a geração matemática
         window.scrollTo({
           top: document.querySelector(".planos-container").offsetTop,
           behavior: "smooth"
         });
-        return; // Bloqueio total! O código morre aqui e o cartão virtual fica vazio.
+        return; 
       }
     } catch (errVerificacao) {
       console.warn("Falha ao consultar validação remota, aplicando trava local preventiva:", errVerificacao);
-      
-      // Fallback local caso o backend esteja offline (Garante que o expired local bloqueie de qualquer forma)
       if (usuarioAtual.paymentStatus === "expired" || usuarioAtual.trialAtivo === false) {
         alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo.");
         return;
       }
     }
 
-    if (!validarLimitesPlano()) {
-      return;
-    }
-
-    const usuarioAtualizado = await buscarUsuarioPorEmail(usuarioAtual.email);
-
-    if (!usuarioAtualizado) {
-      alert("Usuário não encontrado.");
-      usuarioAtual = null;
-      mostrarLogin();
-      return;
-    }
-
-    const statusAcesso = await verificarStatusAcesso(usuarioAtualizado);
-
-    if (!statusAcesso.liberado) {
-      alert(statusAcesso.motivo);
-      usuarioAtual = null;
-      mostrarLogin();
-      return;
-    }
-
-    if (!usuarioAtualizado.accessGranted) {
+    // 2. OTIMIZAÇÃO: Usar os dados que JÁ ESTÃO na variável usuarioAtual em vez de buscar no Firestore de novo
+    if (!usuarioAtual.accessGranted) {
       alert("Seu acesso foi bloqueado pelo administrador.");
       usuarioAtual = null;
       mostrarLogin();
       return;
     }
 
-    usuarioAtual = usuarioAtualizado;
-    atualizarUsuarioLogado();
-    aplicarLimitesDoPlano(usuarioAtual);
-    atualizarValorAposta();
+    // Contagem de jogos feitos hoje (Pode ser mantida local se preferir puxar do banco)
+    const limiteJogosDia = Number(usuarioAtual.limiteJogosDia || 10);
+    const jogosHoje = await contarJogosHoje(usuarioAtual.id);
 
+    if (jogosHoje >= limiteJogosDia) {
+      alert("Seu plano permite até " + limiteJogosDia + " jogo(s) por dia. Atualize seu plano para liberar mais.");
+      return;
+    }
+
+    // Pega as configurações globais de dezenas do cache já lido do Firestore
     const configRef = doc(db, "config", "global");
     const configSnap = await getDoc(configRef);
 
@@ -1449,96 +1429,44 @@ async function gerarJogoUsuario() {
     }
 
     const config = configSnap.data();
-const linhasAtivas = config.linhasAtivas || [];
-const anteriores = config.dezenasAnteriores || [];
+    const linhasAtivas = config.linhasAtivas || [];
+    const anteriores = config.dezenasAnteriores || [];
+    const atrasadas = config.dezenasAtrasadas || []; 
 
-// 1. CORREÇÃO: Ajuste o nome da propriedade para o que está salvo no seu Firestore (ex: dezenasAtrasadas)
-// 2. SEGURANÇA: Adicionamos o "|| []" para garantir que, se estiver vazio no banco, vire uma lista vazia e não quebre.
-const atrasadas = config.dezenasAtrasadas || []; 
+    if (linhasAtivas.length === 0) {
+      alert("O administrador ainda não configurou as linhas ativas.");
+      return;
+    }
 
-if (linhasAtivas.length === 0) {
-  alert("O administrador ainda não configurou as linhas ativas.");
-  return;
-}
-
-const excluidas = new Set();
-
-anteriores.forEach(function(numero) {
-  excluidas.add(numero);
-});
-
-atrasadas.forEach(function(numero) {
-  excluidas.add(numero);
-});
+    const excluidas = new Set();
+    anteriores.forEach(num => excluidas.add(num));
+    atrasadas.forEach(num => excluidas.add(num));
 
     const quantidade = parseInt(elQtdDezenas ? elQtdDezenas.value : "6");
     const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
-
     const valorTotal = TABELA_VALORES[quantidade] || 6;
     const valorPorPessoa = valorTotal / cotas;
 
-    const maxDezenas = Number(usuarioAtual.maxDezenas || 6);
-    const maxCotas = Number(usuarioAtual.maxCotas || 1);
-    const limiteJogosDia = Number(usuarioAtual.limiteJogosDia || 10);
-    const jogosHoje = await contarJogosHoje(usuarioAtual.id);
-
-    if (jogosHoje >= limiteJogosDia) {
-      alert(
-        "Seu plano permite até " +
-        limiteJogosDia +
-        " jogo(s) por dia. Atualize seu plano para liberar mais."
-      );
-      return;
-    }
-
-    if (quantidade > maxDezenas) {
-      alert(
-        "Seu plano permite gerar até " +
-        maxDezenas +
-        " dezenas. Atualize seu plano para liberar mais."
-      );
-      return;
-    }
-
-    if (cotas > maxCotas) {
-      alert(
-        "Seu plano permite bolão de até " +
-        maxCotas +
-        " cota(s). Atualize seu plano para liberar mais."
-      );
-      return;
-    }
-
+    // Executa a engine matemática localmente (Instantâneo)
     const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
 
-    console.log("quantidade =", quantidade);
-    console.log("jogo =", jogo);
-    console.log("tamanho do jogo =", jogo.length);
-
     if (jogo.length !== quantidade) {
-      throw new Error(
-        "O gerador retornou " + jogo.length + " dezenas, mas o usuário pediu " + quantidade + "."
-      );
+      throw new Error("O gerador retornou " + jogo.length + " dezenas, mas o usuário pediu " + quantidade + ".");
     }
 
     renderCartao(jogo);
 
     let acertos = 0;
-
     jogo.forEach(function(numero) {
       if (resultadoOficial.includes(numero)) {
         acertos++;
       }
     });
 
-    await salvarJogoGerado(
-      usuarioAtual,
-      jogo,
-      quantidade,
-      cotas,
-      valorTotal,
-      valorPorPessoa
-    );
+    // Salva em segundo plano sem travar a tela do usuário
+    salvarJogoGerado(usuarioAtual, jogo, quantidade, cotas, valorTotal, valorPorPessoa)
+      .catch(e => console.error("Erro ao salvar log do jogo:", e));
+
   } catch (erro) {
     console.error("Erro ao gerar jogo:", erro);
     alert("Erro ao gerar jogo: " + erro.message);
