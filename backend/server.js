@@ -451,20 +451,22 @@ function enviarMensagemTelegram(texto) {
   req.end();
 }
 
-// --- ESCUTA EM TEMPO REAL DO FIRESTORE (GATILHO CORRIGIDO SEM FALSOS POSITIVOS) ---
+// --- ESCUTA EM TEMPO REAL DO FIRESTORE (VERSÃO BLINDADA) ---
 const dbFirestore = admin.firestore();
-let primeiraCargaDoSnap = true; // Nova trava nativa e síncrona
+let primeiraCargaConcluida = false;
 
 dbFirestore.collection('users').onSnapshot((snapshot) => {
-  // Se for a carga inicial do Firebase trazendo os dados existentes, nós ignoramos o 'added'
-  if (primeiraCargaDoSnap) {
-    primeiraCargaDoSnap = false;
-    console.log("🔥 Monitoramento do Telegram inicializado. Ignorando base histórica.");
-    return; // Mata a execução na primeira leitura de histórico
+  // 🛡️ SE FOR A PRIMEIRA LEITURA DO SNAPSHOT, MARCA COMO CONCLUÍDA E IGNORA OS REQUISITOS ANTIGOS
+  if (!primeiraCargaConcluida) {
+    primeiraCargaConcluida = true;
+    console.log(`🔥 Histórico de ${snapshot.size} usuários carregado. Ignorando logs antigos no Telegram.`);
+    return; // Encerra aqui, não envia nada para o histórico existente
   }
 
+  // A partir do segundo disparo, qualquer alteração é considerada um evento em tempo real
   snapshot.docChanges().forEach((change) => {
-    // 🔔 DETECTA UM NOVO CADASTRO REAL (Somente inserções novas em tempo real)
+    
+    // 🔔 DETECTA UM NOVO CADASTRO REAL (Apenas o que entrar a partir de agora)
     if (change.type === 'added') {
       const usuario = change.doc.data();
       
