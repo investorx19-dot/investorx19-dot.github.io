@@ -851,7 +851,18 @@
       eventoInstalacao = null;
     }
   });
+document.addEventListener('DOMContentLoaded', () => {
+  // Verifica se o usuário já fez login antes
+  const usuarioLogado = localStorage.getItem('mark6_logado');
 
+  if (usuarioLogado === 'true') {
+    // Esconde a tela de cadastro/login usando o ID correto
+    document.getElementById('login').style.display = 'none';
+    
+    // Mostra a tela do gerador de jogos usando o ID correto
+    document.getElementById('app').style.display = 'block';
+  }
+});
   // Esconde o banner se o app já tiver sido instalado antes
   window.addEventListener('appinstalled', () => {
     banner.style.display = 'none';
@@ -1283,6 +1294,7 @@ async function cadastrar() {
     mostrarApp();
     alert("Cadastro realizado com sucesso! Você ganhou 7 dias grátis de acesso 🎉");
   } catch (erro) {
+    localStorage.setItem('mark6_logado', 'true');
     console.error("Erro no cadastro:", erro);
     alert("Erro ao cadastrar usuário: " + erro.message);
   }
@@ -1568,6 +1580,7 @@ async function gerarJogoUsuario() {
 
     if (elQtdDezenas) {
   elQtdDezenas.addEventListener("change", atualizarValorAposta);
+  localStorage.setItem('mark6_logado', 'true');
 }
 
 if (elQtdCotas) {
