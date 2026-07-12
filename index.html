@@ -843,7 +843,47 @@
     };
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
+    // 🎯 ADICIONE O CÓDIGO DO BANNER BEM AQUI (LOGO ABAIXO DO DEB):
+    let eventoInstalacao;
+    const banner = document.getElementById('pwa-install-banner');
+    const btnInstalar = document.getElementById('btn-instalar-pwa');
 
+    // Se o navegador disparar o evento nativo, salva e mostra o banner
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      eventoInstalacao = e;
+      if (banner) banner.style.display = 'flex';
+    });
+
+    // Contingência: Força o banner a aparecer após 3 segundos se não estiver instalado
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const deDentroDoApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (!deDentroDoApp && banner) {
+          banner.style.display = 'flex';
+        }
+      }, 3000);
+    });
+
+    // Clique no botão do seu banner personalizado
+    if (btnInstalar) {
+      btnInstalar.addEventListener('click', async () => {
+        if (eventoInstalacao) {
+          eventoInstalacao.prompt();
+          await eventoInstalacao.userChoice;
+          if (banner) banner.style.display = 'none';
+          eventoInstalacao = null;
+        } else {
+          // Se o Chrome bloquear o prompt nativo por falta das imagens do manifesto
+          alert("Para instalar o Mark6 no seu celular, clique nos 3 pontinhos do canto superior do navegador e selecione 'Instalar aplicativo' ou 'Adicionar à tela inicial' 📲");
+          if (banner) banner.style.display = 'none';
+        }
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (banner) banner.style.display = 'none';
+    });
 function aplicarLimitesDoPlano(usuario) {
   const selectDezenas = document.getElementById("qtdDezenas");
   const selectCotas = document.getElementById("qtdCotas");
