@@ -859,6 +859,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Se já fez login antes, abre direto os jogos
         document.getElementById("login").style.display = "none";
         document.getElementById("app").style.display = "block";
+         carregarUsuario(); 
     } else {
         // Se nunca fez login, aí sim mostra a tela de cadastro
         document.getElementById("login").style.display = "block";
@@ -1294,6 +1295,19 @@ async function cadastrar() {
     };
 
     mostrarApp();
+    usuarioAtual = {
+      id: referencia.id,
+      nome: nome,
+      email: email,
+      // ... restante do objeto que já está aí
+    };
+
+    // O LUGAR CORRETO É AQUI:
+    localStorage.setItem('mark6_logado', 'true');
+    localStorage.setItem('emailUsuario', email);
+
+    mostrarApp();
+    alert("Cadastro realizado com sucesso! Você ganhou 7 dias grátis de acesso 🎉");
     alert("Cadastro realizado com sucesso! Você ganhou 7 dias grátis de acesso 🎉");
   } catch (erro) {
     localStorage.setItem('mark6_logado', 'true');
@@ -1393,7 +1407,20 @@ async function verificarStatusAcesso(usuario) {
     await carregarPlanoUsuario(usuarioAtual.id || usuarioAtual.uid);
 
     mostrarApp();
+usuarioAtual = user;
 
+    if (!statusAcesso.liberado) {
+      alert(statusAcesso.motivo);
+      return;
+    }
+
+    await carregarPlanoUsuario(usuarioAtual.id || usuarioAtual.uid);
+
+    // O LUGAR CORRETO É AQUI:
+    localStorage.setItem('mark6_logado', 'true');
+    localStorage.setItem('emailUsuario', email); 
+
+    mostrarApp();
     if (statusAcesso.emTrial) {
       alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
     } else if (statusAcesso.trialExpirado) {
@@ -1584,8 +1611,6 @@ async function gerarJogoUsuario() {
 
     if (elQtdDezenas) {
   elQtdDezenas.addEventListener("change", atualizarValorAposta);
-  localStorage.setItem('mark6_logado', 'true');
-  localStorage.setItem('emailUsuario', email);
 }
 
 if (elQtdCotas) {
