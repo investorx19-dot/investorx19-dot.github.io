@@ -1568,6 +1568,7 @@ if (elQtdCotas) {
     if (usuarioLogado === 'true') {
         elLogin.style.display = "none";
         elApp.style.display = "block";
+        renderCartao([]);
         carregarUsuario(); // Agora ele vai funcionar porque está no mesmo escopo!
     } else {
         elLogin.style.display = "block";
