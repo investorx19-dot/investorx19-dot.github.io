@@ -817,61 +817,6 @@
     </div>
   </div>
 
-  <script>
-  // Registra o Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-
-  // Lógica para capturar o evento de instalação e mostrar o banner
-  let eventoInstalacao;
-  const banner = document.getElementById('pwa-install-banner');
-  const btnInstalar = document.getElementById('btn-instalar-pwa');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    // Impede o Chrome de mostrar o pop-up nativo sem aviso
-    e.preventDefault();
-    // Salva o evento para ser disparado quando clicarem no botão
-    eventoInstalacao = e;
-    // Mostra o seu banner personalizado na tela
-    banner.style.display = 'flex';
-  });
-
-  btnInstalar.addEventListener('click', async () => {
-    if (eventoInstalacao) {
-      // Mostra a caixinha de confirmação do sistema
-      eventoInstalacao.prompt();
-      // Espera a resposta do usuário (se aceitou ou recusou)
-      const { outcome } = await eventoInstalacao.userChoice;
-      if (outcome === 'accepted') {
-        console.log('Usuário aceitou instalar o Mark6');
-      }
-      // Esconde o banner após a ação
-      banner.style.display = 'none';
-      eventoInstalacao = null;
-    }
-  });
-// Verifica o estado do login assim que a página carrega
-document.addEventListener("DOMContentLoaded", () => {
-    const usuarioLogado = localStorage.getItem('mark6_logado');
-
-    if (usuarioLogado === 'true') {
-        // Se já fez login antes, abre direto os jogos
-        document.getElementById("login").style.display = "none";
-        document.getElementById("app").style.display = "block";
-         carregarUsuario(); 
-    } else {
-        // Se nunca fez login, aí sim mostra a tela de cadastro
-        document.getElementById("login").style.display = "block";
-        document.getElementById("app").style.display = "none";
-    }
-});
-  // Esconde o banner se o app já tiver sido instalado antes
-  window.addEventListener('appinstalled', () => {
-    banner.style.display = 'none';
-    console.log('Mark6 PWA instalado com sucesso!');
-  });
-</script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import {
@@ -1619,6 +1564,15 @@ if (elQtdCotas) {
 
     atualizarValorAposta();
     carregarTotalGlobal();
+    const usuarioLogado = localStorage.getItem('mark6_logado');
+    if (usuarioLogado === 'true') {
+        elLogin.style.display = "none";
+        elApp.style.display = "block";
+        carregarUsuario(); // Agora ele vai funcionar porque está no mesmo escopo!
+    } else {
+        elLogin.style.display = "block";
+        elApp.style.display = "none";
+    }
 async function carregarUsuario() {
   try {
     const email = localStorage.getItem("emailUsuario");
