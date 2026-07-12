@@ -1567,6 +1567,8 @@ async function gerarJogoUsuario() {
     }
 
     function sair() {
+      localStorage.removeItem('mark6_logado');
+      localStorage.removeItem('emailUsuario');
       usuarioAtual = null;
       elNome.value = "";
       elEmail.value = "";
@@ -1583,6 +1585,7 @@ async function gerarJogoUsuario() {
     if (elQtdDezenas) {
   elQtdDezenas.addEventListener("change", atualizarValorAposta);
   localStorage.setItem('mark6_logado', 'true');
+  localStorage.setItem('emailUsuario', email);
 }
 
 if (elQtdCotas) {
