@@ -851,17 +851,19 @@
       eventoInstalacao = null;
     }
   });
-document.addEventListener('DOMContentLoaded', () => {
-  // Verifica se o usuário já fez login antes
-  const usuarioLogado = localStorage.getItem('mark6_logado');
+// Verifica o estado do login assim que a página carrega
+document.addEventListener("DOMContentLoaded", () => {
+    const usuarioLogado = localStorage.getItem('mark6_logado');
 
-  if (usuarioLogado === 'true') {
-    // Esconde a tela de cadastro/login usando o ID correto
-    document.getElementById('login').style.display = 'none';
-    
-    // Mostra a tela do gerador de jogos usando o ID correto
-    document.getElementById('app').style.display = 'block';
-  }
+    if (usuarioLogado === 'true') {
+        // Se já fez login antes, abre direto os jogos
+        document.getElementById("login").style.display = "none";
+        document.getElementById("app").style.display = "block";
+    } else {
+        // Se nunca fez login, aí sim mostra a tela de cadastro
+        document.getElementById("login").style.display = "block";
+        document.getElementById("app").style.display = "none";
+    }
 });
   // Esconde o banner se o app já tiver sido instalado antes
   window.addEventListener('appinstalled', () => {
