@@ -807,6 +807,13 @@
     </div>
   </div>
 
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('Service Worker registrado com sucesso!'))
+      .catch((error) => console.log('Erro ao registrar Service Worker:', error));
+  }
+</script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import {
