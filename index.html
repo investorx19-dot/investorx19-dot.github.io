@@ -1849,10 +1849,22 @@ if (document.readyState === "loading") {
   setTimeout(buscarResultadoAPILoteria, 400);
 }
 // 🚀 GATILHO DE INICIALIZAÇÃO DEFINITIVO
-window.addEventListener("DOMContentLoaded", () => {
-  // Roda imediatamente ao carregar a página
-  buscarResultadoAPILoteria();
-});
+  window.addEventListener("DOMContentLoaded", () => {
+    // Roda imediatamente ao carregar a página
+    buscarResultadoAPILoteria();
+  });
+
+  // 🎯 VERIFICAÇÃO DE LOGIN AUTOMÁTICO (COLE ESTE BLOCO AQUI):
+  const usuarioLogado = localStorage.getItem('mark6_logado');
+  if (usuarioLogado === 'true') {
+      elLogin.style.display = "none";
+      elApp.style.display = "block";
+      renderCartao([]); 
+      carregarUsuario();
+  } else {
+      elLogin.style.display = "block";
+      elApp.style.display = "none";
+  }
 </script>
 </body>
 </html>
