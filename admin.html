@@ -894,60 +894,77 @@
     }
 
     function monitorarGrandesAcertos() {
-      const container = document.getElementById('container-grandes-acertos');
-      if (!container) return;
+  const container = document.getElementById('container-grandes-acertos');
+  if (!container) return;
 
-      const q = query(
-        collection(db, "grandes_acertos"),
-        where("acertos", ">=", 2),
-        orderBy("dataPremio", "desc"),
-        limit(10)
-      );
+  const q = query(
+    collection(db, "grandes_acertos"),
+    where("acertos", ">=", 2),
+    orderBy("acertos", "desc"), // Ordenado por maior número de acertos primeiro
+    orderBy("dataPremio", "desc"),
+    limit(10)
+  );
 
-      onSnapshot(q, (querySnapshot) => {
-        if (querySnapshot.empty) {
-          container.innerHTML = '<div class="muted">Nenhuma Quadra, Quina ou Sena registrada recentemente.</div>';
-          return;
-        }
-
-        container.innerHTML = '';
-
-        querySnapshot.forEach((docSnap) => {
-          const dado = docSnap.data();
-          
-          let badgeClass = "tag-simples"; 
-          let nomePremio = "Quadra";
-          
-          if (dado.acertos === 5) {
-            badgeClass = "tag-bolao"; 
-            nomePremio = "Quina";
-          } else if (dado.acertos === 6) {
-            badgeClass = "tag-bolao";
-            nomePremio = "Sena";
-          }
-
-          const dezenasFormatadas = dado.dezenas ? dado.dezenas.join(" - ") : "N/A";
-          const dataFormatada = formatarDataHora(dado.dataPremio);
-
-          const cardHTML = `
-            <div class="historico-item" style="margin-bottom: 8px; border-left: 4px solid ${dado.acertos === 6 ? 'var(--green)' : 'var(--blue)'};">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong>${nomePremio} (${dado.acertos} acertos)</strong>
-                <span class="${badgeClass}">${nomePremio}</span>
-              </div>
-              <div class="mono" style="font-size: 16px; color: var(--green); margin: 6px 0; font-weight: bold;">
-                ${escapeHtml(dezenasFormatadas)}
-              </div>
-              <div class="small">
-                <span>Usuário: ${escapeHtml(dado.usuarioEmail)}</span><br>
-                <span>Processado em: ${escapeHtml(dataFormatada)}</span>
-              </div>
-            </div>
-          `;
-          container.insertAdjacentHTML('beforeend', cardHTML);
-        });
-      });
+  onSnapshot(q, (querySnapshot) => {
+    if (querySnapshot.empty) {
+      // Atualizado para englobar todas as faixas de acertos
+      container.innerHTML = '<div class="muted">Nenhum acerto de Duque a Sena registrado recentemente.</div>';
+      return;
     }
+
+    container.innerHTML = '';
+
+    querySnapshot.forEach((docSnap) => {
+      const dado = docSnap.data();
+      
+      let badgeClass = "tag-simples"; 
+      let nomePremio = "Duque";
+      
+      // Mapeamento completo de 2 a 6 acertos
+      if (dado.acertos === 6) {
+        badgeClass = "tag-bolao";
+        nomePremio = "Sena";
+      } else if (dado.acertos === 5) {
+        badgeClass = "tag-bolao"; 
+        nomePremio = "Quina";
+      } else if (dado.acertos === 4) {
+        badgeClass = "tag-simples"; 
+        nomePremio = "Quadra";
+      } else if (dado.acertos === 3) {
+        badgeClass = "tag-simples"; 
+        nomePremio = "Terno";
+      } else if (dado.acertos === 2) {
+        badgeClass = "tag-simples"; 
+        nomePremio = "Duque";
+      }
+
+      const dezenasFormatadas = dado.dezenas ? dado.dezenas.join(" - ") : "N/A";
+      const dataFormatada = formatarDataHora(dado.dataPremio);
+
+      // Define uma cor de destaque lateral diferente baseada no acerto
+      let corBorda = 'var(--blue)';
+      if (dado.acertos === 6) corBorda = 'var(--green)';
+      else if (dado.acertos === 5) corBorda = 'var(--purple, var(--blue))';
+
+      const cardHTML = `
+        <div class="historico-item" style="margin-bottom: 8px; border-left: 4px solid ${corBorda};">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${nomePremio} (${dado.acertos} acertos)</strong>
+            <span class="${badgeClass}">${nomePremio}</span>
+          </div>
+          <div class="mono" style="font-size: 16px; color: var(--green); margin: 6px 0; font-weight: bold;">
+            ${escapeHtml(dezenasFormatadas)}
+          </div>
+          <div class="small">
+            <span>Usuário: ${escapeHtml(dado.usuarioEmail)}</span><br>
+            <span>Processado em: ${escapeHtml(dataFormatada)}</span>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', cardHTML);
+    });
+  });
+}
 
     $("btnLogin").addEventListener("click", async () => {
       const email = $("adminEmail").value.trim();
