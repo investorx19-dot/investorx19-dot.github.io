@@ -899,7 +899,7 @@
 
       const q = query(
         collection(db, "grandes_acertos"),
-        where("acertos", ">=", 4),
+        where("acertos", ">=", 2),
         orderBy("dataPremio", "desc"),
         limit(10)
       );
