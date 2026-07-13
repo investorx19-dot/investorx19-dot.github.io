@@ -900,8 +900,8 @@
   const q = query(
     collection(db, "grandes_acertos"),
     where("acertos", ">=", 2),
-    orderBy("acertos", "desc"), // Ordenado por maior número de acertos primeiro
-    orderBy("dataPremio", "desc"),
+    orderBy("dataPremio", "desc"), // Primeiro campo do índice
+    orderBy("acertos", "desc"),    // Segundo campo do índice
     limit(10)
   );
 
