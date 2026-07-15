@@ -902,7 +902,6 @@
     where("acertos", ">=", 2),
     orderBy("dataPremio", "desc"), // Primeiro campo do índice
     orderBy("acertos", "desc"),    // Segundo campo do índice
-    limit(10)
   );
 
   onSnapshot(q, (querySnapshot) => {
