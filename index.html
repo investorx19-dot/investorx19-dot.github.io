@@ -661,7 +661,7 @@
         <div id="totalAcertosGlobal" class="contador-numero">1.826</div>
         <div class="contador-texto">Total acumulado de dezenas acertadas pela comunidade Mark6</div>
       </div>
-
+     
       <!-- Card do Rateio Atualizado para Incluir Ganhadores -->
       <div class="card" style="margin-top: 14px; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08);">
         <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--muted); text-align: center;">
@@ -1847,26 +1847,28 @@ async function buscarResultadoAPILoteria() {
 
     // 3. Renderização dos Prêmios e Ganhadores Reais do Rateio
     if (apiData.premiacoes && apiData.premiacoes.length >= 3) {
-      const senaDados = apiData.premiacoes.find(p => p.descricao === "6 acertos") || apiData.premiacoes[0];
-      const quinaDados = apiData.premiacoes.find(p => p.descricao === "5 acertos") || apiData.premiacoes[1];
-      const quadraDados = apiData.premiacoes.find(p => p.descricao === "4 acertos") || apiData.premiacoes[2];
+      // Correção: A API usa "Acertos" com "A" maiúsculo
+      const senaDados = apiData.premiacoes.find(p => p.descricao === "6 Acertos") || apiData.premiacoes[0];
+      const quinaDados = apiData.premiacoes.find(p => p.descricao === "5 Acertos") || apiData.premiacoes[1];
+      const quadraDados = apiData.premiacoes.find(p => p.descricao === "4 Acertos") || apiData.premiacoes[2];
 
-      // Atualização dos valores em tela
+      // Atualização dos valores em tela (Mantido original que já funcionava)
       if (document.getElementById("premioSena")) document.getElementById("premioSena").textContent = formatarMoedaLocal(senaDados.valorPremio);
       if (document.getElementById("premioQuina")) document.getElementById("premioQuina").textContent = formatarMoedaLocal(quinaDados.valorPremio);
       if (document.getElementById("premioQuadra")) document.getElementById("premioQuadra").textContent = formatarMoedaLocal(quadraDados.valorPremio);
 
       // Quantidade de Ganhadores Corretos vindos da API
+      // Correção: Trocado .numeroDeGanhadores por .ganhadores
       if (document.getElementById("senaGanhadores")) {
-        const gSena = senaDados.numeroDeGanhadores ?? 0;
+        const gSena = senaDados.ganhadores ?? 0;
         document.getElementById("senaGanhadores").textContent = gSena + (gSena === 1 ? " ganhador" : " ganhadores");
       }
       if (document.getElementById("quinaGanhadores")) {
-        const gQuina = quinaDados.numeroDeGanhadores ?? 0;
+        const gQuina = quinaDados.ganhadores ?? 0;
         document.getElementById("quinaGanhadores").textContent = gQuina + (gQuina === 1 ? " ganhador" : " ganhadores");
       }
       if (document.getElementById("quadraGanhadores")) {
-        const gQuadra = quadraDados.numeroDeGanhadores ?? 0;
+        const gQuadra = quadraDados.ganhadores ?? 0;
         document.getElementById("quadraGanhadores").textContent = gQuadra + (gQuadra === 1 ? " ganhador" : " ganhadores");
       }
     }
