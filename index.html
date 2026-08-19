@@ -1908,5 +1908,21 @@ if (document.readyState === "loading") {
       elApp.style.display = "none";
   }
 </script>
+<script>
+    // Função para verificar se a URL tem uma indicação
+    function capturarIndicacao() {
+        const parametros = new URLSearchParams(window.location.search);
+        const idRepresentante = parametros.get('ref');
+
+        // Se existir um ID na URL, salvamos no navegador do usuário
+        if (idRepresentante) {
+            localStorage.setItem('mark6_representante_id', idRepresentante);
+            console.log("Indicação capturada:", idRepresentante);
+        }
+    }S
+
+    // Executa a função ao carregar a página
+    document.addEventListener("DOMContentLoaded", capturarIndicacao);
+</script>
 </body>
 </html>
