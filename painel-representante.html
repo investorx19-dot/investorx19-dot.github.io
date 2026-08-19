@@ -100,17 +100,17 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // COLOQUE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
+        // COLOQUE A SUA CONFIGURAÇÃO DO FIREBASE AQUI NOVAMENTE
         const firebaseConfig = {
-            apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-            authDomain: "painel-megasena.firebaseapp.com",
-            projectId: "painel-megasena",
-            storageBucket: "painel-megasena.firebasestorage.app",
-            messagingSenderId: "924943702876",
-            appId: "1:924943702876:web:77929086c5addb13b37f99"
-        };
+      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+      authDomain: "painel-megasena.firebaseapp.com",
+      projectId: "painel-megasena",
+      storageBucket: "painel-megasena.firebasestorage.app",
+      messagingSenderId: "924943702876",
+      appId: "1:924943702876:web:77929086c5addb13b37f99"
+    };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -123,9 +123,7 @@
         const btnCopiar = document.getElementById('btn-copiar');
         const tabela = document.getElementById('tabela-comissoes');
         
-        // Formatar Moeda
         const formatarRS = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
-        // Formatar Data
         const formatarData = (timestamp) => {
             if(!timestamp) return '-';
             const data = timestamp.toDate();
@@ -134,42 +132,55 @@
 
         // Escutar status do usuário logado
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Usuário logado, vamos verificar se ele é representante
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                
-                if (userDoc.exists() && userDoc.data().role === "representante") {
-                    // É representante! Libera a tela.
-                    document.getElementById('nome-vendedor').innerText = userDoc.data().nome || "Representante";
+            if (user && user.email) {
+                try {
+                    // MUDANÇA AQUI: Busca o usuário pelo E-MAIL no banco de dados
+                    const qUser = query(collection(db, "users"), where("email", "==", user.email));
+                    const querySnapshotUser = await getDocs(qUser);
                     
-                    // Gera o link exclusivo (Altere 'mark6.com.br' para o domínio correto onde fica seu index.html)
-                    const urlBase = window.location.origin; 
-                    linkInput.value = `https://mark6.com.br/?ref=${user.uid}`;
+                    if (!querySnapshotUser.empty) {
+                        const userDoc = querySnapshotUser.docs[0]; // Pega o primeiro documento encontrado
+                        const dadosUsuario = userDoc.data();
+                        const idDoBanco = userDoc.id; // Esse é o ID real que seu sistema usa!
+                        
+                        if (dadosUsuario.role === "representante") {
+                            // É representante! Libera a tela.
+                            document.getElementById('nome-vendedor').innerText = dadosUsuario.nome || "Representante";
+                            
+                            // Gera o link usando o ID real do banco de dados
+                            const urlBase = window.location.origin; 
+                            linkInput.value = `${urlBase}/?ref=${idDoBanco}`;
 
-                    // Buscar os dados de comissão
-                    carregarDashboard(user.uid);
+                            carregarDashboard(idDoBanco);
 
-                    loading.classList.add('hidden');
-                    conteudo.classList.remove('hidden');
-                } else {
-                    // Logado, mas não é representante. Expulsa.
-                    alert("Acesso negado. Esta área é exclusiva para representantes comerciais.");
-                    window.location.href = "index.html"; 
+                            loading.classList.add('hidden');
+                            conteudo.classList.remove('hidden');
+                        } else {
+                            // Encontrou o usuário, mas não é representante
+                            alert("Acesso negado. Esta área é exclusiva para representantes comerciais.");
+                            window.location.href = "index.html"; 
+                        }
+                    } else {
+                        alert("Usuário não encontrado no banco de dados.");
+                        window.location.href = "index.html";
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar usuário:", error);
+                    alert("Erro ao verificar credenciais.");
                 }
             } else {
-                // Não está logado
-                window.location.href = "index.html"; // Redireciona para login
+                window.location.href = "index.html"; 
             }
         });
 
-        // Função para buscar e somar as comissões
-        async function carregarDashboard(uid) {
+        async function carregarDashboard(uidRepresentante) {
             let totalPendente = 0;
             let totalVendas = 0;
-            tabela.innerHTML = ''; // Limpa tabela
+            tabela.innerHTML = ''; 
 
             try {
-                const q = query(collection(db, "comissoes"), where("representante_id", "==", uid));
+                // MUDANÇA AQUI: Busca as comissões usando o ID real do banco
+                const q = query(collection(db, "comissoes"), where("representante_id", "==", uidRepresentante));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
@@ -177,11 +188,9 @@
                     return;
                 }
 
-                // Array para podermos ordenar no JS (já que Firestore exige índice pra order by com where)
                 const comissoes = [];
                 querySnapshot.forEach((doc) => comissoes.push(doc.data()));
                 
-                // Ordenar da mais recente para a mais antiga
                 comissoes.sort((a, b) => b.data_geracao?.seconds - a.data_geracao?.seconds);
 
                 comissoes.forEach((dados) => {
@@ -190,10 +199,8 @@
                         totalPendente += dados.valor_comissao;
                     }
 
-                    // Define cor da badge de status
                     const corStatus = dados.status === 'pendente' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-green-500/20 text-green-500';
 
-                    // Criar linha na tabela
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="p-4">${formatarData(dados.data_geracao)}</td>
@@ -208,7 +215,6 @@
                     tabela.appendChild(tr);
                 });
 
-                // Atualizar os Cards na tela
                 document.getElementById('total-pendente').innerText = formatarRS(totalPendente);
                 document.getElementById('total-vendas').innerText = totalVendas;
 
@@ -217,7 +223,6 @@
             }
         }
 
-        // Função do Botão Copiar
         btnCopiar.addEventListener('click', () => {
             linkInput.select();
             document.execCommand('copy');
@@ -229,7 +234,6 @@
             }, 2000);
         });
 
-        // Função do Botão Sair
         document.getElementById('btn-sair').addEventListener('click', () => {
             signOut(auth).then(() => {
                 window.location.href = "index.html";
