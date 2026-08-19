@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark6 - Painel do Representante</title>
+    <!-- Tailwind CSS para um visual Premium e Rápido -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; } /* Fundo escuro Mark6 */
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-900 border-b border-gray-800 p-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl font-bold text-yellow-500">Mark6</span>
+                <span class="text-sm bg-gray-800 text-gray-300 px-2 py-1 rounded">Afiliados</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="nome-vendedor" class="text-gray-300 hidden md:block">Carregando...</span>
+                <button id="btn-sair" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold transition">
+                    Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay (Enquanto verifica o usuário) -->
+    <div id="loading" class="fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-gray-400">Verificando credenciais...</p>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <main id="conteudo-principal" class="flex-grow max-w-6xl mx-auto w-full p-4 hidden">
+        
+        <!-- Alerta de Link de Indicação -->
+        <div class="bg-gray-800 border border-yellow-500 rounded-lg p-6 mb-8 mt-4 shadow-lg shadow-yellow-500/10">
+            <h2 class="text-lg font-semibold mb-2">Seu Link de Indicação (Divulgue e Ganhe!)</h2>
+            <p class="text-gray-400 text-sm mb-4">Envie este link para seus clientes. Qualquer assinatura feita através dele gerará comissão automática para você.</p>
+            <div class="flex gap-2">
+                <input type="text" id="link-indicacao" readonly 
+                       class="flex-grow bg-gray-900 border border-gray-700 text-gray-300 rounded p-3 focus:outline-none focus:border-yellow-500">
+                <button id="btn-copiar" class="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-3 rounded font-bold transition">
+                    Copiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards de Resumo -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Card 1 -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-1">Comissões Pendentes (A Receber)</h3>
+                <p class="text-3xl font-bold text-green-400" id="total-pendente">R$ 0,00</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-1">Total de Vendas Realizadas</h3>
+                <p class="text-3xl font-bold text-blue-400" id="total-vendas">0</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-1">Taxa de Comissão</h3>
+                <p class="text-3xl font-bold text-yellow-500">50%</p>
+            </div>
+        </div>
+
+        <!-- Tabela de Histórico -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-700">
+                <h2 class="text-lg font-semibold">Histórico de Vendas</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-900 text-gray-400 text-sm">
+                            <th class="p-4 font-medium">Data</th>
+                            <th class="p-4 font-medium">Plano Vendido</th>
+                            <th class="p-4 font-medium">Comissão</th>
+                            <th class="p-4 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-comissoes" class="text-sm divide-y divide-gray-700">
+                        <!-- As linhas serão injetadas via JavaScript -->
+                    </tbody>
+                </table>
+                <div id="sem-vendas" class="p-8 text-center text-gray-500 hidden">
+                    Nenhuma venda registrada ainda. Comece a divulgar seu link!
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- IMPORTANTE: Substitua pelas suas configurações do Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // COLOQUE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+            authDomain: "painel-megasena.firebaseapp.com",
+            projectId: "painel-megasena",
+            storageBucket: "painel-megasena.firebasestorage.app",
+            messagingSenderId: "924943702876",
+            appId: "1:924943702876:web:77929086c5addb13b37f99"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Elementos da Tela
+        const loading = document.getElementById('loading');
+        const conteudo = document.getElementById('conteudo-principal');
+        const linkInput = document.getElementById('link-indicacao');
+        const btnCopiar = document.getElementById('btn-copiar');
+        const tabela = document.getElementById('tabela-comissoes');
+        
+        // Formatar Moeda
+        const formatarRS = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+        // Formatar Data
+        const formatarData = (timestamp) => {
+            if(!timestamp) return '-';
+            const data = timestamp.toDate();
+            return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        };
+
+        // Escutar status do usuário logado
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Usuário logado, vamos verificar se ele é representante
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                
+                if (userDoc.exists() && userDoc.data().role === "representante") {
+                    // É representante! Libera a tela.
+                    document.getElementById('nome-vendedor').innerText = userDoc.data().nome || "Representante";
+                    
+                    // Gera o link exclusivo (Altere 'mark6.com.br' para o domínio correto onde fica seu index.html)
+                    const urlBase = window.location.origin; 
+                    linkInput.value = `https://mark6.com.br/?ref=${user.uid}`;
+
+                    // Buscar os dados de comissão
+                    carregarDashboard(user.uid);
+
+                    loading.classList.add('hidden');
+                    conteudo.classList.remove('hidden');
+                } else {
+                    // Logado, mas não é representante. Expulsa.
+                    alert("Acesso negado. Esta área é exclusiva para representantes comerciais.");
+                    window.location.href = "index.html"; 
+                }
+            } else {
+                // Não está logado
+                window.location.href = "index.html"; // Redireciona para login
+            }
+        });
+
+        // Função para buscar e somar as comissões
+        async function carregarDashboard(uid) {
+            let totalPendente = 0;
+            let totalVendas = 0;
+            tabela.innerHTML = ''; // Limpa tabela
+
+            try {
+                const q = query(collection(db, "comissoes"), where("representante_id", "==", uid));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    document.getElementById('sem-vendas').classList.remove('hidden');
+                    return;
+                }
+
+                // Array para podermos ordenar no JS (já que Firestore exige índice pra order by com where)
+                const comissoes = [];
+                querySnapshot.forEach((doc) => comissoes.push(doc.data()));
+                
+                // Ordenar da mais recente para a mais antiga
+                comissoes.sort((a, b) => b.data_geracao?.seconds - a.data_geracao?.seconds);
+
+                comissoes.forEach((dados) => {
+                    totalVendas++;
+                    if (dados.status === 'pendente') {
+                        totalPendente += dados.valor_comissao;
+                    }
+
+                    // Define cor da badge de status
+                    const corStatus = dados.status === 'pendente' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-green-500/20 text-green-500';
+
+                    // Criar linha na tabela
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-4">${formatarData(dados.data_geracao)}</td>
+                        <td class="p-4 capitalize">${dados.plano_vendido || 'Básico'}</td>
+                        <td class="p-4 font-bold text-green-400">${formatarRS(dados.valor_comissao)}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-xs font-semibold uppercase tracking-wider ${corStatus}">
+                                ${dados.status}
+                            </span>
+                        </td>
+                    `;
+                    tabela.appendChild(tr);
+                });
+
+                // Atualizar os Cards na tela
+                document.getElementById('total-pendente').innerText = formatarRS(totalPendente);
+                document.getElementById('total-vendas').innerText = totalVendas;
+
+            } catch (erro) {
+                console.error("Erro ao buscar comissões:", erro);
+            }
+        }
+
+        // Função do Botão Copiar
+        btnCopiar.addEventListener('click', () => {
+            linkInput.select();
+            document.execCommand('copy');
+            btnCopiar.innerText = "Copiado!";
+            btnCopiar.classList.replace('bg-yellow-600', 'bg-green-600');
+            setTimeout(() => {
+                btnCopiar.innerText = "Copiar";
+                btnCopiar.classList.replace('bg-green-600', 'bg-yellow-600');
+            }, 2000);
+        });
+
+        // Função do Botão Sair
+        document.getElementById('btn-sair').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        });
+    </script>
+</body>
+</html>
