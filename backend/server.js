@@ -349,7 +349,54 @@ app.post("/webhook-mercadopago", async function (req, res) {
       paidAt: Date.now(),
       updatedAt: Date.now()
     }, { merge: true });
+    // === NOVA LÓGICA DE COMISSIONAMENTO DE REPRESENTANTE ===
+    // 1. Buscamos o documento completo do usuário para ver se ele tem um representante
+    const userDocParaComissao = await db.collection("users").doc(userId).get();
+    
+    if (userDocParaComissao.exists) {
+      const dadosUsuarioParaComissao = userDocParaComissao.data();
 
+      // 2. Verifica se o usuário tem o campo representante_id preenchido
+      if (dadosUsuarioParaComissao.representante_id) {
+        console.log(`[COMISSÃO] Usuário ${userId} foi indicado pelo representante: ${dadosUsuarioParaComissao.representante_id}`);
+        
+        const representanteId = dadosUsuarioParaComissao.representante_id;
+        
+        // 3. Verifica se a comissão desse pagamento já foi paga (para evitar duplicidade caso o MP mande o webhook 2 vezes)
+        const comissaoExistente = await db.collection('comissoes')
+          .where('id_pagamento_mp', '==', String(idPagamento))
+          .get();
+
+        if (comissaoExistente.empty) {
+          // 4. Calcula 50% de comissão baseada no valor do plano pago
+          const valorComissao = dadosPlano.preco * 0.50;
+
+          const novaComissao = {
+            representante_id: representanteId,
+            uid_cliente: userId,
+            id_pagamento_mp: String(idPagamento),
+            valor_comissao: valorComissao,
+            plano_vendido: dadosPlano.plan,
+            status: 'pendente', // pendente até você aprovar/pagar
+            data_geracao: admin.firestore.FieldValue.serverTimestamp()
+          };
+
+          // 5. Salva a nova comissão no banco de dados
+          await db.collection('comissoes').add(novaComissao);
+          console.log(`[COMISSÃO] Comissão de R$${valorComissao} gerada com sucesso!`);
+          
+          // Opcional: Enviar mensagem pro seu Telegram avisando da comissão!
+          const msgTelegramComissao = `🤝 *Venda por Representante!*\n` +
+                                      `👤 *Vendedor:* \`${representanteId}\`\n` +
+                                      `💵 *Comissão gerada:* R$ ${valorComissao.toFixed(2)}`;
+          enviarMensagemTelegram(msgTelegramComissao);
+
+        } else {
+          console.log(`[COMISSÃO] A comissão para o pagamento ${idPagamento} já havia sido registrada.`);
+        }
+      }
+    }
+    // === FIM DA LÓGICA DE COMISSIONAMENTO ===
     console.log("Usuário updated com sucesso:", userId, dadosPlano.plan, dadosPlano.periodo);
 
     return res.sendStatus(200);
