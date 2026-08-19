@@ -1206,6 +1206,7 @@ const cotas = parseInt(elQtdCotas ? elQtdCotas.value : "1");
   }
 }
 async function cadastrar() {
+  const idDoRepresentante = localStorage.getItem('mark6_representante_id') || null;
   const nome = elNome.value.trim();
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
@@ -1257,8 +1258,10 @@ async function cadastrar() {
       trialInicio: agora,
       trialFim: agora + seteDiasEmMs,
       createdAt: agora,
-      updatedAt: agora
+      updatedAt: agora,
+      representante_id: idDoRepresentante
     };
+    localStorage.removeItem('mark6_representante_id');
 
     const referencia = await addDoc(collection(db, "users"), novoUsuario);
 
