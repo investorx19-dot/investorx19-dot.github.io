@@ -4,6 +4,7 @@ const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
 const admin = require("firebase-admin");
 const fs = require("fs");
 const https = require("https"); // Módulo movido definitivamente para o topo
+const cron = require('node-cron');
 
 console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
@@ -551,4 +552,66 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
 
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
+});
+// ==========================================
+// 📊 RELATÓRIO DIÁRIO AUTOMÁTICO (18:00)
+// ==========================================
+cron.schedule('0 18 * * *', async () => {
+    try {
+        console.log("Gerando relatório diário de KPIs...");
+
+        const usersSnap = await db.collection('users').get();
+        let usuariosAtivos = 0;
+        let representantes = 0;
+        let mrr = 0;
+
+        usersSnap.forEach((doc) => {
+            const dados = doc.data();
+            
+            if (dados.accessGranted) usuariosAtivos++;
+            if (dados.role === 'representante') representantes++;
+            
+            if (dados.paymentStatus === 'paid') {
+                mrr += Number(dados.valorPlano || 19.90);
+            }
+        });
+
+        // Somar comissões pendentes
+        const comissoesSnap = await db.collection('comissoes')
+                                      .where('status', '==', 'pendente')
+                                      .get();
+        let totalComissoes = 0;
+        comissoesSnap.forEach(doc => {
+            totalComissoes += Number(doc.data().valor_comissao || 0);
+        });
+
+        // Formatação de Moeda
+        const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+
+        // Montar a mensagem
+        const mensagemRelatorio = `
+📊 *Fechamento do Dia - Mark6*
+
+💰 *MRR Atual:* ${formatarMoeda(mrr)}
+👥 *Usuários Ativos:* ${usuariosAtivos}
+🤝 *Representantes:* ${representantes}
+💸 *Comissões a Pagar:* ${formatarMoeda(totalComissoes)}
+
+🚀 _Bora pra cima! O painel está atualizado._
+        `;
+
+        // Substitua MEU_CHAT_ID pela variável que você já usa para enviar as mensagens
+        // Exemplo: bot.sendMessage(process.env.TELEGRAM_CHAT_ID, mensagemRelatorio, { parse_mode: 'Markdown' });
+        
+        // Exemplo genérico (ajuste conforme o nome da sua variável de Chat ID):
+        bot.sendMessage( AAEh4L0F6MnGUCfMaRwXg-oGsENTRnvMKDQ, mensagemRelatorio, { parse_mode: 'Markdown' });
+        
+        console.log("Relatório diário enviado com sucesso!");
+
+    } catch (error) {
+        console.error("Erro ao gerar relatório diário:", error);
+    }
+}, {
+    scheduled: true,
+    timezone: "America/Sao_Paulo" // Trava no horário de Brasília/RJ
 });
