@@ -614,12 +614,15 @@
       </div>
     </div>
 
-       <div id="app" style="display:none;">
+      <div id="app" style="display:none;">
       <div class="topo-app">
         <div class="usuario-logado" id="usuarioLogado">Usuário logado</div>
+        
+        <!-- Botão exclusivo para representantes (invisível por padrão) -->
+        <button id="btnPainelRep" type="button" style="display: none; background: #eab308; color: #111; margin-right: 10px; border-color: #ca8a04;">Painel de Afiliado</button>
+        
         <button id="btnSair" type="button">Sair</button>
       </div>
-
       <div class="painel-aposta">
        <div class="campos-aposta">
   <div class="campo-aposta">
@@ -1130,7 +1133,7 @@ let resultadoOficial = [];
   // 11 dígitos = celular com DDD
   return numero.length === 10 || numero.length === 11;
 }
-    function atualizarUsuarioLogado() {
+   function atualizarUsuarioLogado() {
       if (!usuarioAtual) {
         elUsuarioLogado.textContent = "Usuário logado";
         return;
@@ -1147,6 +1150,21 @@ let resultadoOficial = [];
         usuarioAtual.email +
         " • Plano: " +
         nomePlano;
+
+      // ==========================================
+      // NOVA REGRA: Revelar botão do Representante
+      // ==========================================
+      if (usuarioAtual.role === "representante") {
+        const btnRep = document.getElementById('btnPainelRep');
+        if (btnRep) {
+          btnRep.style.display = 'inline-block'; // Faz o botão aparecer
+          
+          // Garante que o evento de clique não se duplique se a função rodar duas vezes
+          btnRep.onclick = () => {
+            window.location.href = "/painel-representante.html";
+          };
+        }
+      }
     }
 
     function atualizarValorAposta() {
