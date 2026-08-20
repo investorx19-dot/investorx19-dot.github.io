@@ -181,6 +181,16 @@
         }
 
         async function carregarDashboard(uidRepresentante) {
+
+           // ==========================================
+    // GERAÇÃO APENAS DO QR CODE NA TELA
+    // ==========================================
+    const imgQrCode = document.getElementById("qrCodeImg");
+    if (imgQrCode) {
+        const linkExclusivo = `https://mark6.com.br/?ref=${uidRepresentante}`;
+        imgQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(linkExclusivo)}`;
+        imgQrCode.style.display = "block";
+    }
             let totalPendente = 0;
             let totalVendas = 0;
             tabela.innerHTML = ''; 
@@ -220,19 +230,6 @@
                     `;
                     tabela.appendChild(tr);
                 });
-///// ==========================================
-        // GERAÇÃO APENAS DO QR CODE NA TELA
-        // ==========================================
-        const imgQrCode = document.getElementById("qrCodeImg");
-        
-        if (imgQrCode) {
-          // Usa a variável uidRepresentante do seu código
-          const linkExclusivo = `https://mark6.com.br/?ref=${uidRepresentante}`;
-          
-          // Gera a imagem na hora
-          imgQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(linkExclusivo)}`;
-          imgQrCode.style.display = "block"; // Faz a imagem aparecer
-        }
 
         // Função do botão de copiar
         const btnCopiar = document.getElementById("btnCopiarLink");
