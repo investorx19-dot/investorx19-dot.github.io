@@ -41,6 +41,9 @@
         <div class="bg-gray-800 border border-yellow-500 rounded-lg p-6 mb-8 mt-4 shadow-lg shadow-yellow-500/10">
             <h2 class="text-lg font-semibold mb-2">Seu Link de Indicação (Divulgue e Ganhe!)</h2>
             <p class="text-gray-400 text-sm mb-4">Envie este link para seus clientes. Qualquer assinatura feita através dele gerará comissão automática para você.</p>
+            <div style="display: flex; justify-content: center; width: 100%;">
+    <img id="qrCodeImg" src="" alt="QR Code do Representante" style="display: none; margin-bottom: 20px; border-radius: 12px; border: 4px solid #eab308; max-width: 200px;">
+</div>
             <div class="flex gap-2">
                 <input type="text" id="link-indicacao" readonly 
                        class="flex-grow bg-gray-900 border border-gray-700 text-gray-300 rounded p-3 focus:outline-none focus:border-yellow-500">
@@ -94,20 +97,7 @@
             </div>
         </div>
     <div class="card" style="text-align: center; margin-top: 18px;">
-          <h2>📲 Seu Link e QR Code de Indicação</h2>
-          <p class="small" style="margin-bottom: 15px;">Mostre este QR Code para o cliente na lotérica ou envie o link pelo WhatsApp.</p>
-          
-          <!-- Imagem do QR Code -->
-          <img id="qrCodeImg" src="" alt="QR Code do Representante" style="margin: 0 auto 15px auto; border-radius: 8px; border: 4px solid #fff; display: none; max-width: 200px;">
-          
-          <!-- Campo do Link e Botão Copiar -->
-          <div>
-            <input type="text" id="linkAfiliado" readonly style="width: 100%; max-width: 350px; text-align: center; margin-bottom: 10px; font-family: monospace;" value="Carregando link...">
-          </div>
-          <button id="btnCopiarLink" class="btn primary">Copiar Link</button>
-        </div>
-    </main>
-
+    
     <!-- IMPORTANTE: Substitua pelas suas configurações do Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -230,21 +220,18 @@
                     `;
                     tabela.appendChild(tr);
                 });
-/// ==========================================
-        // GERAÇÃO DO LINK E QR CODE DO AFILIADO
+///// ==========================================
+        // GERAÇÃO APENAS DO QR CODE NA TELA
         // ==========================================
-        
-        // Usa o uidRepresentante que já está na sua função
-        const linkExclusivo = `https://mark6.com.br/?ref=${uidRepresentante}`;
-        const inputLink = document.getElementById("linkAfiliado");
         const imgQrCode = document.getElementById("qrCodeImg");
         
-        if (inputLink && imgQrCode) {
-          inputLink.value = linkExclusivo;
+        if (imgQrCode) {
+          // Usa a variável uidRepresentante do seu código
+          const linkExclusivo = `https://mark6.com.br/?ref=${uidRepresentante}`;
           
-          // Chama a API que transforma o link em QR Code
+          // Gera a imagem na hora
           imgQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(linkExclusivo)}`;
-          imgQrCode.style.display = "block";
+          imgQrCode.style.display = "block"; // Faz a imagem aparecer
         }
 
         // Função do botão de copiar
