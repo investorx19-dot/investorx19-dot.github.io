@@ -1286,20 +1286,14 @@
             </td>
             <td class="right">
               <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
-                <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
-                        data-userid="${escapeHtml(u.id)}"
-                        data-granted="${granted}">
-                  ${granted ? "Bloquear" : "Liberar"}
-                </button>
-                <td class="right">
-              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
-                <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
-                        data-userid="${escapeHtml(u.id)}"
-                        data-granted="${granted}">
-                  ${granted ? "Bloquear" : "Liberar"}
-                </button>
                 
-                <!-- NOVO BOTÃO DE REPRESENTANTE AQUI -->
+                <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-granted="${granted}">
+                  ${granted ? "Bloquear" : "Liberar"}
+                </button>
+
+                <!-- BOTÃO DE REPRESENTANTE -->
                 <button class="btn ${u.role === 'representante' ? 'danger' : 'primary'} btn-toggle-rep"
                         style="padding: 6px 10px; font-size: 12px;"
                         data-userid="${escapeHtml(u.id)}"
@@ -1312,17 +1306,12 @@
                   <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
                   <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
                 </div>
-              </div>
-            </td>
-                <div class="acoes-dias">
-                  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
-                  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
-                  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
-                </div>
+                
               </div>
             </td>
           `;
           tbody.appendChild(tr);
+        
         }
 
         tbody.querySelectorAll(".btn-toggle-access").forEach(btn => {
