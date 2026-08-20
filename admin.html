@@ -1291,6 +1291,29 @@
                         data-granted="${granted}">
                   ${granted ? "Bloquear" : "Liberar"}
                 </button>
+                <td class="right">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
+                <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-granted="${granted}">
+                  ${granted ? "Bloquear" : "Liberar"}
+                </button>
+                
+                <!-- NOVO BOTÃO DE REPRESENTANTE AQUI -->
+                <button class="btn ${u.role === 'representante' ? 'danger' : 'primary'} btn-toggle-rep"
+                        style="padding: 6px 10px; font-size: 12px;"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-isrep="${u.role === 'representante'}">
+                  ${u.role === 'representante' ? "Remover Rep" : "Tornar Rep"}
+                </button>
+
+                <div class="acoes-dias">
+                  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
+                  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
+                  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
+                </div>
+              </div>
+            </td>
                 <div class="acoes-dias">
                   <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
                   <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
@@ -1310,14 +1333,26 @@
           });
         });
 
-        tbody.querySelectorAll("button[data-plano]").forEach(btn => {
+       // Configura o clique dos botões de Liberar/Bloquear Acesso
+        tbody.querySelectorAll(".btn-toggle-access").forEach(btn => {
           btn.addEventListener("click", async () => {
             const userId = btn.getAttribute("data-userid");
-            const plano = btn.getAttribute("data-plano");
-            await liberarPlano(userId, plano);
+            const granted = btn.getAttribute("data-granted") === "true";
+            await toggleAccess(userId, !granted);
           });
         });
 
+        // ==========================================
+        // NOVO: Configura o clique do botão de Representante
+        // ==========================================
+        tbody.querySelectorAll(".btn-toggle-rep").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-userid");
+            const isRep = btn.getAttribute("data-isrep") === "true";
+            await toggleRepresentante(userId, isRep);
+          });
+        });
+      
       } catch(err){
         console.error(err);
         tbody.innerHTML = '<tr><td colspan="8" class="small">Erro ao carregar usuários.</td></tr>';
@@ -1339,7 +1374,24 @@
         toast("Falha ao alterar acesso.", "error");
       }
     }
-
+    async function toggleRepresentante(userDocId, currentStatus) {
+      try {
+        // Se já é representante, vira cliente. Se não é, vira representante.
+        const novoRole = currentStatus ? "cliente" : "representante";
+        
+        await updateDoc(doc(db, "users", userDocId), {
+          role: novoRole,
+          updatedAt: Date.now()
+        });
+        
+        toast(currentStatus ? "Privilégio de representante removido." : "Usuário promovido a representante!", "ok");
+        await loadUsers(); // Recarrega a tabela na hora
+        await carregarResumoAdmin(); // Atualiza o gráfico de MRR/Reps lá em cima
+      } catch(err) {
+        console.error(err);
+        toast("Falha ao alterar privilégio do usuário.", "error");
+      }
+    }
     async function liberarPlano(userDocId, planoNome){
       try{
         const agora = Date.now();
