@@ -383,6 +383,30 @@
   </style>
 </head>
 <body>
+  <!-- NOVA LINHA DE KPIs -->
+          <h2 style="margin-top: 10px;">📈 KPIs (Financeiro & Comercial)</h2>
+          <div class="stats-admin" style="margin-top: 0;">
+            <div class="stat-card" style="border-color: rgba(34,197,94,.3);">
+              <div class="stat-label">💰 MRR (Receita Mensal)</div>
+              <div class="stat-value" style="color: var(--green);" id="statMRR">R$ 0,00</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">🤝 Representantes</div>
+              <div class="stat-value" style="color: var(--blue);" id="statReps">0</div>
+            </div>
+
+            <div class="stat-card" style="border-color: rgba(245,158,11,.3);">
+              <div class="stat-label">💸 Comissões a Pagar</div>
+              <div class="stat-value" style="color: #fde68a;" id="statComissoes">R$ 0,00</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">⭐ Assinaturas Pagas</div>
+              <div class="stat-value" id="statPagos">0%</div>
+            </div>
+          </div>
+          <!-- FIM DA NOVA LINHA DE KPIs -->
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
@@ -867,16 +891,49 @@
         const elPendentes = $("statPendentes");
         const elAcertos = $("statAcertos");
 
+        // Novos elementos KPI
+        const elMRR = $("statMRR");
+        const elReps = $("statReps");
+        const elComissoes = $("statComissoes");
+        const elConversao = $("statPagos");
+
         const usersSnap = await getDocs(collection(db, "users"));
         const jogosSnap = await getDocs(collection(db, "jogosGerados"));
         const pendentesSnap = await getDocs(query(collection(db, "jogosGerados"), where("processado", "==", false)));
         const statsSnap = await getDoc(doc(db, "config", "global"));
 
         let usuariosAtivos = 0;
+        let mrr = 0;
+        let representantes = 0;
+        let assinaturasPagas = 0;
+        let assinaturasTrial = 0;
+
         usersSnap.forEach((docItem) => {
           const dados = docItem.data();
           if (dados.accessGranted) usuariosAtivos++;
+
+          // 📊 Cálculos de Performance
+          if (dados.role === "representante") representantes++;
+
+          if (dados.paymentStatus === "paid") {
+            assinaturasPagas++;
+            // Soma o valor do plano (se não existir, calcula a base do Básico R$ 19,90)
+            mrr += Number(dados.valorPlano || 19.90); 
+          } else if (dados.paymentStatus === "trial") {
+            assinaturasTrial++;
+          }
         });
+
+        // 💸 Buscar Comissões Pendentes dos Afiliados
+        let totalComissoes = 0;
+        try {
+          const comissoesSnap = await getDocs(query(collection(db, "comissoes"), where("status", "==", "pendente")));
+          comissoesSnap.forEach(docItem => {
+            totalComissoes += Number(docItem.data().valor_comissao || 0);
+          });
+        } catch (e) {
+          // A coleção pode estar vazia no início
+        }
 
         let totalAcertos = 2711;
         if (statsSnap.exists()) {
@@ -884,15 +941,26 @@
           totalAcertos = Number(statsData.acertosAcumulados ?? 2711);
         }
 
+        // 📈 Cálculo de Conversão (Pagos vs Trial)
+        const totalCalculo = assinaturasPagas + assinaturasTrial;
+        const taxaConversao = totalCalculo > 0 ? ((assinaturasPagas / totalCalculo) * 100).toFixed(1) : 0;
+
+        // Injeta os dados gerais
         if(elUsuarios) elUsuarios.textContent = usuariosAtivos.toLocaleString("pt-BR");
         if(elJogos) elJogos.textContent = jogosSnap.size.toLocaleString("pt-BR");
         if(elPendentes) elPendentes.textContent = pendentesSnap.size.toLocaleString("pt-BR");
         if(elAcertos) elAcertos.textContent = totalAcertos.toLocaleString("pt-BR");
+
+        // Injeta os KPIs de Negócio
+        if(elMRR) elMRR.textContent = formatarMoeda(mrr);
+        if(elReps) elReps.textContent = representantes.toString();
+        if(elComissoes) elComissoes.textContent = formatarMoeda(totalComissoes);
+        if(elConversao) elConversao.textContent = taxaConversao + "%";
+
       } catch (err) {
-        console.error("Erro ao carregar resumo admin:", err);
+        console.error("Erro ao carregar resumo admin e KPIs:", err);
       }
     }
-
     function monitorarGrandesAcertos() {
   const container = document.getElementById('container-grandes-acertos');
   if (!container) return;
