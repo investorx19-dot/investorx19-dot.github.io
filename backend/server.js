@@ -5,9 +5,6 @@ const admin = require("firebase-admin");
 const fs = require("fs");
 const https = require("https"); // Módulo movido definitivamente para o topo
 const cron = require('node-cron');
-const TelegramBot = require('node-telegram-bot-api');
-const token = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new TelegramBot(token, { polling: false });
 
 console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
@@ -637,22 +634,8 @@ async function enviarRelatorioDiario() {
 🚀 _Bora pra cima! O painel está atualizado._
         `;
 
-        // Substitua MEU_CHAT_ID pela variável que você já usa para enviar as mensagens
-        // Exemplo genérico (ajuste conforme o nome da sua variável de Chat ID):
-        // Disparo direto via API do Telegram (Sem precisar da variável 'bot')
-const token = process.env.TELEGRAM_BOT_TOKEN; // Puxa o token do seu Render
-const chatId = "877220624"; // O seu Chat ID numérico
-const urlTelegram = `https://api.telegram.org/bot${token}/sendMessage`;
-
-await fetch(urlTelegram, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        chat_id: chatId,
-        text: mensagemRelatorio,
-        parse_mode: 'Markdown'
-    })
-});
+       // Usando a sua função nativa que já existe no código!
+        enviarMensagemTelegram(mensagemRelatorio);
         
         console.log("Relatório diário enviado com sucesso!");
 
