@@ -641,7 +641,20 @@ async function enviarRelatorioDiario() {
         // Exemplo: bot.sendMessage(process.env.TELEGRAM_CHAT_ID, mensagemRelatorio, { parse_mode: 'Markdown' });
         
         // Exemplo genérico (ajuste conforme o nome da sua variável de Chat ID):
-        bot.sendMessage( 8772206224, mensagemRelatorio, { parse_mode: 'Markdown' });
+        // Disparo direto via API do Telegram (Sem precisar da variável 'bot')
+const token = process.env.TELEGRAM_BOT_TOKEN; // Puxa o token do seu Render
+const chatId = "877220624"; // O seu Chat ID numérico
+const urlTelegram = `https://api.telegram.org/bot${token}/sendMessage`;
+
+await fetch(urlTelegram, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        chat_id: chatId,
+        text: mensagemRelatorio,
+        parse_mode: 'Markdown'
+    })
+});
         
         console.log("Relatório diário enviado com sucesso!");
 
