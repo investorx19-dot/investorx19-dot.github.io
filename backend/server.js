@@ -586,10 +586,11 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
-// ==========================================
 // 📊 RELATÓRIO DIÁRIO AUTOMÁTICO (18:00)
 // ==========================================
-cron.schedule('0 18 * * *', async () => {
+
+// Criamos a função com o nome que a rota lá de cima está procurando:
+async function enviarRelatorioDiario() {
     try {
         console.log("Gerando relatório diário de KPIs...");
 
@@ -641,10 +642,17 @@ cron.schedule('0 18 * * *', async () => {
         
         console.log("Relatório diário enviado com sucesso!");
 
-    } catch (error) {
+     } catch (error) {
         console.error("Erro ao gerar relatório diário:", error);
     }
+} // <-- Aqui fecha a nossa nova função enviarRelatorioDiario()
+
+// ==========================================
+// O Cron agora só chama a função acima:
+cron.schedule('0 18 * * *', async () => {
+    console.log("[CRON INTERNO] Tentando disparar relatório...");
+    await enviarRelatorioDiario();
 }, {
     scheduled: true,
-    timezone: "America/Sao_Paulo" // Trava no horário de Brasília/RJ
+    timezone: "America/Sao_Paulo"
 });
