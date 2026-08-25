@@ -1555,12 +1555,12 @@
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
       }
     });
-    // =======================================================
-// LÓGICA DA TABELA DE COMISSÕES POR REPRESENTANTE
+    // LÓGICA DA TABELA DE COMISSÕES POR REPRESENTANTE
 // =======================================================
 async function carregarTabelaComissoes() {
   try {
     const corpoTabela = document.getElementById('corpoTabelaComissoes');
+    if (!corpoTabela) return; // Trava de segurança
 
     // 1. Busca todas as comissões pendentes no Firebase
     const snapshot = await db.collection('comissoes')
@@ -1575,12 +1575,9 @@ async function carregarTabelaComissoes() {
       const repId = dados.representante_id || "Desconhecido";
       const valor = Number(dados.valor_comissao) || 0;
 
-      // Se é a primeira vez que vemos esse representante, começa com 0
       if (!comissoesAgrupadas[repId]) {
         comissoesAgrupadas[repId] = 0;
       }
-      
-      // Soma a comissão no "bolso" dele
       comissoesAgrupadas[repId] += valor;
     });
 
@@ -1606,18 +1603,16 @@ async function carregarTabelaComissoes() {
       corpoTabela.appendChild(tr);
     }
 
-    // Se não tiver nenhuma venda comissionada ainda
     if (!temComissao) {
-      corpoTabela.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #aaa;">Nenhuma comissão pendente no momento.</td></tr>`;
+      corpoTabela.innerHTML = <tr><td colspan="3" style="padding: 10px; text-align: center; color: #aaa;">Nenhuma comissão pendente no momento.</td></tr>;
     }
 
   } catch (error) {
     console.error("Erro ao carregar tabela de comissões:", error);
-    document.getElementById('corpoTabelaComissoes').innerHTML = <tr><td colspan="3" style="padding: 10px; text-align: center; color: #ff4444;">Erro ao carregar dados.</td></tr>;
   }
 }
 
-// Executa a função para preencher a tabela assim que a página abre
+// Executa a função para preencher a tabela
 carregarTabelaComissoes();
 </script>
 </body>
