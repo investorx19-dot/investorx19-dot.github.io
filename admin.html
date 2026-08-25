@@ -1555,6 +1555,70 @@
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
       }
     });
+    // =======================================================
+// LÓGICA DA TABELA DE COMISSÕES POR REPRESENTANTE
+// =======================================================
+async function carregarTabelaComissoes() {
+  try {
+    const corpoTabela = document.getElementById('corpoTabelaComissoes');
+
+    // 1. Busca todas as comissões pendentes no Firebase
+    const snapshot = await db.collection('comissoes')
+                             .where('status', '==', 'pendente')
+                             .get();
+
+    // 2. Objeto para agrupar o dinheiro de cada representante
+    const comissoesAgrupadas = {};
+
+    snapshot.forEach(doc => {
+      const dados = doc.data();
+      const repId = dados.representante_id || "Desconhecido";
+      const valor = Number(dados.valor_comissao) || 0;
+
+      // Se é a primeira vez que vemos esse representante, começa com 0
+      if (!comissoesAgrupadas[repId]) {
+        comissoesAgrupadas[repId] = 0;
+      }
+      
+      // Soma a comissão no "bolso" dele
+      comissoesAgrupadas[repId] += valor;
+    });
+
+    // 3. Limpa o texto de "Carregando..."
+    corpoTabela.innerHTML = ''; 
+
+    // Função para formatar em R$
+    const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+
+    let temComissao = false;
+
+    // 4. Cria as linhas da tabela com os totais
+    for (const [representante, total] of Object.entries(comissoesAgrupadas)) {
+      temComissao = true;
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = "1px solid #444"; 
+      
+      tr.innerHTML = `
+        <td style="padding: 10px; color: #fff;"><strong>${representante}</strong></td>
+        <td style="padding: 10px; color: #00ff88; font-weight: bold;">${formatarMoeda(total)}</td>
+        <td style="padding: 10px;"><span style="background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Pendente</span></td>
+      `;
+      corpoTabela.appendChild(tr);
+    }
+
+    // Se não tiver nenhuma venda comissionada ainda
+    if (!temComissao) {
+      corpoTabela.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #aaa;">Nenhuma comissão pendente no momento.</td></tr>`;
+    }
+
+  } catch (error) {
+    console.error("Erro ao carregar tabela de comissões:", error);
+    document.getElementById('corpoTabelaComissoes').innerHTML = <tr><td colspan="3" style="padding: 10px; text-align: center; color: #ff4444;">Erro ao carregar dados.</td></tr>;
+  }
+}
+
+// Executa a função para preencher a tabela assim que a página abre
+carregarTabelaComissoes();
 </script>
 </body>
 </html>
