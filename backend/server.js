@@ -638,8 +638,6 @@ async function enviarRelatorioDiario() {
         `;
 
         // Substitua MEU_CHAT_ID pela variável que você já usa para enviar as mensagens
-        // Exemplo: bot.sendMessage(process.env.TELEGRAM_CHAT_ID, mensagemRelatorio, { parse_mode: 'Markdown' });
-        
         // Exemplo genérico (ajuste conforme o nome da sua variável de Chat ID):
         // Disparo direto via API do Telegram (Sem precisar da variável 'bot')
 const token = process.env.TELEGRAM_BOT_TOKEN; // Puxa o token do seu Render
