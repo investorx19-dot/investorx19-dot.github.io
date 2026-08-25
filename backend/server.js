@@ -5,6 +5,9 @@ const admin = require("firebase-admin");
 const fs = require("fs");
 const https = require("https"); // Módulo movido definitivamente para o topo
 const cron = require('node-cron');
+const TelegramBot = require('node-telegram-bot-api');
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const bot = new TelegramBot(token, { polling: false });
 
 console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
