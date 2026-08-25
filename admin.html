@@ -1562,10 +1562,9 @@ async function carregarTabelaComissoes() {
     const corpoTabela = document.getElementById('corpoTabelaComissoes');
     if (!corpoTabela) return; // Trava de segurança
 
-    // 1. Busca todas as comissões pendentes no Firebase
-    const snapshot = await db.collection('comissoes')
-                             .where('status', '==', 'pendente')
-                             .get();
+    // 1. Busca usando o formato Modular (Firebase v9+)
+    const q = query(collection(db, 'comissoes'), where('status', '==', 'pendente'));
+    const snapshot = await getDocs(q);
 
     // 2. Objeto para agrupar o dinheiro de cada representante
     const comissoesAgrupadas = {};
