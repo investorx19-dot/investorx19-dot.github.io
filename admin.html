@@ -1604,7 +1604,7 @@ async function carregarTabelaComissoes() {
     }
 
     if (!temComissao) {
-      corpoTabela.innerHTML = <tr><td colspan="3" style="padding: 10px; text-align: center; color: #aaa;">Nenhuma comissão pendente no momento.</td></tr>;
+      corpoTabela.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #aaa;">Nenhuma comissão pendente no momento.</td></tr>`;
     }
 
   } catch (error) {
