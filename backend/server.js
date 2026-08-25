@@ -46,6 +46,39 @@ app.get("/teste-cors", (req, res) => {
   });
 });
 
+// ==========================================
+// 1. ROTA "KEEP-ALIVE" (Para o servidor não dormir)
+// ==========================================
+app.get('/ping', (req, res) => {
+  const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  console.log(`[PING] Servidor cutucado às ${dataHora}`);
+  res.status(200).send("Servidor Mark6 acordado e operante!");
+});
+
+// ==========================================
+// 2. ROTA DE DISPARO DO RELATÓRIO DO TELEGRAM
+// ==========================================
+app.get('/disparar-relatorio', async (req, res) => {
+  // Pequena trava de segurança para curiosos não dispararem seu bot
+  const { senha } = req.query;
+  if (senha !== "mark6-admin") {
+    return res.status(401).send("Acesso negado.");
+  }
+
+  try {
+    console.log("[CRON] Disparando relatório diário via chamada externa...");
+    
+    // IMPORTANTE: Substitua 'enviarRelatorioDiario()' pelo nome exato 
+    // da função que você já criou para enviar os dados para o Telegram!
+    await enviarRelatorioDiario(); 
+    
+    res.status(200).send("Relatório enviado com sucesso para o Telegram!");
+  } catch (erro) {
+    console.error("[ERRO] Falha ao enviar relatório:", erro);
+    res.status(500).send("Erro interno ao tentar enviar o relatório.");
+  }
+});
+
 let serviceAccount;
 
 try {
