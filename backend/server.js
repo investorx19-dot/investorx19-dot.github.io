@@ -638,7 +638,7 @@ async function enviarRelatorioDiario() {
         // Exemplo: bot.sendMessage(process.env.TELEGRAM_CHAT_ID, mensagemRelatorio, { parse_mode: 'Markdown' });
         
         // Exemplo genérico (ajuste conforme o nome da sua variável de Chat ID):
-        bot.sendMessage( AAEh4L0F6MnGUCfMaRwXg-oGsENTRnvMKDQ, mensagemRelatorio, { parse_mode: 'Markdown' });
+        bot.sendMessage( 8772206224, mensagemRelatorio, { parse_mode: 'Markdown' });
         
         console.log("Relatório diário enviado com sucesso!");
 
