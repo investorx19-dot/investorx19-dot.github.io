@@ -133,7 +133,7 @@ function embaralhar(array) {
 }
 
 // Quando o botão for clicado
-btnGerar.addEventListener('click', () => {
+btnGerar?.addEventListener('click', () => {
   const tamanhoJogo = parseInt(document.getElementById('qtd-dezenas-jogo').value);
   const qtdPares = parseInt(document.getElementById('filtro-pares').value);
   const qtdImpares = parseInt(document.getElementById('filtro-impares').value);
