@@ -137,3 +137,35 @@ export function gerarJogoValido(linhasAtivas, excluidas, quantidade = 6, histori
 
   return jogo.sort((a, b) => a - b);
 }
+// 🔥 INTEGRAÇÃO COM O MAPA DE CALOR
+export function gerarJogoPeloMapa(selecionadasSet, quantidade = 6) {
+  let jogo = Array.from(selecionadasSet);
+  quantidade = Number(quantidade);
+
+  // Se o usuário selecionou mais números do que o tamanho do jogo, embaralha e corta
+  if (jogo.length > quantidade) {
+    jogo = jogo.sort(() => Math.random() - 0.5).slice(0, quantidade);
+  }
+
+  // Se faltarem números para completar o jogo, usa a engine inteligente
+  if (jogo.length < quantidade) {
+    let pool = Array.from({length: 60}, (_, i) => i + 1).filter(n => !jogo.includes(n));
+    
+    // Arrays globais que já existem no topo do seu gerador.js
+    let f = pool.filter(n => FIBONACCI.includes(n));
+    let p = pool.filter(n => PRIMOS.includes(n));
+    let m = pool.filter(n => MULT3.includes(n));
+    
+    const pegar = arr => arr && arr.length ? arr.splice(Math.floor(Math.random() * arr.length), 1)[0] : null;
+
+    while (jogo.length < quantidade) {
+      const tipo = Math.random();
+      let escolha = tipo < 0.3 ? pegar(f) : tipo < 0.6 ? pegar(p) : pegar(m);
+      
+      if (!escolha) escolha = pegar(pool);
+      if (escolha && !jogo.includes(escolha)) jogo.push(escolha);
+    }
+  }
+
+  return jogo.sort((a, b) => a - b);
+}
