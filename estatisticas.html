@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Calor • Mark6</title>
+  <link rel="stylesheet" href="estatisticas.css">
+</head>
+<body>
+
+  <div class="heatmap-container">
+    <h2>🔥 Volante de Calor - Mega-Sena</h2>
+    
+    <div id="volante-grid" class="volante-grid"></div>
+    
+    <div class="legenda">
+      <span>❄️ Mais Frias</span>
+      <div class="escala-cores"></div>
+      <span>🔥 Mais Quentes</span>
+    </div>
+
+    <div id="painel-selecao">
+      <p>Dezenas selecionadas: <strong id="contador-selecao">0</strong></p>
+      <div id="lista-selecao">Nenhuma dezena selecionada</div>
+    </div>
+  </div>
+
+  <div id="tooltip-estatistica" class="tooltip" style="opacity: 0;"></div>
+
+  <script type="module" src="estatisticas.js"></script>
+</body>
+</html>
