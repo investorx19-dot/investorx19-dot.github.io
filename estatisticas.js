@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Guardará os números selecionados pelo usuário
-const dezenasSelecionadas = new Set();
+export const dezenasSelecionadas = new Set();
 
 async function carregarHeatmap() {
   const grid = document.getElementById('volante-grid');
