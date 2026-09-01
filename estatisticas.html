@@ -23,6 +23,29 @@
       <p>Dezenas selecionadas: <strong id="contador-selecao">0</strong></p>
       <div id="lista-selecao">Nenhuma dezena selecionada</div>
     </div>
+
+    <div class="controles-gerador">
+      <div class="input-group">
+        <label>Dezenas por jogo:</label>
+        <select id="qtd-dezenas-jogo">
+          <option value="6">6 dezenas</option>
+          <option value="7">7 dezenas</option>
+          <option value="8">8 dezenas</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Pares:</label>
+        <input type="number" id="filtro-pares" value="3" min="0" max="8">
+      </div>
+      <div class="input-group">
+        <label>Ímpares:</label>
+        <input type="number" id="filtro-impares" value="3" min="0" max="8">
+      </div>
+      
+      <button id="btn-gerar" class="btn-acao">Gerar Jogos</button>
+    </div>
+
+    <div id="resultado-jogos" class="resultado-container"></div>
   </div>
 
   <div id="tooltip-estatistica" class="tooltip" style="opacity: 0;"></div>

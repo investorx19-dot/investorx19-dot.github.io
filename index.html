@@ -822,6 +822,8 @@
   </div>
 
   <script type="module">
+    import { gerarJogoPeloMapa } from './gerador.js';
+    import { dezenasSelecionadas } from './estatisticas.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import {
   getFirestore,
@@ -1548,8 +1550,15 @@ async function gerarJogoUsuario() {
     const valorPorPessoa = valorTotal / cotas;
 
     // Executa a engine matemática localmente (Instantâneo)
-    const jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
+    let jogo;
 
+// Se o usuário selecionou bolas no Mapa de Calor, usa o novo motor
+if (dezenasSelecionadas && dezenasSelecionadas.size > 0) {
+    jogo = gerarJogoPeloMapa(dezenasSelecionadas, quantidade);
+} else {
+    // Se não tocou no mapa, usa a engine original de exclusão/linhas
+    jogo = gerarJogoValido(linhasAtivas, excluidas, quantidade);
+}
     if (jogo.length !== quantidade) {
       throw new Error("O gerador retornou " + jogo.length + " dezenas, mas o usuário pediu " + quantidade + ".");
     }

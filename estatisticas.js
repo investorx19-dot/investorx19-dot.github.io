@@ -118,5 +118,71 @@ async function carregarHeatmap() {
     console.error("❌ Erro ao carregar mapa de calor:", error);
   }
 }
+// --- LÓGICA DO GERADOR DE JOGOS ---
+const btnGerar = document.getElementById('btn-gerar');
+const divResultados = document.getElementById('resultado-jogos');
 
+// Função para embaralhar um array (Método Fisher-Yates)
+function embaralhar(array) {
+  const novoArray = [...array];
+  for (let i = novoArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [novoArray[i], novoArray[j]] = [novoArray[j], novoArray[i]];
+  }
+  return novoArray;
+}
+
+// Quando o botão for clicado
+btnGerar.addEventListener('click', () => {
+  const tamanhoJogo = parseInt(document.getElementById('qtd-dezenas-jogo').value);
+  const qtdPares = parseInt(document.getElementById('filtro-pares').value);
+  const qtdImpares = parseInt(document.getElementById('filtro-impares').value);
+
+  // 1. Validações Iniciais
+  if (qtdPares + qtdImpares !== tamanhoJogo) {
+    return alert(`Erro: A soma de pares (${qtdPares}) e ímpares (${qtdImpares}) tem de ser igual a ${tamanhoJogo}.`);
+  }
+
+  const selecionadas = Array.from(dezenasSelecionadas);
+  
+  if (selecionadas.length < tamanhoJogo) {
+    return alert(`Selecione pelo menos ${tamanhoJogo} dezenas no mapa de calor!`);
+  }
+
+  // 2. Separar pares e ímpares
+  const paresDisponiveis = selecionadas.filter(n => n % 2 === 0);
+  const imparesDisponiveis = selecionadas.filter(n => n % 2 !== 0);
+
+  if (paresDisponiveis.length < qtdPares) {
+    return alert(`Precisa de ${qtdPares} pares no filtro, mas só selecionou ${paresDisponiveis.length} no mapa.`);
+  }
+  if (imparesDisponiveis.length < qtdImpares) {
+    return alert(`Precisa de ${qtdImpares} ímpares no filtro, mas só selecionou ${imparesDisponiveis.length} no mapa.`);
+  }
+
+  // 3. Gerar os jogos
+  divResultados.innerHTML = '<h3 style="color: #2d6cff; margin-bottom: 10px;">Jogos Gerados:</h3>';
+  
+  // Exemplo: Vamos gerar 5 jogos seguidos baseados nas escolhas
+  for (let i = 0; i < 5; i++) {
+    // Embaralha as dezenas disponíveis
+    const paresEmbaralhados = embaralhar(paresDisponiveis);
+    const imparesEmbaralhados = embaralhar(imparesDisponiveis);
+
+    // Pega a quantidade exata exigida pelo utilizador
+    const paresEscolhidos = paresEmbaralhados.slice(0, qtdPares);
+    const imparesEscolhidos = imparesEmbaralhados.slice(0, qtdImpares);
+
+    // Junta, ordena de forma crescente e coloca um 0 à esquerda se for menor que 10
+    const jogoFinal = [...paresEscolhidos, ...imparesEscolhidos]
+      .sort((a, b) => a - b)
+      .map(n => n.toString().padStart(2, '0'));
+
+    // Adiciona ao ecrã
+    const jogoDiv = document.createElement('div');
+    jogoDiv.className = 'jogo-gerado';
+    jogoDiv.textContent = `Jogo ${i + 1}: ${jogoFinal.join(' - ')}`;
+    divResultados.appendChild(jogoDiv);
+  }
+});
 document.addEventListener("DOMContentLoaded", carregarHeatmap);

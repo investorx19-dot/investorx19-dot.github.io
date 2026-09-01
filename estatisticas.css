@@ -105,3 +105,82 @@
   margin-top: 5px;
   font-size: 16px;
 }
+
+/* --- ESTILOS DO GERADOR DE JOGOS --- */
+.controles-gerador {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  border-top: 1px solid #242447;
+  padding-top: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.input-group input, .input-group select {
+  padding: 10px 12px;
+  background-color: #0b1220;
+  border: 1px solid #242447;
+  color: #fbbf24; /* Texto dourado */
+  border-radius: 6px;
+  font-size: 14px;
+  width: 110px;
+  outline: none;
+}
+
+.input-group input:focus, .input-group select:focus {
+  border-color: #2d6cff;
+}
+
+.btn-acao {
+  background-color: #2d6cff;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  height: 40px;
+}
+
+.btn-acao:hover {
+  background-color: #1e4bb8;
+}
+
+/* Lista de resultados gerados */
+.resultado-container {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.jogo-gerado {
+  background: #0b1220;
+  border: 1px solid #242447;
+  border-left: 4px solid #fbbf24; /* Linha dourada de destaque */
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: #e2e8f0;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
