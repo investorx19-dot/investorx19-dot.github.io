@@ -641,7 +641,20 @@
           Por pessoa: R$ 6,00
         </div>
       </div>
+  <div class="heatmap-container">
+  <h2 style="text-align: center; color: #2d6cff; margin-bottom: 20px;">🔥 Volante de Calor</h2>
+  
+  <div id="volante-grid" class="volante-grid"></div>
+  
+  <div class="legenda" style="display: flex; justify-content: space-between; margin-top: 15px; color: #94a3b8; font-size: 13px;">
+    <span>❄️ Mais Frias</span>
+    <div class="escala-cores" style="height: 12px; flex-grow: 1; background: linear-gradient(to right, hsl(240, 100%, 50%), hsl(0, 100%, 50%)); border-radius: 6px; margin: 0 15px;"></div>
+    <span>🔥 Mais Quentes</span>
+  </div>
+</div>
 
+<!-- Tooltip flutuante do mapa -->
+<div id="tooltip-estatistica" class="tooltip" style="opacity: 0;"></div>
      <div class="centro">
         <button id="btnGerar" type="button">GERAR JOGO</button>
       </div>
@@ -1954,5 +1967,9 @@ if (document.readyState === "loading") {
     // Executa a função ao carregar a página
     document.addEventListener("DOMContentLoaded", capturarIndicacao);
 </script>
+
+<!-- Importação do Mapa de Calor -->
+<script type="module" src="estatisticas.js"></script>
+
 </body>
 </html>
