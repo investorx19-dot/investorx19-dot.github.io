@@ -1870,6 +1870,15 @@ async function buscarResultadoAPILoteria() {
     }
 
     // 1. Número do concurso e cabeçalho
+    const elementoInfo = document.getElementById("infoConcurso");
+    if (elementoInfo) {
+      // Captura o número e a data (usando fallback || caso a API use nomes diferentes)
+      const numeroConcurso = apiData.concurso || apiData.numero; 
+      const dataConcurso = apiData.data || apiData.dataApuracao;
+      
+      // Atualiza o texto na tela
+      elementoInfo.textContent = `Concurso ${numeroConcurso} - ${dataConcurso}`;
+    }
 
     // 2. Renderização das Dezenas Oficiais Coloridas
     const containerBolas = document.getElementById("numerosSorteioReal");
