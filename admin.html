@@ -842,8 +842,13 @@
           const jogo = Array.isArray(dados.jogo) ? dados.jogo : [];
 
           let acertos = 0;
+          const dezenasAcertadas = []; // 1. Criamos um array vazio para guardar apenas os números certos
+
           jogo.forEach(numero => {
-            if(resultadoOficial.includes(numero)) acertos++;
+            if(resultadoOficial.includes(numero)) {
+              acertos++;
+              dezenasAcertadas.push(numero); // 2. Guardamos a dezena caso ela seja um acerto
+            }
           });
 
           totalAcertosSomados += acertos;
@@ -852,7 +857,7 @@
           if (acertos >= 2) {
             await addDoc(collection(db, "grandes_acertos"), {
               usuarioEmail: dados.email || "Usuário Mark6",
-              dezenas: jogo,
+              dezenas: dezenasAcertadas, // 3. SUBSTITUIÇÃO CHAVE: trocamos 'jogo' por 'dezenasAcertadas'
               acertos: acertos,
               concurso: config.concurso || "Atual",
               dataPremio: Date.now()
