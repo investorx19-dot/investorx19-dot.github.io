@@ -874,6 +874,59 @@
     };
     const appFirebase = initializeApp(firebaseConfig);
     const db = getFirestore(appFirebase);
+
+      // 1. COLE AQUI AS FUNÇÕES DO MURAL
+  function mascararEmail(email) {
+    if (!email || !email.includes('@')) return "Membro Mark6";
+    const partes = email.split('@');
+    return `${partes[0].charAt(0)}***@${partes[1]}`;
+  }
+
+  async function carregarMuralDaComunidade() {
+    try {
+      const muralRef = collection(db, "grandes_acertos");
+      const q = query(muralRef, orderBy("dataPremio", "desc"), limit(20));
+      const snapshot = await getDocs(q);
+      
+      const containerMural = document.getElementById("muralComunidadeMark6");
+      if (!containerMural) return;
+
+      if (snapshot.empty) {
+        containerMural.innerHTML = "<p style='text-align: center; font-size: 13px; color: var(--muted);'>Nenhum prémio registado ainda. Seja o primeiro a ganhar!</p>";
+        return;
+      }
+
+      containerMural.innerHTML = "";
+
+      snapshot.forEach((docSnap) => {
+        const premio = docSnap.data();
+        const emailProtegido = mascararEmail(premio.usuarioEmail);
+        
+        let dezenasStr = Array.isArray(premio.dezenas) ? premio.dezenas.join(" - ") : (premio.dezenas || "Dezenas indisponíveis");
+        
+        let tituloPremio = `${premio.acertos} Acertos`;
+        if (premio.acertos === 6) tituloPremio = "Sena";
+        if (premio.acertos === 5) tituloPremio = "Quina";
+        if (premio.acertos === 4) tituloPremio = "Quadra";
+
+        const divCartao = document.createElement("div");
+        divCartao.style = "background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px;";
+        divCartao.innerHTML = `
+          <h4 style="color: var(--yellow); margin: 0 0 5px 0; font-size: 13px;">🏆 ${tituloPremio}</h4>
+          <p style="margin: 0; font-size: 12px; color: #fff;"><strong>Ganhador:</strong> ${emailProtegido}</p>
+          <p style="margin: 5px 0 0 0; font-size: 12px; color: #fff;"><strong>Dezenas:</strong> <span style="color: #00ffcc;">${dezenasStr}</span></p>
+        `;
+        containerMural.appendChild(divCartao);
+      });
+    } catch (erro) {
+      console.error("Erro ao carregar o mural:", erro);
+    }
+  }
+
+  // 2. CHAME A FUNÇÃO
+  carregarMuralDaComunidade();
+</script>
+
     // 🎯 ADICIONE O CÓDIGO DO BANNER BEM AQUI (LOGO ABAIXO DO DEB):
     let eventoInstalacao;
     const banner = document.getElementById('pwa-install-banner');
@@ -1987,75 +2040,6 @@ if (document.readyState === "loading") {
     }
     // Executa a função ao carregar a página
     document.addEventListener("DOMContentLoaded", capturarIndicacao);
-
-    // Função para ocultar parte do e-mail por motivos de privacidade
-function mascararEmail(email) {
-  if (!email || !email.includes('@')) return "Membro Mark6";
-  
-  const partes = email.split('@');
-  const nomeUsuario = partes[0];
-  const dominio = partes[1];
-  
-  const primeiraLetra = nomeUsuario.charAt(0);
-  return `${primeiraLetra}***@${dominio}`;
-}
-
-// Função para procurar os dados no Firebase e desenhar o Mural
-async function carregarMuralDaComunidade() {
-  try {
-    const muralRef = collection(db, "grandes_acertos");
-    
-    // Procura os 20 últimos acertos
-    const q = query(muralRef, orderBy("dataPremio", "desc"), limit(20));
-    const snapshot = await getDocs(q);
-
-    const containerMural = document.getElementById("muralComunidadeMark6");
-    if (!containerMural) return;
-
-    if (snapshot.empty) {
-      containerMural.innerHTML = "<p style='text-align: center; font-size: 13px; color: var(--muted);'>Nenhum prémio registado ainda. Seja o primeiro a ganhar!</p>";
-      return;
-    }
-
-    containerMural.innerHTML = ""; // Limpa o texto "Carregando..."
-
-    snapshot.forEach((doc) => {
-      const dados = doc.data();
-      const emailProtegido = mascararEmail(dados.usuarioEmail);
-      
-      // Formata as dezenas para exibição
-      let dezenasStr = "";
-      if (Array.isArray(dados.dezenas)) {
-        dezenasStr = dados.dezenas.join(" - ");
-      } else if (typeof dados.dezenas === 'string') {
-        dezenasStr = dados.dezenas;
-      } else {
-        dezenasStr = "Dezenas indisponíveis";
-      }
-      
-      // Define o título consoante o número de acertos
-      let tituloPremio = `${dados.acertos} Acertos`;
-      if (dados.acertos === 6) tituloPremio = "Sena";
-      if (dados.acertos === 5) tituloPremio = "Quina";
-      if (dados.acertos === 4) tituloPremio = "Quadra";
-
-      // Cria e insere o cartão HTML para cada ganhador
-      const divCartao = document.createElement("div");
-      divCartao.style = "background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px;";
-      
-      divCartao.innerHTML = `
-        <h4 style="color: var(--yellow); margin: 0 0 5px 0; font-size: 13px;">🏆 ${tituloPremio}</h4>
-        <p style="margin: 0; font-size: 12px; color: #fff;"><strong>Ganhador:</strong> ${emailProtegido}</p>
-        <p style="margin: 5px 0 0 0; font-size: 12px; color: #fff;"><strong>Dezenas:</strong> <span style="color: #00ffcc;">${dezenasStr}</span></p>
-      `;
-      
-      containerMural.appendChild(divCartao);
-    });
-
-  } catch (erro) {
-    console.error("Erro ao carregar o mural:", erro);
-  }
-}
 
 // Executa a função assim que o ecrã terminar de carregar
 document.addEventListener("DOMContentLoaded", () => {
