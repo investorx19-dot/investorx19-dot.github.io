@@ -854,7 +854,7 @@
           totalAcertosSomados += acertos;
           totalJogosProcessados++;
 
-          if (acertos >= 2) {
+          if (acertos >= 4) {
             await addDoc(collection(db, "grandes_acertos"), {
               usuarioEmail: dados.email || "Usuário Mark6",
               dezenas: dezenasAcertadas, // 3. SUBSTITUIÇÃO CHAVE: trocamos 'jogo' por 'dezenasAcertadas'
