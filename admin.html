@@ -664,7 +664,6 @@
   </div>
 
   <script type="module">
-    const ADMIN_EMAIL = "decarvalho01@gmail.com";
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
@@ -698,6 +697,8 @@
       messagingSenderId: "924943702876",
       appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
+
+    const ADMIN_EMAIL = "decarvalho01@gmail.com";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -1456,7 +1457,7 @@
       if (!modoLinhasVazias || !linhasVaziasManuais) return;
       linhasVaziasManuais.style.display = modoLinhasVazias.value === "manual" ? "grid" : "none";
     }
-    
+
     async function loadConfig() {
       try {
         const ref = doc(db, "config", "global");
