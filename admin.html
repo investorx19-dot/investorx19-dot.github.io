@@ -1450,6 +1450,13 @@
       }
     });
 
+    function atualizarExibicaoLinhasVazias() {
+      const modoLinhasVazias = document.getElementById("modoLinhasVazias");
+      const linhasVaziasManuais = document.getElementById("linhasVaziasManuais");
+      if (!modoLinhasVazias || !linhasVaziasManuais) return;
+      linhasVaziasManuais.style.display = modoLinhasVazias.value === "manual" ? "grid" : "none";
+    }
+    
     async function loadConfig() {
       try {
         const ref = doc(db, "config", "global");
@@ -1503,7 +1510,7 @@
         toast("Erro ao carregar config.", "error");
       }
     }
-    
+
     // LÓGICA DA TABELA DE COMISSÕES POR REPRESENTANTE
 // =======================================================
 async function carregarTabelaComissoes() {
