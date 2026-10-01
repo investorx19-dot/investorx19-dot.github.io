@@ -713,7 +713,45 @@
 
     if ($("adminEmailHint")) $("adminEmailHint").textContent = ADMIN_EMAIL;
     if ($("adminEmail")) $("adminEmail").placeholder = ADMIN_EMAIL;
+     
+    // Monitora o status de login para mostrar/esconder o painel
+    onAuthStateChanged(auth, async (user) => {
+      const loginCard = document.getElementById("loginCard");
+      const appDiv = document.getElementById("app");
+      const who = document.getElementById("who");
+      const btnLogout = document.getElementById("btnLogout");
 
+      if (user) {
+        // Se logou com sucesso, esconde o login e mostra o painel
+        if (loginCard) loginCard.style.display = "none";
+        if (appDiv) appDiv.style.display = "block";
+        
+        if (who) who.textContent = user.email;
+        if (btnLogout) btnLogout.style.display = "inline-block";
+
+        // Dispara o carregamento dos dados
+        await loadConfig();
+        await carregarResumoAdmin();
+        await loadUsers();
+        await carregarJogosGerados();
+      } else {
+        // Se não tem usuário logado, trava na tela de login
+        if (loginCard) loginCard.style.display = "block";
+        if (appDiv) appDiv.style.display = "none";
+        
+        if (who) who.textContent = "Não autenticado";
+        if (btnLogout) btnLogout.style.display = "none";
+      }
+    });
+
+    // Ativa o botão de Sair
+    const btnLogout = document.getElementById("btnLogout");
+    if (btnLogout) {
+      btnLogout.addEventListener("click", async () => {
+        await signOut(auth);
+      });
+    }
+    
     function toast(msg, type="ok"){
       if (!toastEl) return;
       toastEl.className = "toast show " + (type === "error" ? "error" : "ok");
