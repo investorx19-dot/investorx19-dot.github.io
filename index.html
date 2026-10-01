@@ -910,13 +910,18 @@
         if (premio.acertos === 5) tituloPremio = "Quina";
         if (premio.acertos === 4) tituloPremio = "Quadra";
 
+       // Captura o número do concurso (se for um registo antigo sem número, mostra "N/D")
+        const numeroConcurso = premio.concurso || "N/D";
+
         const divCartao = document.createElement("div");
         divCartao.style = "background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px;";
         divCartao.innerHTML = `
           <h4 style="color: var(--yellow); margin: 0 0 5px 0; font-size: 13px;">🏆 ${tituloPremio}</h4>
+          <p style="margin: 0; font-size: 12px; color: #fff;"><strong>Concurso:</strong> ${numeroConcurso}</p>
           <p style="margin: 0; font-size: 12px; color: #fff;"><strong>Ganhador:</strong> ${emailProtegido}</p>
           <p style="margin: 5px 0 0 0; font-size: 12px; color: #fff;"><strong>Dezenas:</strong> <span style="color: #00ffcc;">${dezenasStr}</span></p>
         `;
+        
         containerMural.appendChild(divCartao);
       });
     } catch (erro) {
