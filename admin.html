@@ -1449,6 +1449,61 @@
         botaoApi.addEventListener("click", sincronizarMegaSenaApi);
       }
     });
+
+    async function loadConfig() {
+      try {
+        const ref = doc(db, "config", "global");
+        const snap = await getDoc(ref);
+
+        let linhasAtivas = [];
+        let dezenasAnteriores = [];
+        let dezenasAtrasadas = [];
+        let resultadoOficial = [];
+        let modoLinhasVazias = "automatico";
+        let repeticaoUltimoConcurso = "automatico";
+        let modoAtrasadas = "nenhum";
+
+        if (snap.exists()) {
+          const data = snap.data();
+          linhasAtivas = data.linhasAtivas || [];
+          dezenasAnteriores = data.dezenasAnteriores || [];
+          dezenasAtrasadas = data.dezenasAtrasadas || [];
+          resultadoOficial = data.resultadoOficial || [];
+          modoLinhasVazias = data.modoLinhasVazias || "automatico";
+          repeticaoUltimoConcurso = String(data.repeticaoUltimoConcurso ?? "automatico");
+          modoAtrasadas = data.modoAtrasadas || "nenhum";
+          
+          // Preserva na memória o que já está salvo caso o admin clique em Salvar sem sincronizar a API antes
+          premiacoesTemporarias = data.ultimaPremiacao || null;
+          estimativaProximoTemporaria = data.valorEstimadoProximo || null;
+        }
+
+        const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
+        const elRepeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso");
+        const elModoAtrasadas = document.getElementById("modoAtrasadas");
+
+        if (elModoLinhasVazias) elModoLinhasVazias.value = modoLinhasVazias;
+        if (elRepeticaoUltimoConcurso) elRepeticaoUltimoConcurso.value = repeticaoUltimoConcurso;
+        if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
+
+        const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          const numeroLinha = Number(cb.value);
+          cb.checked = !linhasAtivas.includes(numeroLinha);
+        });
+
+        setInputsFromArray(".anterior", dezenasAnteriores);
+        setInputsFromArray(".atrasada", dezenasAtrasadas);
+        setInputsFromArray(".resultado", resultadoOficial);
+
+        atualizarExibicaoLinhasVazias();
+        toast("Config carregada.", "ok");
+      } catch (err) {
+        console.error(err);
+        toast("Erro ao carregar config.", "error");
+      }
+    }
+    
     // LÓGICA DA TABELA DE COMISSÕES POR REPRESENTANTE
 // =======================================================
 async function carregarTabelaComissoes() {
