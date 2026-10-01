@@ -498,7 +498,7 @@
       </div>
 
       <div class="row" style="margin-top:12px;justify-content:flex-end">
-        <button id="btnLogin" class="btn primary">Entrar</button>
+       <button id="btnLogin" type="button">Entrar</button>
       </div>
 
       <div class="sep"></div>
@@ -1120,6 +1120,32 @@
     $("btnSaveConfig").addEventListener("click", saveConfig);
     $("btnReloadUsers").addEventListener("click", loadUsers);
 
+// Código de Login corrigido para não piscar a página
+    const btnLogin = document.getElementById("btnLogin");
+    if (btnLogin) {
+      btnLogin.addEventListener("click", async (e) => {
+        e.preventDefault(); // Impede a página de recarregar
+        
+        const emailInput = document.getElementById("adminEmail");
+        const passInput = document.getElementById("adminPass");
+        
+        if (!emailInput || !passInput) return;
+
+        const email = emailInput.value.trim();
+        const pass = passInput.value;
+        
+        console.log("1. Tentando entrar com:", email);
+        
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+          console.log("2. Autenticação com sucesso!");
+        } catch (err) {
+          console.error("Erro detalhado do Firebase:", err);
+          alert("Falha no login: verifique o e-mail e a senha.");
+        }
+      });
+    }
+        
     async function loadUsers(){
       const tbody = $("usersTbody");
       if(!tbody) return;
