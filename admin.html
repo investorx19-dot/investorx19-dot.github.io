@@ -989,21 +989,20 @@
         console.error("Erro ao carregar resumo admin e KPIs:", err);
       }
     }
-    function monitorarGrandesAcertos() {
+   function monitorarGrandesAcertos() {
   const container = document.getElementById('container-grandes-acertos');
   if (!container) return;
 
   const q = query(
     collection(db, "grandes_acertos"),
-    where("acertos", ">=", 2),
-    orderBy("dataPremio", "desc"), // Primeiro campo do índice
-    orderBy("acertos", "desc"),    // Segundo campo do índice
+    where("acertos", ">=", 4), // <-- ALTERADO PARA 4 (apenas Quadra, Quina e Sena)
+    orderBy("dataPremio", "desc"), 
+    orderBy("acertos", "desc"),    
   );
 
   onSnapshot(q, (querySnapshot) => {
     if (querySnapshot.empty) {
-      // Atualizado para englobar todas as faixas de acertos
-      container.innerHTML = '<div class="muted">Nenhum acerto de Duque a Sena registrado recentemente.</div>';
+      container.innerHTML = '<div class="muted">Nenhum acerto de Quadra, Quina ou Sena registrado recentemente.</div>';
       return;
     }
 
@@ -1015,7 +1014,6 @@
       let badgeClass = "tag-simples"; 
       let nomePremio = "Duque";
       
-      // Mapeamento completo de 2 a 6 acertos
       if (dado.acertos === 6) {
         badgeClass = "tag-bolao";
         nomePremio = "Sena";
@@ -1025,21 +1023,17 @@
       } else if (dado.acertos === 4) {
         badgeClass = "tag-simples"; 
         nomePremio = "Quadra";
-      } else if (dado.acertos === 3) {
-        badgeClass = "tag-simples"; 
-        nomePremio = "Terno";
-      } else if (dado.acertos === 2) {
-        badgeClass = "tag-simples"; 
-        nomePremio = "Duque";
       }
 
       const dezenasFormatadas = dado.dezenas ? dado.dezenas.join(" - ") : "N/A";
       const dataFormatada = formatarDataHora(dado.dataPremio);
 
-      // Define uma cor de destaque lateral diferente baseada no acerto
       let corBorda = 'var(--blue)';
       if (dado.acertos === 6) corBorda = 'var(--green)';
       else if (dado.acertos === 5) corBorda = 'var(--purple, var(--blue))';
+
+      // Variável que puxa o concurso do banco de dados (se não existir, mostra N/D)
+      const numeroConcurso = dado.concurso ? dado.concurso : "N/D";
 
       const cardHTML = `
         <div class="historico-item" style="margin-bottom: 8px; border-left: 4px solid ${corBorda};">
@@ -1051,6 +1045,8 @@
             ${escapeHtml(dezenasFormatadas)}
           </div>
           <div class="small">
+            <!-- LINHA DO CONCURSO ADICIONADA AQUI 👇 -->
+            <span>Concurso: ${escapeHtml(numeroConcurso)}</span><br>
             <span>Usuário: ${escapeHtml(dado.usuarioEmail)}</span><br>
             <span>Processado em: ${escapeHtml(dataFormatada)}</span>
           </div>
@@ -1060,113 +1056,6 @@
     });
   });
 }
-
-    $("btnLogin").addEventListener("click", async () => {
-      const email = $("adminEmail").value.trim();
-      const pass = $("adminPass").value;
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-      } catch (err) {
-        console.error(err);
-        toast("Falha no login (email ou senha).", "error");
-      }
-    });
-
-    $("btnLogout").addEventListener("click", async () => {
-      await signOut(auth);
-      toast("Você saiu.", "ok");
-    });
-
-    $("btnReload").addEventListener("click", () => location.reload());
-
-    onAuthStateChanged(auth, async (user) => {
-      if(!user){
-        $("who").textContent = "Não autenticado";
-        $("btnLogout").style.display = "none";
-        $("loginCard").style.display = "block";
-        $("app").style.display = "none";
-        return;
-      }
-
-      const email = normEmail(user.email);
-      $("who").textContent = "Logado: " + email;
-      $("btnLogout").style.display = "inline-block";
-
-      if(email !== normEmail(ADMIN_EMAIL)){
-        toast("Este usuário não é admin. Saindo...", "error");
-        await signOut(auth);
-        return;
-      }
-
-      $("loginCard").style.display = "none";
-      $("app").style.display = "block";
-
-      await loadConfig();
-      await loadUsers();
-      await carregarResumoAdmin();
-      await carregarJogosGerados();
-    });
-
-    function atualizarExibicaoLinhasVazias() {
-      const modoLinhasVazias = document.getElementById("modoLinhasVazias");
-      const linhasVaziasManuais = document.getElementById("linhasVaziasManuais");
-      if (!modoLinhasVazias || !linhasVaziasManuais) return;
-      linhasVaziasManuais.style.display = modoLinhasVazias.value === "manual" ? "grid" : "none";
-    }
-
-    async function loadConfig() {
-      try {
-        const ref = doc(db, "config", "global");
-        const snap = await getDoc(ref);
-
-        let linhasAtivas = [];
-        let dezenasAnteriores = [];
-        let dezenasAtrasadas = [];
-        let resultadoOficial = [];
-        let modoLinhasVazias = "automatico";
-        let repeticaoUltimoConcurso = "automatico";
-        let modoAtrasadas = "nenhum";
-
-        if (snap.exists()) {
-          const data = snap.data();
-          linhasAtivas = data.linhasAtivas || [];
-          dezenasAnteriores = data.dezenasAnteriores || [];
-          dezenasAtrasadas = data.dezenasAtrasadas || [];
-          resultadoOficial = data.resultadoOficial || [];
-          modoLinhasVazias = data.modoLinhasVazias || "automatico";
-          repeticaoUltimoConcurso = String(data.repeticaoUltimoConcurso ?? "automatico");
-          modoAtrasadas = data.modoAtrasadas || "nenhum";
-          
-          // Preserva na memória o que já está salvo caso o admin clique em Salvar sem sincronizar a API antes
-          premiacoesTemporarias = data.ultimaPremiacao || null;
-          estimativaProximoTemporaria = data.valorEstimadoProximo || null;
-        }
-
-        const elModoLinhasVazias = document.getElementById("modoLinhasVazias");
-        const elRepeticaoUltimoConcurso = document.getElementById("repeticaoUltimoConcurso");
-        const elModoAtrasadas = document.getElementById("modoAtrasadas");
-
-        if (elModoLinhasVazias) elModoLinhasVazias.value = modoLinhasVazias;
-        if (elRepeticaoUltimoConcurso) elRepeticaoUltimoConcurso.value = repeticaoUltimoConcurso;
-        if (elModoAtrasadas) elModoAtrasadas.value = modoAtrasadas;
-
-        const checkboxes = document.querySelectorAll('#linhasVaziasManuais input[type="checkbox"]');
-        checkboxes.forEach(cb => {
-          const numeroLinha = Number(cb.value);
-          cb.checked = !linhasAtivas.includes(numeroLinha);
-        });
-
-        setInputsFromArray(".anterior", dezenasAnteriores);
-        setInputsFromArray(".atrasada", dezenasAtrasadas);
-        setInputsFromArray(".resultado", resultadoOficial);
-
-        atualizarExibicaoLinhasVazias();
-        toast("Config carregada.", "ok");
-      } catch (err) {
-        console.error(err);
-        toast("Erro ao carregar config.", "error");
-      }
-    }
 
     async function saveConfig() {
       try {
