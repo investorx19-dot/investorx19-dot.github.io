@@ -1363,8 +1363,9 @@
         toast("Falha ao alterar privilégio do usuário.", "error");
       }
     }
-    async function liberarPlano(userDocId, planoNome){
-      try{
+    async function liberarPlano(userDocId, planoNome) {
+    console.log("Botão clicado! Tentando liberar o plano:", planoNome, "para o usuário:", userDocId);
+    try {
         const agora = Date.now();
         let plan = "basico";
         let maxDezenas = 6;
