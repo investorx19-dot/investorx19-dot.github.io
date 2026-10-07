@@ -1324,6 +1324,19 @@
           });
         });
       
+      // Configura o clique dos botões de alterar plano
+tbody.querySelectorAll('.acoes-dias button').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const userId = btn.getAttribute('data-userid');
+        const planoNome = btn.getAttribute('data-plano');
+        
+        if(userId && planoNome) {
+            console.log("Botão de plano clicado!", planoNome, userId);
+            await liberarPlano(userId, planoNome);
+        }
+    });
+});
+
       } catch(err){
         console.error(err);
         tbody.innerHTML = '<tr><td colspan="8" class="small">Erro ao carregar usuários.</td></tr>';
