@@ -608,6 +608,19 @@
   placeholder="Telefone com DDD. Ex: 21999887766"
   maxlength="15"
 />
+ 
+<div class="input-group">
+  <label for="cpf">CPF</label>
+  <input 
+    type="text" 
+    id="cpf" 
+    name="cpf" 
+    placeholder="000.000.000-00" 
+    maxlength="14" 
+    required
+  />
+  <span id="cpf-error" style="display:none; color: #ff4d4d; font-size: 12px; margin-top: 4px;">CPF inválido</span>
+</div>
 
       <div class="acoes-login">
         <button id="btnCadastrar" type="button">Cadastrar</button>
@@ -2051,6 +2064,95 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarMuralDaComunidade();
 });
 
+// Função para validar os dígitos verificadores do CPF
+function validarCPF(cpf) {
+  cpf = cpf.replace(/[^\d]+/g, ''); // Remove tudo o que não for dígito
+
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+  let soma = 0;
+  let resto;
+
+  for (let i = 1; i <= 9; i++) {
+    soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+  }
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+  soma = 0;
+  for (let i = 1; i <= 10; i++) {
+    soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+  }
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+  return true;
+}
+
+// Máscara dinâmica para formatar o CPF enquanto o utilizador escreve
+const cpfInput = document.getElementById('cpf');
+if (cpfInput) {
+  cpfInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 11) value = value.slice(0, 11);
+
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+    e.target.value = value;
+  });
+}
+
+// Exemplo de integração no evento de submissão do formulário de registo
+const formRegisto = document.getElementById('form-registo'); // Substitua pelo ID real do seu formulário
+if (formRegisto) {
+  formRegisto.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const cpfValue = cpfInput.value;
+    const errorSpan = document.getElementById('cpf-error');
+    const emailValue = document.getElementById('email').value; // Substitua pelo ID do campo de email
+
+    // 1. Validar o CPF antes de enviar
+    if (!validarCPF(cpfValue)) {
+      errorSpan.style.display = 'block';
+      errorSpan.textContent = 'Insira um CPF válido para continuar.';
+      return;
+    }
+    errorSpan.style.display = 'none';
+
+    // 2. Enviar dados para o backend (backend/server.js)
+    try {
+      const response = await fetch('/api/registar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          cpf: cpfValue, 
+          email: emailValue 
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Se o backend recusar (ex: CPF já registado)
+        alert(data.erro || 'Erro ao realizar o registo.');
+        return;
+      }
+
+      // Sucesso: 7 dias grátis ativados
+      alert('Registo efetuado com sucesso! Bem-vindo ao Mark6.');
+      window.location.href = '/estatisticas.html'; // Redirecionar para a aplicação
+
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      alert('Não foi possível ligar ao servidor. Tente novamente.');
+    }
+  });
+}
 </script>
 
 <!-- Importação do Mapa de Calor -->
