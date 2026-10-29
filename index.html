@@ -1613,6 +1613,9 @@ async function gerarJogoUsuario() {
 
       if (!validacao.autorizado) {
         alert(validacao.mensagem || "Seu período de teste expirou. Escolha um plano abaixo.");
+        // 🔴 OCULTAR O PAINEL DE JOGOS / GERADOR AQUI:
+    const painelGerador = document.querySelector("#app"); // ou o ID/classe do seu gerador
+    if (painelGerador) painelGerador.style.display = "none";
         window.scrollTo({
           top: document.querySelector(".planos-container").offsetTop,
           behavior: "smooth"
@@ -1622,6 +1625,9 @@ async function gerarJogoUsuario() {
     } catch (errVerificacao) {
       console.warn("Falha ao consultar validação remota, aplicando trava local preventiva:", errVerificacao);
       if (usuarioAtual.paymentStatus === "expired" || usuarioAtual.trialAtivo === false) {
+        // 🔴 OCULTAR O PAINEL DE JOGOS / GERADOR AQUI:
+        const painelGerador = document.querySelector("#app");
+        if (painelGerador) painelGerador.style.display = "none";
         alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo.");
         return;
       }
