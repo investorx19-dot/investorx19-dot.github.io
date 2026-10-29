@@ -1439,8 +1439,8 @@ async function cadastrar() {
     localStorage.setItem('emailUsuario', email);
 
     mostrarApp();
-    alert("Cadastro realizado com sucesso! Você ganhou 7 dias grátis de acesso 🎉");
-    alert("Cadastro realizado com sucesso! Você ganhou 7 dias grátis de acesso 🎉");
+    alert("Cadastro realizado com sucesso! Você ganhou 3 dias grátis de acesso 🎉");
+    alert("Cadastro realizado com sucesso! Você ganhou 3 dias grátis de acesso 🎉");
   } catch (erro) {
     localStorage.setItem('mark6_logado', 'true');
     console.error("Erro no cadastro:", erro);
@@ -1556,7 +1556,7 @@ usuarioAtual = user;
     if (statusAcesso.emTrial) {
       alert("Seu teste grátis está ativo. Restam " + statusAcesso.diasRestantes + " dia(s).");
     } else if (statusAcesso.trialExpirado) {
-      alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para continuar gerando jogos!");
+      alert("Seu período de 3 dias grátis terminou. Escolha um plano abaixo para continuar gerando jogos!");
     }
 
   } catch (erro) {
@@ -1628,7 +1628,7 @@ async function gerarJogoUsuario() {
         // 🔴 OCULTAR O PAINEL DE JOGOS / GERADOR AQUI:
         const painelGerador = document.querySelector("#app");
         if (painelGerador) painelGerador.style.display = "none";
-        alert("Seu período de 7 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo.");
+        alert("Seu período de 3 dias grátis terminou. Escolha um plano abaixo para manter seu acesso ativo.");
         return;
       }
     }
@@ -2175,7 +2175,7 @@ if (formRegisto) {
         return;
       }
 
-      // Sucesso: 7 dias grátis ativados
+      // Sucesso: 3 dias grátis ativados
       alert('Registo efetuado com sucesso! Bem-vindo ao Mark6.');
       window.location.href = '/estatisticas.html'; // Redirecionar para a aplicação
 
