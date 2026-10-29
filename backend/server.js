@@ -381,7 +381,8 @@ app.post("/webhook-mercadopago", async function (req, res) {
       valorPlano: dadosPlano.preco,
       mercadoPagoPaymentId: String(idPagamento),
       paidAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
+      cpf: cpfLimpo,
     }, { merge: true });
     // === NOVA LÓGICA DE COMISSIONAMENTO DE REPRESENTANTE ===
     // 1. Buscamos o documento completo do usuário para ver se ele tem um representante

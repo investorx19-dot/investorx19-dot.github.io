@@ -1333,6 +1333,22 @@ async function cadastrar() {
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
 
+   // 1. Capturar o valor do CPF (ajuste 'elCpf' se a sua variável de elemento tiver outro nome, ou use document.getElementById('cpf').value)
+  const cpf = elCpf.value; 
+  const cpfLimpo = cpf.replace(/\D/g, '');
+
+  // 2. Incluir o CPF na verificação de campos preenchidos
+  if (!nome || !email || !telefone || !cpf) {
+    alert("Preencha nome, e-mail, telefone e CPF.");
+    return;
+  }
+
+  // 3. Validar se o CPF é matematicamente correto
+  if (!validarCPF(cpf)) {
+    alert("CPF inválido. Por favor, insira um CPF real.");
+    return;
+  }
+  
   if (!nome || !email || !telefone) {
     alert("Preencha nome, e-mail e telefone.");
     return;
