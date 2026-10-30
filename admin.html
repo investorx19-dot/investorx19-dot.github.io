@@ -1190,7 +1190,7 @@
     async function loadUsers(){
       const tbody = $("usersTbody");
       if(!tbody) return;
-      tbody.innerHTML = '<tr><td colspan="8" class="small">Carregando...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="small">Carregando...</td></tr>';
 
       try{
         const snap = await getDocs(collection(db, "users"));
@@ -1341,7 +1341,7 @@ tbody.querySelectorAll('.acoes-dias button').forEach(btn => {
 
       } catch(err){
         console.error(err);
-        tbody.innerHTML = '<tr><td colspan="8" class="small">Erro ao carregar usuários.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="small">Erro ao carregar usuários.</td></tr>';
         toast("Erro ao carregar usuários.", "error");
       }
     }
