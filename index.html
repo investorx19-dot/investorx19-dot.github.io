@@ -1337,7 +1337,8 @@ async function cadastrar() {
   const nome = elNome.value.trim();
   const email = normalizarEmail(elEmail.value);
   const telefone = normalizarTelefone(elTelefone.value);
-
+  const elCpf = document.getElementById('cpf'); // Substitua 'cpf' pelo id exato do seu input no HTML se for diferente
+  
    // 1. Capturar o valor do CPF (ajuste 'elCpf' se a sua variável de elemento tiver outro nome, ou use document.getElementById('cpf').value)
   const cpf = elCpf.value; 
   const cpfLimpo = cpf.replace(/\D/g, '');
@@ -1354,8 +1355,8 @@ async function cadastrar() {
     return;
   }
 
-  if (!nome || !email || !telefone) {
-    alert("Preencha nome, e-mail e telefone.");
+  if (!nome || !email || !telefone || !cpf) {
+    alert("Preencha nome, e-mail, telefone e CPF.");
     return;
   }
 
