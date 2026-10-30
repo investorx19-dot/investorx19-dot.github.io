@@ -1268,30 +1268,32 @@
                 ${granted ? "Liberado" : "Bloqueado"}
               </span>
             </td>
-            <td class="right" style="min-width: 240px;">
-              <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end">
+            <td class="right" style="text-align: right; min-width: 180px;">
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                 
+                <!-- Botão de Bloquear / Liberar -->
                 <button class="btn ${granted ? "danger" : "success"} btn-toggle-access"
                         data-userid="${escapeHtml(u.id)}"
-                        data-granted="${granted}">
-                        style="padding: 6px 12px; font-size: 12px; cursor: pointer;">              
+                        data-granted="${granted}"
+                        style="padding: 4px 10px; font-size: 11px; cursor: pointer;">
                   ${granted ? "Bloquear" : "Liberar"}
                 </button>
 
-                <!-- BOTÃO DE REPRESENTANTE -->
+                <!-- Botão de Representante -->
                 <button class="btn ${u.role === 'representante' ? 'danger' : 'primary'} btn-toggle-rep"
-                      style="padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 4px;"
-                      data-userid="${escapeHtml(u.id)}"
-                      data-isrep="${u.role === 'representante'}">
-                ${u.role === 'representante' ? "Remover Rep" : "Tornar Rep"}
-              </button>
-            </td>
-                <div class="acoes-dias">
-                  <button data-plano="basico" data-userid="${escapeHtml(u.id)}">Básico</button>
-                  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}">Intermediário</button>
-                  <button data-plano="premium" data-userid="${escapeHtml(u.id)}">Premium</button>
+                        style="padding: 4px 10px; font-size: 11px; cursor: pointer;"
+                        data-userid="${escapeHtml(u.id)}"
+                        data-isrep="${u.role === 'representante'}">
+                  ${u.role === 'representante' ? "Remover Rep" : "Tornar Rep"}
+                </button>
+
+                <!-- Botões de Planos -->
+                <div class="acoes-dias" style="display: flex; gap: 4px;">
+                  <button data-plano="basico" data-userid="${escapeHtml(u.id)}" style="font-size: 10px; padding: 2px 6px;">Básico</button>
+                  <button data-plano="intermediario" data-userid="${escapeHtml(u.id)}" style="font-size: 10px; padding: 2px 6px;">Interm.</button>
+                  <button data-plano="premium" data-userid="${escapeHtml(u.id)}" style="font-size: 10px; padding: 2px 6px;">Premium</button>
                 </div>
-                
+
               </div>
             </td>
           `;
