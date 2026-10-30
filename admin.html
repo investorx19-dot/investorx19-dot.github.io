@@ -616,6 +616,7 @@
                   <th>Nome</th>
                   <th>E-mail</th>
                   <th>Telefone</th>
+                  <th class="th">CPF</th>
                   <th>Plano</th>
                   <th>Pagamento</th>
                   <th>Vencimento</th>
@@ -624,7 +625,7 @@
                 </tr>
               </thead>
               <tbody id="usersTbody">
-                <tr><td colspan="8" class="small">Carregando...</td></tr>
+                <tr><td colspan="9" class="small">Carregando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1221,7 +1222,7 @@
         }
 
         if (uniqueUsers.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" class="small">Nenhum usuário encontrado.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" class="small">Nenhum usuário encontrado.</td></tr>';
           return;
         }
 
@@ -1257,6 +1258,7 @@
             <td>${escapeHtml(u.nome || u.name || "(sem nome)")}</td>
             <td class="mono">${escapeHtml(u.email || "")}</td>
             <td class="mono">${escapeHtml(phone || "-")}</td>
+            <td class="mono">${escapeHtml(u.cpf || "-")}</td>
             <td>${escapeHtml(plano)}</td>
             <td>${escapeHtml(pagamento)}</td>
             <td class="mono">${escapeHtml(vencimento)}</td>
