@@ -37,6 +37,9 @@ async function carregarHeatmap() {
     }
 
     const dadosDezenas = docSnap.data().dezenas;
+
+console.log("📊 Dados de frequência carregados do concurso mais recente:", dadosDezenas);
+
     let maxFreq = 0;
     let minFreq = Infinity;
 
