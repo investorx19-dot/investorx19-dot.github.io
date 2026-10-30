@@ -1412,37 +1412,14 @@ async function cadastrar() {
 
     usuarioAtual = {
       id: referencia.id,
-      nome: nome,
-      email: email,
-      telefone: telefone,
-      accessGranted: true,
-      plan: "basico",
-      maxDezenas: 6,
-      maxCotas: 1,
-      limiteJogosDia: 3,
-      paymentStatus: "trial",
-      trialAtivo: true,
-      trialInicio: novoUsuario.trialInicio,
-      trialFim: novoUsuario.trialFim,
-      createdAt: novoUsuario.createdAt,
-      updatedAt: novoUsuario.updatedAt,
+      ...novoUsuario
     };
 
-    mostrarApp();
-    usuarioAtual = {
-      id: referencia.id,
-      nome: nome,
-      email: email,
-      // ... restante do objeto que já está aí
-    };
-
-    // O LUGAR CORRETO É AQUI:
     localStorage.setItem('mark6_logado', 'true');
     localStorage.setItem('emailUsuario', email);
 
     mostrarApp();
-    alert("Cadastro realizado com sucesso! Você ganhou 3 dias grátis de acesso 🎉");
-    alert("Cadastro realizado com sucesso! Você ganhou 3 dias grátis de acesso 🎉");
+    alert("Registo realizado com sucesso! O seu teste grátis de 3 dias está ativo.");
   } catch (erro) {
     localStorage.setItem('mark6_logado', 'true');
     console.error("Erro no cadastro:", erro);
