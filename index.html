@@ -906,19 +906,49 @@
     return `${partes[0].charAt(0)}***@${partes[1]}`;
   }
 
-  if (dados.premiacao) {
-    // Sena
-    if (document.getElementById("senaValor")) document.getElementById("senaValor").innerText = `R$ ${dados.premiacao.sena.valor}`;
-    if (document.getElementById("senaGanhadores")) document.getElementById("senaGanhadores").innerText = `${dados.premiacao.sena.ganhadores} ganhadores`;
+ async function carregarUltimoConcurso() {
+    try {
+        const docRef = doc(db, "configuracoes", "ultimo_concurso");
+        const docSnap = await getDoc(docRef);
 
-    // Quina
-    if (document.getElementById("quinaValor")) document.getElementById("quinaValor").innerText = `R$ ${dados.premiacao.quina.valor}`;
-    if (document.getElementById("quinaGanhadores")) document.getElementById("quinaGanhadores").innerText = `${dados.premiacao.quina.ganhadores} ganhadores`;
+        if (docSnap.exists()) {
+            const dados = docSnap.data(); // <--- A variável 'dados' é criada aqui!
 
-    // Quadra
-    if (document.getElementById("quadraValor")) document.getElementById("quadraValor").innerText = `R$ ${dados.premiacao.quadra.valor}`;
-    if (document.getElementById("quadraGanhadores")) document.getElementById("quadraGanhadores").innerText = `${dados.premiacao.quadra.ganhadores} ganhadores`;
+            // 1. Atualizar Concurso e Data
+            const labelConcurso = document.getElementById("labelConcurso");
+            if (labelConcurso) {
+                labelConcurso.innerText = `Concurso ${dados.concurso} - ${dados.data}`;
+            }
+
+            // 2. Preencher as dezenas
+            if (dados.dezenas && Array.isArray(dados.dezenas)) {
+                dados.dezenas.forEach((dezena, index) => {
+                    const caixa = document.getElementById(`dezena_${index + 1}`);
+                    if (caixa) caixa.innerText = dezena;
+                });
+            }
+
+            // 3. Preencher a premiação (Sena, Quina, Quadra)
+            if (dados.premiacao) {
+                if (document.getElementById("senaValor")) 
+                    document.getElementById("senaValor").innerText = `R$ ${dados.premiacao.sena.valor || dados.premiacao.sena}`;
+                
+                if (document.getElementById("quinaValor")) 
+                    document.getElementById("quinaValor").innerText = `R$ ${dados.premiacao.quina.valor || dados.premiacao.quina}`;
+                
+                if (document.getElementById("quadraValor")) 
+                    document.getElementById("quadraValor").innerText = `R$ ${dados.premiacao.quadra.valor || dados.premiacao.quadra}`;
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao carregar último concurso:", error);
+    }
 }
+
+// Chamar a função quando a página carregar
+document.addEventListener("DOMContentLoaded", () => {
+    carregarUltimoConcurso();
+});
 
   async function carregarMuralDaComunidade() {
     try {
