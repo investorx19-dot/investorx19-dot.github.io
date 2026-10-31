@@ -587,6 +587,41 @@
               <button type="button" id="btnSincronizarApi" class="btn success" style="padding: 6px 12px; font-size: 13px;">🔄 Capturar da API</button>
             </div>
           </div>
+     
+          <div class="manual-entry-section" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>Lançamento Manual de Concurso</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+        <div>
+            <label>Concurso:</label>
+            <input type="number" id="manualConcurso" placeholder="Ex: 2790" style="width: 100%; padding: 5px;">
+        </div>
+        <div>
+            <label>Data:</label>
+            <input type="date" id="manualData" style="width: 100%; padding: 5px;">
+        </div>
+        <div>
+            <label>Sena (R$):</label>
+            <input type="text" id="manualSena" placeholder="0,00" style="width: 100%; padding: 5px;">
+        </div>
+        <div>
+            <label>Quina (R$):</label>
+            <input type="text" id="manualQuina" placeholder="0,00" style="width: 100%; padding: 5px;">
+        </div>
+        <div>
+            <label>Quadra (R$):</label>
+            <input type="text" id="manualQuadra" placeholder="0,00" style="width: 100%; padding: 5px;">
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 10px;">
+        <label>Dezenas Sorteadas (separadas por vírgula ou espaço):</label>
+        <input type="text" id="manualDezenas" placeholder="Ex: 05, 09, 16, 40, 41, 59" style="width: 100%; padding: 8px;">
+    </div>
+
+    <button type="button" id="btnSalvarManual" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+        Salvar Resultado Manual
+    </button>
+</div>
 
           <h2>4) Resultado Oficial (6)</h2>
           <div class="nums" id="resultadoBox"></div>
@@ -952,6 +987,46 @@
         toast("Erro ao processar resultado oficial.", "error");
       }
     }
+    
+    document.getElementById('btnSalvarManual').addEventListener('click', async () => {
+    const concurso = document.getElementById('manualConcurso').value;
+    const data = document.getElementById('manualData').value;
+    const sena = document.getElementById('manualSena').value;
+    const quina = document.getElementById('manualQuina').value;
+    const quadra = document.getElementById('manualQuadra').value;
+    const dezenasStr = document.getElementById('manualDezenas').value;
+
+    // Converte a string de dezenas em um array de números formatados com 2 dígitos
+    const dezenas = dezenasStr
+        .split(/[\s,]+/)
+        .map(d => d.trim())
+        .filter(d => d.length > 0)
+        .map(d => d.padStart(2, '0'));
+
+    if (!concurso || dezenas.length !== 6) {
+        alert('Por favor, informe o número do concurso e exatamente 6 dezenas.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/salvar-resultado-manual', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ concurso, data, dezenas, sena, quina, quadra })
+        });
+
+        const resultado = await response.json();
+        if (response.ok) {
+            alert('Resultado manual salvo com sucesso!');
+            location.reload(); // Recarrega para atualizar os campos na tela
+        } else {
+            alert('Erro ao salvar: ' + resultado.erro);
+        }
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+        alert('Erro de conexão ao tentar salvar o resultado.');
+    }
+});
 
     async function carregarResumoAdmin() {
       try {

@@ -584,6 +584,40 @@ dbFirestore.collection('users').onSnapshot((snapshot) => {
   console.error("Erro ao monitorar a coleção users:", erro);
 });
 
+app.post('/api/salvar-resultado-manual', async (req, res) => {
+    try {
+        const { concurso, data, dezenas, sena, quina, quadra } = req.body;
+
+        if (!concurso || !dezenas || dezenas.length !== 6) {
+            return res.status(400).json({ erro: 'Dados incompletos ou inválidos.' });
+        }
+
+        const dadosConcurso = {
+            concurso: Number(concurso),
+            data: data || new Date().toISOString().split('T')[0],
+            dezenas: dezenas.sort((a, b) => a - b), // Ordena as dezenas em ordem crescente
+            premiacao: {
+                sena: sena || "0,00",
+                quina: quina || "0,00",
+                quadra: quadra || "0,00"
+            },
+            atualizadoEm: new Date(),
+            origem: 'manual'
+        };
+
+        // Exemplo salvando no Firestore (ajuste conforme a coleção do seu projeto)
+        await db.collection('resultados_mega').doc(String(concurso)).set(dadosConcurso);
+        
+        // Salva também como o último concurso oficial vigente na sua collection de configurações
+        await db.collection('configuracoes').doc('ultimo_concurso').set(dadosConcurso);
+
+        return res.status(200).json({ sucesso: true, mensagem: 'Concurso salvo com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao salvar concurso manual:', error);
+        return res.status(500).json({ erro: 'Erro interno ao salvar os dados.' });
+    }
+});
+
 const server = app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
