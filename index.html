@@ -906,6 +906,20 @@
     return `${partes[0].charAt(0)}***@${partes[1]}`;
   }
 
+  if (dados.premiacao) {
+    // Sena
+    if (document.getElementById("senaValor")) document.getElementById("senaValor").innerText = `R$ ${dados.premiacao.sena.valor}`;
+    if (document.getElementById("senaGanhadores")) document.getElementById("senaGanhadores").innerText = `${dados.premiacao.sena.ganhadores} ganhadores`;
+
+    // Quina
+    if (document.getElementById("quinaValor")) document.getElementById("quinaValor").innerText = `R$ ${dados.premiacao.quina.valor}`;
+    if (document.getElementById("quinaGanhadores")) document.getElementById("quinaGanhadores").innerText = `${dados.premiacao.quina.ganhadores} ganhadores`;
+
+    // Quadra
+    if (document.getElementById("quadraValor")) document.getElementById("quadraValor").innerText = `R$ ${dados.premiacao.quadra.valor}`;
+    if (document.getElementById("quadraGanhadores")) document.getElementById("quadraGanhadores").innerText = `${dados.premiacao.quadra.ganhadores} ganhadores`;
+}
+
   async function carregarMuralDaComunidade() {
     try {
       const muralRef = collection(db, "grandes_acertos");
