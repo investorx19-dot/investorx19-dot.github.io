@@ -127,21 +127,39 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <script>
-    // Configuração do Firebase (Utiliza os mesmos parâmetros do seu projeto principal)
-    // Dica: Pode carregar dinamicamente ou ajustar caso já tenha um init centralizado.
+  <!-- Firebase SDKs Modulares -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      query, 
+      where, 
+      getDocs, 
+      getDoc, 
+      doc 
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    // Configuração do Firebase do projeto Mark6
     const firebaseConfig = {
-      // Insira aqui os dados da sua config do Firebase se necessário ou importe do seu script existente
+      apiKey: "AIzaSyA9ccyTSDoIqrwnq9K7nAEjeOHZahKIu0",
+      authDomain: "painel-megasena.firebaseapp.com",
+      projectId: "painel-megasena",
+      storageBucket: "painel-megasena.firebasestorage.app",
+      messagingSenderId: "924943702876",
+      appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
 
-    // Inicialização simplificada baseada no seu backend/frontend
-    // Certifique-se de que a app está inicializada ou ajuste conforme o seu front-end existente.
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // Inicialização
+    const appFirebase = initializeApp(firebaseConfig);
+    const auth = getAuth(appFirebase);
+    const db = getFirestore(appFirebase);
 
     const loginScreen = document.getElementById('login-screen');
     const dashboardScreen = document.getElementById('dashboard-screen');
@@ -155,18 +173,18 @@
       const password = document.getElementById('password').value;
 
       try {
-        await auth.signInWithEmailAndPassword(email, password);
+        await signInWithEmailAndPassword(auth, email, password);
       } catch (error) {
         alert('Erro ao entrar: ' + error.message);
       }
     });
 
     btnLogout.addEventListener('click', () => {
-      auth.signOut();
+      signOut(auth);
     });
 
     // Observador de Estado de Autenticação
-    auth.onAuthStateChanged(async (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         loginScreen.classList.add('hidden');
         dashboardScreen.classList.remove('hidden');
@@ -183,14 +201,12 @@
     // Carregar dados específicos do representante logado
     async function carregarDadosRepresentante(emailUser) {
       try {
-        const repSnapshot = await db.collection('crm_representantes')
-          .where('email', '==', emailUser)
-          .limit(1)
-          .get();
+        const repQuery = query(collection(db, 'crm_representantes'), where('email', '==', emailUser));
+        const repSnapshot = await getDocs(repQuery);
 
         if (repSnapshot.empty) {
           alert('Este e-mail não está registado como representante comercial.');
-          auth.signOut();
+          signOut(auth);
           return;
         }
 
@@ -200,16 +216,15 @@
 
         // Atualizar Nome e Link
         document.getElementById('welcome-msg').innerText = `Bem-vindo, ${repData.nome || 'Parceiro'}!`;
-        const linkIndisponivel = `https://mark6.com.br/?ref=${repData.codigoRef || ''}`;
+        const linkIndisponivel = `https://mark6.com.br/?ref=${repData.codigoRef}`;
         document.getElementById('ref-link').value = linkIndisponivel;
 
         // Atualizar Métricas Financeiras
-        document.getElementById('stat-comissao-pendente').innerText = `R$ ${(Number(repData.comissaoPendente || 0)).toFixed(2)}`;
+        document.getElementById('stat-comissao-pendente').innerText = `R$ ${(repData.comissaoPendente || 0).toFixed(2)}`;
 
         // Carregar Leads do Representante
-        const leadsSnapshot = await db.collection('crm_leads')
-          .where('representanteId', '==', repId)
-          .get();
+        const leadsQuery = query(collection(db, 'crm_leads'), where('representanteId', '==', repId));
+        const leadsSnapshot = await getDocs(leadsQuery);
 
         document.getElementById('stat-leads').innerText = leadsSnapshot.size;
 
@@ -217,18 +232,18 @@
         tabelaCorpo.innerHTML = '';
 
         if (leadsSnapshot.empty) {
-          tabelaCorpo.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Ainda não tem leads registados. Partilhe o seu link!</td></tr>';
+          tabelaCorpo.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Ainda não tem leads registados. Partilhe o seu link!</td></tr>`;
           return;
         }
 
-        leadsSnapshot.forEach(doc => {
-          const lead = doc.data();
+        leadsSnapshot.forEach(docSnap => {
+          const lead = docSnap.data();
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${lead.nome || 'Sem Nome'}</td>
             <td>${lead.tipo || 'B2C'}</td>
             <td><span style="padding: 4px 8px; background: rgba(59, 130, 246, 0.2); color: var(--primary); border-radius: 4px; font-size: 0.85rem;">${lead.statusEstagio || 'Lead Recebido'}</span></td>
-            <td>${new Date(lead.criadoEm).toLocaleDateString('pt-BR')}</td>
+            <td>${lead.criadoEm ? new Date(lead.criadoEm).toLocaleDateString('pt-BR') : '-'}</td>
           `;
           tabelaCorpo.appendChild(tr);
         });
