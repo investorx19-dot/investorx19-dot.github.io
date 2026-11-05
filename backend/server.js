@@ -5,6 +5,7 @@ const admin = require("firebase-admin");
 const fs = require("fs");
 const https = require("https"); // Módulo movido definitivamente para o topo
 const cron = require('node-cron');
+const { registarLeadComRef, registarUpsellCliente } = require('./crm.js');
 
 console.log("ARQUIVO CERTO CARREGADO");
 console.log("CAMINHO:", __filename);
@@ -34,7 +35,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
+// Rotas do CRM e Comissões do Mark6
+app.post('/api/crm/leads', registarLeadComRef);
+app.post('/api/crm/upsell', registarUpsellCliente);
 app.get("/", (req, res) => {
   res.send("Backend Mercado Pago online 🚀");
 });
