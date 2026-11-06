@@ -127,7 +127,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase SDKs Modulares -->
+ <!-- Firebase SDKs Modulares -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import { 
@@ -141,15 +141,8 @@
       collection, 
       query, 
       where, 
-      getDocs, 
-      getDoc, 
-      doc 
+      getDocs 
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
     // Configuração do Firebase do projeto Mark6
     const firebaseConfig = {
@@ -161,7 +154,7 @@ import { initializeApp } from "firebase/app";
       appId: "1:924943702876:web:77929086c5addb13b37f99"
     };
 
-    // Inicialização
+    // Inicialização única
     const appFirebase = initializeApp(firebaseConfig);
     const auth = getAuth(appFirebase);
     const db = getFirestore(appFirebase);
@@ -237,8 +230,7 @@ import { initializeApp } from "firebase/app";
         tabelaCorpo.innerHTML = '';
 
         if (leadsSnapshot.empty) {
-          tabelaCorpo.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Ainda não tem leads registados. Partilhe o seu link!</td></tr>`;
-          return;
+          tabelaCorpo.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Ainda não tem leads registados. Partilhe o seu link!</td></tr>`
         }
 
         leadsSnapshot.forEach(docSnap => {
