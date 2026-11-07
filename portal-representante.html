@@ -129,133 +129,82 @@
 
  <!-- Firebase SDKs Modulares -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword, 
-      signOut, 
-      onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-    import { 
-      getFirestore, 
-      collection, 
-      query, 
-      where, 
-      getDocs 
-    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-    // Configuração do Firebase do projeto Mark6
+  // Configuração do Firebase
   const firebaseConfig = {
-  apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-  authDomain: "painel-megasena.firebaseapp.com",
-  projectId: "painel-megasena",
-  storageBucket: "painel-megasena.firebasestorage.app",
-  messagingSenderId: "924943702876",
-  appId: "1:924943702876:web:77929086c5addb13b37f99"
-};
-    // Inicialização única
-    const appFirebase = initializeApp(firebaseConfig);
-    const auth = getAuth(appFirebase);
-    const db = getFirestore(appFirebase);
+    apiKey: "AIzaSyA9ccyTSDowiqrwnq9K7nAEjeOHZahKiu0",
+    authDomain: "painel-megasena.firebaseapp.com",
+    projectId: "painel-megasena",
+    storageBucket: "painel-megasena.appspot.com",
+    messagingSenderId: "924943702876",
+    appId: "1:924943702876:web:77929086c5addb13b37f99"
+  };
 
-    const loginScreen = document.getElementById('login-screen');
-    const dashboardScreen = document.getElementById('dashboard-screen');
-    const formLogin = document.getElementById('form-login');
-    const btnLogout = document.getElementById('btn-logout');
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    // Gestão de Login
-    formLogin.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        alert('Erro ao entrar: ' + error.message);
-      }
-    });
-
-    btnLogout.addEventListener('click', () => {
-      signOut(auth);
-    });
-
-    // Observador de Estado de Autenticação
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        loginScreen.classList.add('hidden');
-        dashboardScreen.classList.remove('hidden');
-        btnLogout.classList.remove('hidden');
-        
-        await carregarDadosRepresentante(user.email);
-      } else {
-        loginScreen.classList.remove('hidden');
-        dashboardScreen.classList.add('hidden');
-        btnLogout.classList.add('hidden');
-      }
-    });
-
-    // Carregar dados específicos do representante logado
-    async function carregarDadosRepresentante(emailUser) {
-      try {
-        const repQuery = query(collection(db, 'crm_representantes'), where('email', '==', emailUser));
-        const repSnapshot = await getDocs(repQuery);
-
-        if (repSnapshot.empty) {
-          alert('Este e-mail não está registado como representante comercial.');
-          signOut(auth);
-          return;
-        }
-
-        const repDoc = repSnapshot.docs[0];
-        const repData = repDoc.data();
-        const repId = repDoc.id;
-
-        // Atualizar Nome e Link
-        document.getElementById('welcome-msg').innerText = `Bem-vindo, ${repData.nome || 'Parceiro'}!`;
-        const linkIndisponivel = `https://mark6.com.br/?ref=${repData.codigoRef}`;
-        document.getElementById('ref-link').value = linkIndisponivel;
-
-        // Atualizar Métricas Financeiras
-        document.getElementById('stat-comissao-pendente').innerText = `R$ ${(repData.comissaoPendente || 0).toFixed(2)}`;
-
-        // Carregar Leads do Representante
-        const leadsQuery = query(collection(db, 'crm_leads'), where('representanteId', '==', repId));
-        const leadsSnapshot = await getDocs(leadsQuery);
-
-        document.getElementById('stat-leads').innerText = leadsSnapshot.size;
-
-        const tabelaCorpo = document.getElementById('tabela-leads-corpo');
-        tabelaCorpo.innerHTML = '';
-
-        if (leadsSnapshot.empty) {
-          tabelaCorpo.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Ainda não tem leads registados. Partilhe o seu link!</td></tr>`
-        }
-
-        leadsSnapshot.forEach(docSnap => {
-          const lead = docSnap.data();
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${lead.nome || 'Sem Nome'}</td>
-            <td>${lead.tipo || 'B2C'}</td>
-            <td><span style="padding: 4px 8px; background: rgba(59, 130, 246, 0.2); color: var(--primary); border-radius: 4px; font-size: 0.85rem;">${lead.statusEstagio || 'Lead Recebido'}</span></td>
-            <td>${lead.criadoEm ? new Date(lead.criadoEm).toLocaleDateString('pt-BR') : '-'}</td>
-          `;
-          tabelaCorpo.appendChild(tr);
-        });
-
-      } catch (error) {
-        console.error('Erro ao carregar dados do representante:', error);
-      }
+  // Monitora o estado da sessão do representante
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      console.log("Usuário autenticado:", user.email);
+      await carregarComissoesRepresentante(user.email);
+    } else {
+      console.log("Nenhum usuário logado. Redirecionando...");
+      // Se não estiver logado, redireciona ou exibe tela de login
     }
+  });
 
-    // Botão Copiar Link
-    document.getElementById('btn-copiar').addEventListener('click', () => {
-      const inputLink = document.getElementById('ref-link');
-      inputLink.select();
-      navigator.clipboard.writeText(inputLink.value);
-      alert('Link copiado para a área de transferência!');
-    });
-  </script>
+  // Função para buscar e renderizar os dados do Firestore na tabela
+  async function carregarComissoesRepresentante(email) {
+    try {
+      const q = query(collection(db, "crm_oportunidades"), where("representanteEmail", "==", email));
+      const querySnapshot = await getDocs(q);
+      
+      const tabela = document.getElementById("tabela-comissoes");
+      if (!tabela) return;
+      
+      tabela.innerHTML = "";
+      
+      if (querySnapshot.empty) {
+        tabela.innerHTML = <tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>;
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.clienteNome || "Cliente"}</td>
+          <td>${data.status || "Ativo"}</td>
+          <td>R$ ${data.comissao ? data.comissao.toFixed(2) : "0,00"}</td>
+        `;
+        tabela.appendChild(tr);
+      });
+    } catch (error) {
+      console.error("Erro ao buscar dados do Firestore:", error);
+    }
+  }
+
+  // Exemplo de função de login (caso utilize form de acesso)
+  window.fazerLogin = async function(email, senha) {
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+      alert("Login realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro no login:", error.message);
+      alert("Erro ao entrar: " + error.message);
+    }
+  };
+
+  // Exemplo de função para o botão Sair
+  window.fazerLogout = async function() {
+    await signOut(auth);
+    window.location.reload();
+  };
+</script>
 </body>
 </html>
