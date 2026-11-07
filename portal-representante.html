@@ -194,6 +194,9 @@
     try {
       await signInWithEmailAndPassword(auth, email, senha);
       alert("Login realizado com sucesso!");
+
+      window.location.href = "painel-representante.html";
+
     } catch (error) {
       console.error("Erro no login:", error.message);
       alert("Erro ao entrar: " + error.message);
