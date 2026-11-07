@@ -197,14 +197,21 @@ const firebaseConfig = {
     await window.fazerLogin(email, senha);
   };
 
-  // Função de autenticação do Firebase
+ // Função de autenticação e transição na mesma página do portal
   window.fazerLogin = async function(email, senha) {
     try {
       await signInWithEmailAndPassword(auth, email, senha);
       alert("Login realizado com sucesso!");
       
-      // Redireciona para o painel interno após o sucesso
-      window.location.href = "painel-representante.html";
+      // Oculta a tela de login e exibe a tela do painel/dashboard na mesma página
+      const loginScreen = document.getElementById("login-screen");
+      const dashboardScreen = document.getElementById("dashboard-screen"); // ID da div do painel no portal
+      
+      if (loginScreen) loginScreen.style.display = "none";
+      if (dashboardScreen) dashboardScreen.style.display = "block";
+
+      // Carrega os dados do Firestore correspondentes ao representante
+      await carregarComissoesRepresentante(email);
       
     } catch (error) {
       console.error("Erro no login:", error.message);
