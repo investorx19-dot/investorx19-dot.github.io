@@ -134,14 +134,14 @@
   import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
   // Configuração do Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9ccyTSDowiqrwnq9K7nAEjeOHZahKiu0",
-    authDomain: "painel-megasena.firebaseapp.com",
-    projectId: "painel-megasena",
-    storageBucket: "painel-megasena.appspot.com",
-    messagingSenderId: "924943702876",
-    appId: "1:924943702876:web:77929086c5addb13b37f99"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+  authDomain: "painel-megasena.firebaseapp.com",
+  projectId: "painel-megasena",
+  storageBucket: "painel-megasena.firebasestorage.app",
+  messagingSenderId: "924943702876",
+  appId: "1:924943702876:web:77929086c5addb13b37f99"
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
