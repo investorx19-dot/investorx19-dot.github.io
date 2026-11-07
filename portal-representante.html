@@ -72,7 +72,7 @@
           <label>Palavra-passe</label>
           <input type="password" id="password" required placeholder="••••••••">
         </div>
-        <button type="submit">Entrar no Portal</button>
+        <button type="button" onclick="tentarLogar()">Entrar no Portal</button>
       </form>
     </div>
 
@@ -189,14 +189,23 @@
     }
   }
 
-  // Exemplo de função de login (caso utilize form de acesso)
+  // Função para capturar os dados dos inputs e iniciar o login
+  window.tentarLogar = async function() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("password").value; // Ajustado para o id 'password' do seu input
+    
+    await window.fazerLogin(email, senha);
+  };
+
+  // Função de autenticação do Firebase
   window.fazerLogin = async function(email, senha) {
     try {
       await signInWithEmailAndPassword(auth, email, senha);
       alert("Login realizado com sucesso!");
-
+      
+      // Redireciona para o painel interno após o sucesso
       window.location.href = "painel-representante.html";
-
+      
     } catch (error) {
       console.error("Erro no login:", error.message);
       alert("Erro ao entrar: " + error.message);
