@@ -241,41 +241,74 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // 2. Configuração do teu projeto Firebase
- const firebaseConfig = {
-  apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-  authDomain: "painel-megasena.firebaseapp.com",
-  projectId: "painel-megasena",
-  storageBucket: "painel-megasena.firebasestorage.app",
-  messagingSenderId: "924943702876",
-  appId: "1:924943702876:web:77929086c5addb13b37f99"
-};
+  // 1. Configuração do projeto Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+    authDomain: "painel-megasena.firebaseapp.com",
+    projectId: "painel-megasena",
+    storageBucket: "painel-megasena.firebasestorage.app",
+    messagingSenderId: "924943702876",
+    appId: "1:924943702876:web:77929086c5addb13b37f99"
+  };
 
-  // 3. INICIALIZAÇÃO OBRIGATÓRIA (Resolve o erro "No Firebase App '[DEFAULT]'")
+  // 2. Inicialização segura do Firebase (Compat)
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-  // Monitora o estado da sessão do representante
-  onAuthStateChanged(auth, async (user) => {
+  // 3. Monitora o estado da sessão do representante
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
       console.log("Usuário autenticado:", user.email);
+      
+      // Oculta a tela de login e exibe o painel/dashboard
+      const loginScreen = document.getElementById("login-screen");
+      const dashboardScreen = document.getElementById("dashboard-screen");
+      
+      if (loginScreen) loginScreen.style.display = "none";
+      if (dashboardScreen) dashboardScreen.style.display = "block";
+
+      // Carrega os dados do Kanban e da Tabela
+      await carregarLeadsDoKanban(user.email);
       await carregarComissoesRepresentante(user.email);
     } else {
-      console.log("Nenhum usuário logado. Redirecionando...");
-      // Se não estiver logado, redireciona ou exibe tela de login
+      console.log("Nenhum usuário logado.");
+      const loginScreen = document.getElementById("login-screen");
+      const dashboardScreen = document.getElementById("dashboard-screen");
+      
+      if (loginScreen) loginScreen.style.display = "block";
+      if (dashboardScreen) dashboardScreen.style.display = "none";
     }
   });
 
-  // Função para buscar e renderizar os dados do Firestore na tabela
+  // 4. Função para capturar os dados dos inputs e iniciar o login
+  window.tentarLogar = async function() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("password").value;
+    
+    await window.fazerLogin(email, senha);
+  };
+
+  // 5. Função de autenticação por e-mail e senha
+  window.fazerLogin = async function(email, senha) {
+    try {
+      await auth.signInWithEmailAndPassword(email, senha);
+      alert("Login realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro no login:", error.message);
+      alert("Erro ao entrar: " + error.message);
+    }
+  };
+
+  // 6. Função para buscar e renderizar as comissões na tabela
   async function carregarComissoesRepresentante(email) {
     try {
-      const q = query(collection(db, "crm_oportunidades"), where("representanteEmail", "==", email));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await db.collection("crm_oportunidades")
+        .where("representanteEmail", "==", email)
+        .get();
       
       const tabela = document.getElementById("tabela-comissoes");
       if (!tabela) return;
@@ -283,7 +316,7 @@
       tabela.innerHTML = "";
       
       if (querySnapshot.empty) {
-        tabela.innerHTML = `<tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>`;
+        tabela.innerHTML = <tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>;
         return;
       }
 
@@ -298,168 +331,130 @@
         tabela.appendChild(tr);
       });
     } catch (error) {
-      console.error("Erro ao buscar dados do Firestore:", error);
+      console.error("Erro ao buscar comissões do Firestore:", error);
     }
   }
 
-  // Função para capturar os dados dos inputs e iniciar o login
-  window.tentarLogar = async function() {
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("password").value; // Ajustado para o id 'password' do seu input
-    
-    await window.fazerLogin(email, senha);
-  };
+  // 7. Funções do Funil Kanban (Drag and Drop)
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
 
- // Função de autenticação e transição na mesma página do portal
-  window.fazerLogin = async function(email, senha) {
+  function drag(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+  }
+
+  async function drop(ev) {
+    ev.preventDefault();
+    const cardId = ev.dataTransfer.getData("text/plain");
+    const cardElement = document.getElementById(cardId);
+    
+    // Encontra o container de cards da coluna de destino
+    const colunaDestino = ev.target.closest('.kanban-column');
+    if (!colunaDestino) return;
+    
+    const targetCardsContainer = colunaDestino.querySelector('.kanban-cards');
+    
+    if (targetCardsContainer && cardElement) {
+      targetCardsContainer.appendChild(cardElement);
+      
+      // Obtém o novo status e o ID do lead
+      const novoStatus = colunaDestino.id.replace('col-', '');
+      const leadId = cardId.replace('lead-', '');
+      
+      // Atualiza a etapa no Firebase Firestore
+      try {
+        await db.collection("crm_leads").doc(leadId).update({
+          statusEtapa: novoStatus,
+          ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`Lead ${leadId} movido para ${novoStatus}`);
+        
+        // Atualiza os contadores das badges após mover
+        atualizarContadoresKanban();
+      } catch (error) {
+        console.error("Erro ao atualizar etapa do lead no Firestore:", error);
+      }
+    }
+  }
+
+  // 8. Função para carregar os leads do Kanban do Firestore
+  async function carregarLeadsDoKanban(emailRep) {
     try {
-      await signInWithEmailAndPassword(auth, email, senha);
-      alert("Login realizado com sucesso!");
-      
-      // Oculta a tela de login e exibe a tela do painel/dashboard na mesma página
-      const loginScreen = document.getElementById("login-screen");
-      const dashboardScreen = document.getElementById("dashboard-screen"); // ID da div do painel no portal
-      
-      if (loginScreen) loginScreen.style.display = "none";
-      if (dashboardScreen) dashboardScreen.style.display = "block";
-
-      // Carrega os dados do Firestore correspondentes ao representante
-      await carregarComissoesRepresentante(email);
-      
-    } catch (error) {
-      console.error("Erro no login:", error.message);
-      alert("Erro ao entrar: " + error.message);
-    }
-  };
-
-  // Habilita a soltura do card na coluna
-function allowDrop(ev) {
-  ev.preventDefault();
-}
-
-// Ao iniciar o arraste do lead
-function drag(ev) {
-  ev.dataTransfer.setData("text/plain", ev.target.id);
-}
-
-// Ao soltar o lead na nova coluna
-async function drop(ev) {
-  ev.preventDefault();
-  const cardId = ev.dataTransfer.getData("text/plain");
-  const cardElement = document.getElementById(cardId);
-  const targetColumn = ev.currentTarget.querySelector('.kanban-cards');
-  
-  if (targetColumn && cardElement) {
-    targetColumn.appendChild(cardElement);
-    
-    // Obtém o novo status a partir do ID da coluna destino
-    const novoStatus = ev.currentTarget.id.replace('col-', '');
-    const leadId = cardId.replace('lead-', '');
-    
-    // Atualiza a etapa no Firebase Firestore
-    try {
-      await db.collection("crm_leads").doc(leadId).update({
-        statusEtapa: novoStatus,
-        ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      console.log(`Lead ${leadId} movido para ${novoStatus}`);
-    } catch (error) {
-      console.error("Erro ao atualizar etapa do lead no Firestore:", error);
-    }
-  }
-}
-
-// Aguarda o carregamento do DOM e do utilizador logado
-firebase.auth().onAuthStateChanged(async (user) => {
-  if (user) {
-    const emailRepresentante = user.email;
-    carregarLeadsDoKanban(emailRepresentante);
-  } else {
-    // Se não estiver logado, redireciona para a tela de login
-    window.location.href = "portal-representante.html";
-  }
-});
-
-async function carregarLeadsDoKanban(emailRep) {
-  try {
-    // Limpa as colunas antes de recarregar
-    document.getElementById('cards-novo').innerHTML = '';
-    document.getElementById('cards-contato').innerHTML = '';
-    document.getElementById('cards-teste').innerHTML = '';
-    document.getElementById('cards-fechamento').innerHTML = '';
-    document.getElementById('cards-ganho').innerHTML = '';
-
-    // Contadores para as badges
-    const contadores = { novo: 0, contato: 0, teste: 0, fechamento: 0, ganho: 0 };
-
-    // Consulta os leads na coleção 'crm_leads' filtrando pelo representante
-    const snapshot = await db.collection("crm_leads")
-      .where("representanteEmail", "==", emailRep)
-      .get();
-
-    if (snapshot.empty) {
-      console.log("Nenhum lead encontrado para este representante.");
-      atualizarBadges(contadores);
-      return;
-    }
-
-    snapshot.forEach((doc) => {
-      const lead = doc.data();
-      const leadId = doc.id;
-      
-      // Define a etapa padrão como 'novo' caso o campo não exista
-      const etapa = lead.statusEtapa || 'novo';
-      contadores[etapa] = (contadores[etapa] || 0) + 1;
-
-      // Cria o elemento visual do cartão
-      const card = document.createElement('div');
-      card.className = 'lead-card';
-      card.id = `lead-${leadId}`;
-      card.draggable = true;
-      card.onsubmit = (e) => e.preventDefault();
-      
-      // Evento de início do arrasto (Drag and Drop)
-      card.addEventListener('dragstart', (ev) => {
-        ev.dataTransfer.setData("text/plain", ev.id);
+      // Limpa as colunas antes de recarregar
+      ['novo', 'contato', 'teste', 'fechamento', 'ganho'].forEach(etapa => {
+        const container = document.getElementById(`cards-${etapa}`);
+        if (container) container.innerHTML = '';
       });
 
-      // Formata o número do WhatsApp para o link direto
-      const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
-      const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
+      const snapshot = await db.collection("crm_leads")
+        .where("representanteEmail", "==", emailRep)
+        .get();
 
-      card.innerHTML = `
-        <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
-        <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
-        <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
-        ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
-      `;
+      if (snapshot.empty) {
+        console.log("Nenhum lead encontrado para este representante.");
+        atualizarContadoresKanban();
+        return;
+      }
 
-      // Insere o cartão na coluna correspondente
-      const colunaContainer = document.getElementById(`cards-${etapa}`);
-      if (colunaContainer) {
-        colunaContainer.appendChild(card);
+      snapshot.forEach((doc) => {
+        const lead = doc.data();
+        const leadId = doc.id;
+        
+        const etapa = lead.statusEtapa || 'novo';
+
+        // Cria o elemento visual do cartão
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        card.id = `lead-${leadId}`;
+        card.draggable = true;
+        
+        card.addEventListener('dragstart', drag);
+
+        // Formata o número do WhatsApp para o link direto
+        const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
+        const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
+
+        card.innerHTML = `
+          <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
+          <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
+          <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
+          ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
+        `;
+
+        // Insere o cartão na coluna correspondente
+        const colunaContainer = document.getElementById(`cards-${etapa}`);
+        if (colunaContainer) {
+          colunaContainer.appendChild(card);
+        }
+      });
+
+      atualizarContadoresKanban();
+
+    } catch (error) {
+      console.error("Erro ao carregar leads do CRM:", error);
+    }
+  }
+
+  // 9. Atualiza as contagens (badges) dinamicamente com base nos cards presentes nas colunas
+  function atualizarContadoresKanban() {
+    ['novo', 'contato', 'teste', 'fechamento', 'ganho'].forEach(etapa => {
+      const container = document.getElementById(`cards-${etapa}`);
+      const badge = document.getElementById(`count-${etapa}`);
+      if (container && badge) {
+        badge.innerText = container.children.length;
       }
     });
-
-    atualizarBadges(contadores);
-
-  } catch (error) {
-    console.error("Erro ao carregar leads do CRM:", error);
   }
-}
 
-function atualizarBadges(contadores) {
-  for (const [etapa, qtd] of Object.entries(contadores)) {
-    const badge = document.getElementById(`count-${etapa}`);
-    if (badge) {
-      badge.innerText = qtd;
-    }
-  }
-}
-  // Exemplo de função para o botão Sair
+  // 10. Função para o botão Sair (Logout)
   window.fazerLogout = async function() {
-    await signOut(auth);
-    window.location.reload();
+    try {
+      await auth.signOut();
+      window.location.reload();
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+    }
   };
 </script>
 </body>
