@@ -369,6 +369,93 @@ async function drop(ev) {
   }
 }
 
+// Aguarda o carregamento do DOM e do utilizador logado
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    const emailRepresentante = user.email;
+    carregarLeadsDoKanban(emailRepresentante);
+  } else {
+    // Se não estiver logado, redireciona para a tela de login
+    window.location.href = "portal-representante.html";
+  }
+});
+
+async function carregarLeadsDoKanban(emailRep) {
+  try {
+    // Limpa as colunas antes de recarregar
+    document.getElementById('cards-novo').innerHTML = '';
+    document.getElementById('cards-contato').innerHTML = '';
+    document.getElementById('cards-teste').innerHTML = '';
+    document.getElementById('cards-fechamento').innerHTML = '';
+    document.getElementById('cards-ganho').innerHTML = '';
+
+    // Contadores para as badges
+    const contadores = { novo: 0, contato: 0, teste: 0, fechamento: 0, ganho: 0 };
+
+    // Consulta os leads na coleção 'crm_leads' filtrando pelo representante
+    const snapshot = await db.collection("crm_leads")
+      .where("representanteEmail", "==", emailRep)
+      .get();
+
+    if (snapshot.empty) {
+      console.log("Nenhum lead encontrado para este representante.");
+      atualizarBadges(contadores);
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const lead = doc.data();
+      const leadId = doc.id;
+      
+      // Define a etapa padrão como 'novo' caso o campo não exista
+      const etapa = lead.statusEtapa || 'novo';
+      contadores[etapa] = (contadores[etapa] || 0) + 1;
+
+      // Cria o elemento visual do cartão
+      const card = document.createElement('div');
+      card.className = 'lead-card';
+      card.id = `lead-${leadId}`;
+      card.draggable = true;
+      card.onsubmit = (e) => e.preventDefault();
+      
+      // Evento de início do arrasto (Drag and Drop)
+      card.addEventListener('dragstart', (ev) => {
+        ev.dataTransfer.setData("text/plain", ev.id);
+      });
+
+      // Formata o número do WhatsApp para o link direto
+      const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
+      const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
+
+      card.innerHTML = `
+        <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
+        <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
+        <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
+        ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
+      `;
+
+      // Insere o cartão na coluna correspondente
+      const colunaContainer = document.getElementById(`cards-${etapa}`);
+      if (colunaContainer) {
+        colunaContainer.appendChild(card);
+      }
+    });
+
+    atualizarBadges(contadores);
+
+  } catch (error) {
+    console.error("Erro ao carregar leads do CRM:", error);
+  }
+}
+
+function atualizarBadges(contadores) {
+  for (const [etapa, qtd] of Object.entries(contadores)) {
+    const badge = document.getElementById(`count-${etapa}`);
+    if (badge) {
+      badge.innerText = qtd;
+    }
+  }
+}
   // Exemplo de função para o botão Sair
   window.fazerLogout = async function() {
     await signOut(auth);
