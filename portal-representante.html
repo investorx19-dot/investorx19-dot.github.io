@@ -21,6 +21,82 @@
     header { background-color: var(--card-bg); border-bottom: 1px solid var(--border); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
     header h1 { font-size: 1.5rem; color: var(--primary); }
     
+    .kanban-container {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding: 20px 0;
+}
+
+.kanban-column {
+  background-color: #1e2538;
+  border-radius: 8px;
+  min-width: 260px;
+  max-width: 280px;
+  padding: 15px;
+  border: 1px solid #2a344d;
+}
+
+.kanban-column h3 {
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  background-color: #00d2ff;
+  color: #000;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.kanban-cards {
+  min-height: 300px;
+}
+
+.lead-card {
+  background-color: #0f1423;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: grab;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.lead-card:hover {
+  border-color: #00d2ff;
+  transform: translateY(-2px);
+}
+
+.lead-name {
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.lead-info {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.btn-whatsapp {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background-color: #25d366;
+  color: #fff;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
     .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
     
     /* Ecrã de Login */
@@ -91,6 +167,38 @@
     
       <!-- QR Code Dinâmico -->
 <div id="qrcode-container" style="margin-top: 15px; text-align: center;"></div>
+
+<div class="kanban-container">
+  <!-- Coluna 1 -->
+  <div class="kanban-column" id="col-novo" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <h3>Leads Novos <span class="badge" id="count-novo">0</span></h3>
+    <div class="kanban-cards" id="cards-novo"></div>
+  </div>
+
+  <!-- Coluna 2 -->
+  <div class="kanban-column" id="col-contato" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <h3>Contato Iniciado <span class="badge" id="count-contato">0</span></h3>
+    <div class="kanban-cards" id="cards-contato"></div>
+  </div>
+
+  <!-- Coluna 3 -->
+  <div class="kanban-column" id="col-teste" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <h3>Em Teste / Apresentação <span class="badge" id="count-teste">0</span></h3>
+    <div class="kanban-cards" id="cards-teste"></div>
+  </div>
+
+  <!-- Coluna 4 -->
+  <div class="kanban-column" id="col-fechamento" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <h3>Fechamento <span class="badge" id="count-fechamento">0</span></h3>
+    <div class="kanban-cards" id="cards-fechamento"></div>
+  </div>
+
+  <!-- Coluna 5 -->
+  <div class="kanban-column column-success" id="col-ganho" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <h3>Venda Realizada <span class="badge" id="count-ganho">0</span></h3>
+    <div class="kanban-cards" id="cards-ganho"></div>
+  </div>
+</div>
 
       <!-- Métricas -->
       <div class="metrics-grid">
@@ -221,6 +329,43 @@ const firebaseConfig = {
       alert("Erro ao entrar: " + error.message);
     }
   };
+
+  // Habilita a soltura do card na coluna
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+// Ao iniciar o arraste do lead
+function drag(ev) {
+  ev.dataTransfer.setData("text/plain", ev.target.id);
+}
+
+// Ao soltar o lead na nova coluna
+async function drop(ev) {
+  ev.preventDefault();
+  const cardId = ev.dataTransfer.getData("text/plain");
+  const cardElement = document.getElementById(cardId);
+  const targetColumn = ev.currentTarget.querySelector('.kanban-cards');
+  
+  if (targetColumn && cardElement) {
+    targetColumn.appendChild(cardElement);
+    
+    // Obtém o novo status a partir do ID da coluna destino
+    const novoStatus = ev.currentTarget.id.replace('col-', '');
+    const leadId = cardId.replace('lead-', '');
+    
+    // Atualiza a etapa no Firebase Firestore
+    try {
+      await db.collection("crm_leads").doc(leadId).update({
+        statusEtapa: novoStatus,
+        ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`Lead ${leadId} movido para ${novoStatus}`);
+    } catch (error) {
+      console.error("Erro ao atualizar etapa do lead no Firestore:", error);
+    }
+  }
+}
 
   // Exemplo de função para o botão Sair
   window.fazerLogout = async function() {
