@@ -1308,16 +1308,29 @@ let resultadoOficial = [];
       // NOVA REGRA: Revelar botão do Representante
       // ==========================================
       if (usuarioAtual.role === "representante") {
-        const btnRep = document.getElementById('btnPainelRep');
-        if (btnRep) {
-          btnRep.style.display = 'inline-block'; // Faz o botão aparecer
-          
-          // Garante que o evento de clique não se duplique se a função rodar duas vezes
-          btnRep.onclick = () => {
+    const btnRep = document.getElementById('btnPainelRep');
+    if (btnRep) {
+        btnRep.style.display = 'inline-block';
+        btnRep.onclick = () => {
             window.location.href = "/painel-representante.html";
-          };
+        };
+
+        // Cria o botão do CRM dinamicamente logo a seguir ao botão existente
+        if (!document.getElementById('btnCrmDinamico')) {
+            const btnCrm = document.createElement('button');
+            btnCrm.id = 'btnCrmDinamico';
+            btnCrm.innerText = 'CRM';
+            btnCrm.className = btnRep.className; // Herda as mesmas cores/estilos do botão original
+            btnCrm.style.marginLeft = '8px';
+            btnCrm.style.display = 'inline-block';
+            
+            btnCrm.onclick = () => {
+                window.location.href = "/painel-representante.html";
+        };
+            btnRep.parentNode.insertBefore(btnCrm, btnRep.nextSibling);
         }
-      }
+    }
+}
     }
 
     function atualizarValorAposta() {
