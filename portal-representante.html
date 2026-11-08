@@ -316,7 +316,7 @@
       tabela.innerHTML = "";
       
       if (querySnapshot.empty) {
-        tabela.innerHTML = <tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>;
+        tabela.innerHTML = `<tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>`;
         return;
       }
 
