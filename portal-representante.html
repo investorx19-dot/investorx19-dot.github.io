@@ -235,19 +235,14 @@
 
   </div>
 
-  <!-- Firebase SDKs compatíveis com o projeto -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- 1. Scripts SDK do Firebase (Versão Compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
- <!-- Firebase SDKs Modulares -->
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-  // Configuração do Firebase
-const firebaseConfig = {
+<script>
+  // 2. Configuração do teu projeto Firebase
+ const firebaseConfig = {
   apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
   authDomain: "painel-megasena.firebaseapp.com",
   projectId: "painel-megasena",
@@ -255,6 +250,11 @@ const firebaseConfig = {
   messagingSenderId: "924943702876",
   appId: "1:924943702876:web:77929086c5addb13b37f99"
 };
+
+  // 3. INICIALIZAÇÃO OBRIGATÓRIA (Resolve o erro "No Firebase App '[DEFAULT]'")
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
