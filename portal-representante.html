@@ -333,6 +333,12 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
+  window.tentarLogar = async function() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("password").value;
+    await window.fazerLogin(email, senha);
+  };
+
   // 3. Monitora o estado da sessão do representante
   auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -360,12 +366,6 @@
   });
 
   // 4. Função para capturar os dados dos inputs e iniciar o login
-  window.tentarLogar = async function() {
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("password").value;
-    
-    await window.fazerLogin(email, senha);
-  };
 
   // 5. Função de autenticação por e-mail e senha
   window.fazerLogin = async function(email, senha) {
@@ -391,7 +391,7 @@
       tabela.innerHTML = "";
       
       if (querySnapshot.empty) {
-        tabela.innerHTML = <tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>;
+        tabela.innerHTML = `<tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>`;
         return;
       }
 
