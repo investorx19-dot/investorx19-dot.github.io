@@ -676,44 +676,49 @@
 
   // 10. Funções para o Link de Indicação e QR Code dinâmicos
   async function carregarLinkEQRCodeRepresentante(emailRep) {
-    try {
-      const repSnapshot = await db.collection("crm_representantes")
-        .where("email", "==", emailRep)
-        .get();
+  try {
+    // Procura o documento do representante na coleção pelo e-mail
+    const repSnapshot = await db.collection("crm_representantes")
+      .where("email", "==", emailRep)
+      .get();
 
-      let codigoRef = "";
+    let codigoRef = "";
 
-      if (!repSnapshot.empty) {
-        const dadosRep = repSnapshot.docs[0].data();
-        codigoRef = dadosRep.codigoRef || dadosRep.id || emailRep.split('@')[0];
-      } else {
-        codigoRef = btoa(emailRep).substring(0, 12);
-      }
-
-      const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
-
-      const inputLink = document.getElementById("input-link-indicacao");
-      if (inputLink) {
-        inputLink.value = urlCompleta;
-      }
-
-      const containerQr = document.getElementById("qrcode");
-      if (containerQr) {
-        containerQr.innerHTML = "";
-        new QRCode(containerQr, {
-          text: urlCompleta,
-          width: 130,
-          height: 130,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      }
-
-    } catch (error) {
-      console.error("Erro ao gerar link de indicação:", error);
+    if (!repSnapshot.empty) {
+      const docRep = repSnapshot.docs[0];
+      const dadosRep = docRep.data();
+      // Utiliza o ID do documento ou o codigoRef, exatamente como o painel principal
+      codigoRef = dadosRep.codigoRef || docRep.id;
+    } else {
+      codigoRef = emailRep.split('@')[0];
     }
+
+    const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
+
+    // Insere no input do portal
+    const inputLink = document.getElementById("input-link-indicacao");
+    if (inputLink) {
+      inputLink.value = urlCompleta;
+    }
+
+    // Gera o QR Code visualmente com a livraria qrcode.min.js
+    const containerQr = document.getElementById("qrcode");
+    if (containerQr) {
+      containerQr.innerHTML = "";
+      new QRCode(containerQr, {
+        text: urlCompleta,
+        width: 130,
+        height: 130,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+  } catch (error) {
+    console.error("Erro ao gerar link de indicação:", error);
   }
+}
 
   window.copiarLinkIndicacao = function() {
     const inputLink = document.getElementById("input-link-indicacao");
