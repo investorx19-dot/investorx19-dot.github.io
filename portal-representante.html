@@ -688,7 +688,7 @@
       const docRep = repSnapshot.docs[0];
       const dadosRep = docRep.data();
       console.log("Documento encontrado no Firestore:", docRep.id, dadosRep);
-      codigoRef = dadosRep.codigoRef || docRep.id;
+      codigoRef = docRep.id;
     } else {
       console.log("Nenhum documento encontrado na coleção crm_representantes para este email. Usando fallback.");
       codigoRef = emailRep.split('@')[0];
