@@ -235,6 +235,30 @@
 
   </div>
 
+  <!-- Modal de Detalhes do Lead -->
+<div id="modalLeadDetalhes" class="modal-crm" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+  <div class="modal-content" style="background: #1e2538; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; border: 1px solid #2a344d; color: #fff; position: relative;">
+    <span onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 20px; font-size: 22px; cursor: pointer; color: #aaa;">&times;</span>
+    
+    <h3 style="margin-bottom: 15px; color: #00d2ff;">Detalhes do Lead</h3>
+    
+    <div id="modal-lead-info" style="margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">
+      <!-- Preenchido dinamicamente -->
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #2a344d; margin: 15px 0;">
+
+    <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Histórico de Anotações / Interações</h4>
+    <textarea id="input-nova-anotacao" placeholder="Escreva uma anotação (ex: Ligou, pediu para retornar na quarta-feira...)" style="width: 100%; height: 80px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 6px; padding: 10px; margin-bottom: 10px; resize: none;"></textarea>
+    
+    <button onclick="salvarAnotacaoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Adicionar Anotação</button>
+
+    <div id="lista-anotacoes" style="margin-top: 15px; max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
+      <!-- Histórico exibido aqui -->
+    </div>
+  </div>
+</div>
+
   <!-- 1. Scripts SDK do Firebase (Versão Compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -411,6 +435,14 @@
         
         card.addEventListener('dragstart', drag);
 
+        // Dentro da função carregarLeadsDoKanban, logo após criar a tag 'card':
+card.addEventListener('click', (e) => {
+  // Evita abrir se clicar diretamente no link do WhatsApp
+  if (e.target.tagName !== 'A') {
+    window.abrirDetalhesLead(leadId);
+  }
+});
+
         // Formata o número do WhatsApp para o link direto
         const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
         const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
@@ -446,6 +478,97 @@
       }
     });
   }
+let leadAtualId = null;
+
+// Abre o modal ao clicar num cartão do Kanban
+window.abrirDetalhesLead = async function(leadId) {
+  leadAtualId = leadId;
+  const modal = document.getElementById("modalLeadDetalhes");
+  const containerInfo = document.getElementById("modal-lead-info");
+  const containerAnotacoes = document.getElementById("lista-anotacoes");
+  
+  containerInfo.innerHTML = "A carregar dados...";
+  containerAnotacoes.innerHTML = "";
+  document.getElementById("input-nova-anotacao").value = "";
+  
+  modal.style.display = "flex";
+
+  try {
+    const docRef = await db.collection("crm_leads").doc(leadId).get();
+    if (!docRef.exists) {
+      containerInfo.innerHTML = "Lead não encontrado.";
+      return;
+    }
+
+    const lead = docRef.data();
+    
+    containerInfo.innerHTML = `
+      <p><b>Nome:</b> ${lead.nome || 'Não informado'}</p>
+      <p><b>E-mail:</b> ${lead.email || 'Não informado'}</p>
+      <p><b>Telefone:</b> ${lead.telefone || 'Não informado'}</p>
+      <p><b>Origem:</b> ${lead.origem || 'Indefinida'}</p>
+      <p><b>Etapa Atual:</b> <span style="text-transform: uppercase; color: #00d2ff;">${lead.statusEtapa || 'novo'}</span></p>
+    `;
+
+    // Renderiza as anotações existentes (se houver um array de anotações)
+    renderizarAnotacoes(lead.anotacoes || []);
+
+  } catch (error) {
+    console.error("Erro ao carregar detalhes do lead:", error);
+    containerInfo.innerHTML = "Erro ao carregar informações.";
+  }
+};
+
+// Fecha o modal
+window.fecharModalDetalhes = function() {
+  document.getElementById("modalLeadDetalhes").style.display = "none";
+  leadAtualId = null;
+};
+
+// Salva uma nova anotação no documento do lead no Firestore
+window.salvarAnotacaoLead = async function() {
+  const textoAnotacao = document.getElementById("input-nova-anotacao").value.trim();
+  if (!textoAnotacao || !leadAtualId) return;
+
+  const novaAnotacao = {
+    texto: textoAnotacao,
+    data: new Date().toISOString()
+  };
+
+  try {
+    // Atualiza o documento adicionando a anotação a um array (ArrayUnion)
+    await db.collection("crm_leads").doc(leadAtualId).update({
+      anotacoes: firebase.firestore.FieldValue.arrayUnion(novaAnotacao)
+    });
+
+    document.getElementById("input-nova-anotacao").value = "";
+    
+    // Recarrega os detalhes para atualizar a lista instantaneamente
+    window.abrirDetalhesLead(leadAtualId);
+  } catch (error) {
+    console.error("Erro ao salvar anotação:", error);
+    alert("Erro ao guardar anotação.");
+  }
+};
+
+// Função auxiliar para exibir o histórico de anotações
+function renderizarAnotacoes(anotacoes) {
+  const container = document.getElementById("lista-anotacoes");
+  if (!anotacoes || anotacoes.length === 0) {
+    container.innerHTML = "<p style='color: #888;'>Sem anotações registadas.</p>";
+    return;
+  }
+
+  container.innerHTML = anotacoes.reverse().map(item => {
+    const dataFormatada = new Date(item.data).toLocaleString('pt-BR');
+    return `
+      <div style="background: #131722; padding: 8px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid #00d2ff;">
+        <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 3px;">${dataFormatada}</div>
+        <div>${item.texto}</div>
+      </div>
+    `;
+  }).join('');
+}
 
   // 10. Função para o botão Sair (Logout)
   window.fazerLogout = async function() {

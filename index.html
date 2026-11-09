@@ -1483,6 +1483,49 @@ async function cadastrar() {
     alert("Erro ao cadastrar usuário: " + erro.message);
   }
 }
+
+async function verificarEArmazenarLeadNoCrm(userEmail, userName, userTelefone) {
+  try {
+    // 1. Recupera o código de indicação salvo no navegador (armazenado quando ele entrou pelo link ?ref=...)
+    const codigoRef = localStorage.getItem('mark6_ref');
+
+    if (!codigoRef) {
+      console.log("Cadastro direto (sem indicação de representante).");
+      return; // Se não tem indicação, segue o fluxo normal sem criar lead no CRM
+    }
+
+    // 2. Procura na coleção 'crm_representantes' qual parceiro tem este código de referência
+    const repSnapshot = await db.collection("crm_representantes")
+      .where("codigoRef", "==", codigoRef)
+      .get();
+
+    let emailRepresentante = "admin@mark6.com.br"; // E-mail coringa caso não ache
+
+    if (!repSnapshot.empty) {
+      emailRepresentante = repSnapshot.docs[0].data().email;
+    }
+
+    // 3. Cria o lead automaticamente na coleção 'crm_leads' já na etapa inicial 'novo'
+    await db.collection("crm_leads").add({
+      nome: userName || "Novo Usuário",
+      email: userEmail,
+      telefone: userTelefone || "",
+      origem: "Link de Indicação (?ref=" + codigoRef + ")",
+      representanteEmail: emailRepresentante,
+      statusEtapa: "novo", // Vai cair direto na primeira coluna do Kanban do representante!
+      dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log("Lead registado com sucesso no CRM do representante:", emailRepresentante);
+
+    // Opcional: Limpa o ref para evitar duplicidades futuras se ele se cadastrar de novo
+    localStorage.removeItem('mark6_ref');
+
+  } catch (error) {
+    console.error("Erro ao integrar cadastro com o CRM:", error);
+  }
+}
+
 async function verificarStatusAcesso(usuario) {
   try {
     if (!usuario) {
