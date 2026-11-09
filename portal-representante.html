@@ -167,6 +167,10 @@
         <button id="btn-copiar" type="button" style="margin-top: 20px;">Copiar Link</button>
       </div>
     
+      <button onclick="abrirModalNovoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+  + Novo Lead Manual
+</button>
+
       <!-- QR Code Dinâmico -->
 <div id="qrcode-container" style="margin-top: 15px; text-align: center;"></div>
 
@@ -256,6 +260,44 @@
     <div id="lista-anotacoes" style="margin-top: 15px; max-height: 150px; overflow-y: auto; font-size: 0.85rem;">
       <!-- Histórico exibido aqui -->
     </div>
+  </div>
+</div>
+
+<!-- Modal de Cadastro Manual de Lead -->
+<div id="modalNovoLead" class="modal-crm" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+  <div class="modal-content" style="background: #1e2538; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; border: 1px solid #2a344d; color: #fff; position: relative;">
+    <span onclick="fecharModalNovoLead()" style="position: absolute; top: 15px; right: 20px; font-size: 22px; cursor: pointer; color: #aaa;">&times;</span>
+    
+    <h3 style="margin-bottom: 15px; color: #00d2ff;">Registar Novo Lead</h3>
+    
+    <form id="formNovoLeadManual" onsubmit="salvarLeadManual(event)">
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Nome do Lead *</label>
+        <input type="text" id="manual-nome" required style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">WhatsApp / Telefone *</label>
+        <input type="text" id="manual-telefone" placeholder="(21) 99999-9999" required style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">E-mail (Opcional)</label>
+        <input type="email" id="manual-email" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Origem do Contato</label>
+        <select id="manual-origem" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+          <option value="Indicação Direta">Indicação Direta</option>
+          <option value="WhatsApp / Rede Social">WhatsApp / Rede Social</option>
+          <option value="Prospecção Ativa">Prospecção Ativa</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+
+      <button type="submit" style="background: #00d2ff; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Guardar Lead</button>
+    </form>
   </div>
 </div>
 
@@ -569,6 +611,56 @@ function renderizarAnotacoes(anotacoes) {
     `;
   }).join('');
 }
+
+// Abre o modal de cadastro manual
+window.abrirModalNovoLead = function() {
+  document.getElementById("formNovoLeadManual").reset();
+  document.getElementById("modalNovoLead").style.display = "flex";
+};
+
+// Fecha o modal de cadastro manual
+window.fecharModalNovoLead = function() {
+  document.getElementById("modalNovoLead").style.display = "none";
+};
+
+// Salva o lead manual diretamente no Firestore associado ao representante logado
+window.salvarLeadManual = async function(event) {
+  event.preventDefault();
+
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("Erro: Utilizador não autenticado.");
+    return;
+  }
+
+  const nome = document.getElementById("manual-nome").value.trim();
+  const telefone = document.getElementById("manual-telefone").value.trim();
+  const email = document.getElementById("manual-email").value.trim();
+  const origem = document.getElementById("manual-origem").value;
+
+  try {
+    // Adiciona o lead diretamente na coleção crm_leads na coluna inicial 'novo'
+    await db.collection("crm_leads").add({
+      nome: nome,
+      telefone: telefone,
+      email: email,
+      origem: origem,
+      representanteEmail: user.email,
+      statusEtapa: "novo", // Cai direto na primeira coluna do Kanban
+      dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    fecharModalNovoLead();
+    alert("Lead registado com sucesso!");
+
+    // Recarrega o Kanban para exibir o novo cartão instantaneamente
+    carregarLeadsDoKanban(user.email);
+
+  } catch (error) {
+    console.error("Erro ao registar lead manual:", error);
+    alert("Erro ao guardar o lead.");
+  }
+};
 
   // 10. Função para o botão Sair (Logout)
   window.fazerLogout = async function() {
