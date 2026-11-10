@@ -154,9 +154,9 @@
                             document.getElementById('nome-vendedor').innerText = dadosUsuario.nome || "Representante";
                             
                             const urlBase = window.location.origin; 
-                            linkInput.value = `${urlBase}/?ref=${idDoBanco}`;
+                            linkInput.value = `${urlBase}/?ref=${userDoc.id}`;
 
-                            carregarDashboard(idDoBanco);
+                            carregarDashboard(userDoc.id);
 
                             loading.classList.add('hidden');
                             conteudo.classList.remove('hidden');
