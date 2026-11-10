@@ -677,9 +677,23 @@
   // 10. Funções para o Link de Indicação e QR Code dinâmicos
   async function carregarLinkEQRCodeRepresentante(emailRep) {
   try {
-    // Pega diretamente o UID do utilizador autenticado no Firebase (que é o mesmo ID do documento usado no painel)
-    const userAtual = auth.currentUser;
-    const codigoRef = userAtual ? userAtual.uid : "";
+    console.log("A procurar dados para o email:", emailRep);
+    
+    // Faz a consulta na coleção de utilizadores do Firestore usando o e-mail do representante
+    const q = query(collection(db, "usuarios"), where("email", "==", emailRep));
+    const querySnapshot = await getDocs(q);
+
+    let codigoRef = "";
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      // Pega exatamente o ID do documento do banco, igualzinho ao painel de afiliado!
+      codigoRef = userDoc.id;
+      console.log("ID encontrado na coleção usuarios:", codigoRef);
+    } else {
+      console.log("Nenhum documento encontrado pelo e-mail. Usando fallback.");
+      codigoRef = emailRep.split('@')[0];
+    }
 
     const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
     console.log("URL gerada no CRM:", urlCompleta);
@@ -701,6 +715,7 @@
         correctLevel: QRCode.CorrectLevel.H
       });
     }
+
   } catch (error) {
     console.error("Erro ao gerar link de indicação no CRM:", error);
   }
