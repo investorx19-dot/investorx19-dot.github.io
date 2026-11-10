@@ -677,41 +677,12 @@
   // 10. Funções para o Link de Indicação e QR Code dinâmicos
   async function carregarLinkEQRCodeRepresentante(emailRep) {
   try {
-    console.log("A procurar dados para o email:", emailRep);
-    
-    // Pega o usuário atualmente autenticado no Firebase Auth
+    // Pega diretamente o UID do utilizador autenticado no Firebase (que é o mesmo ID do documento usado no painel)
     const userAtual = auth.currentUser;
-    let codigoRef = "";
-
-    if (userAtual) {
-      // Tenta buscar diretamente pelo UID do usuário logado (geralmente é o ID do documento)
-      const docRef = await db.collection("crm_representantes").doc(userAtual.uid).get();
-      
-      if (docRef.exists) {
-        console.log("Documento encontrado pelo UID:", docRef.id);
-        codigoRef = docRef.id;
-      } else {
-        // Fallback: se não achar pelo UID, tenta pelo e-mail
-        const repSnapshot = await db.collection("crm_representantes")
-          .where("email", "==", emailRep)
-          .get();
-
-        if (!repSnapshot.empty) {
-          const docRep = repSnapshot.docs[0];
-          console.log("Documento encontrado pelo email:", docRep.id);
-          codigoRef = docRep.id;
-        } else {
-          // Se realmente não achar em nenhum lugar, usa o UID do Auth como código padrão
-          console.log("Nenhum documento encontrado na coleção. Usando Auth UID.");
-          codigoRef = userAtual.uid;
-        }
-      }
-    } else {
-      codigoRef = emailRep.split('@')[0];
-    }
+    const codigoRef = userAtual ? userAtual.uid : "";
 
     const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
-    console.log("URL gerada:", urlCompleta);
+    console.log("URL gerada no CRM:", urlCompleta);
 
     const inputLink = document.getElementById("input-link-indicacao");
     if (inputLink) {
@@ -730,9 +701,8 @@
         correctLevel: QRCode.CorrectLevel.H
       });
     }
-
   } catch (error) {
-    console.error("Erro ao gerar link de indicação:", error);
+    console.error("Erro ao gerar link de indicação no CRM:", error);
   }
 }
   window.copiarLinkIndicacao = function() {
