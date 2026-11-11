@@ -162,26 +162,29 @@
     <button onclick="fazerLogout()" style="width: auto !important; max-width: 120px; padding: 6px 16px; background-color: #dc2626; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-block;">Sair</button>
   </div>
 
-    <!-- Alerta de Link de Indicação -->
+   <!-- Alerta de Link de Indicação -->
 <div class="bg-gray-800 border border-yellow-500 rounded-lg p-6 mb-8 mt-4 shadow-lg shadow-yellow-500/10">
     <h2 class="text-lg font-semibold mb-2">Seu Link de Indicação (Divulgue e Ganhe!)</h2>
     <p class="text-gray-400 text-sm mb-4">Envie este link para seus clientes. Qualquer assinatura feita através dele gerará comissão automática para você.</p>
     
-    <!-- QR Code Centralizado (Usando DIV para a biblioteca de QR code injetar) -->
+    <!-- QR Code Centralizado -->
     <div style="display: flex; justify-content: center; width: 100%;">
         <div id="qrcode" style="margin-bottom: 20px; padding: 10px; background: white; border-radius: 12px; border: 4px solid #eab308; display: inline-block;"></div>
     </div>
 
-    <!-- Linha com Input e Botão Copiar Compacto -->
-<div style="display: flex; gap: 8px; align-items: center; width: 100%;">
-    <input type="text" id="link-indicacao" readonly 
-           style="flex-grow: 1; background: #111827; border: 1px solid #374151; color: #d1d5db; border-radius: 6px; padding: 8px 12px; outline: none; font-size: 14px;">
-    
-    <button id="btn-copiar" onclick="copiarLinkIndicacao()" 
-            style="background-color: #ca8a04; color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; white-space: nowrap; font-size: 14px;">
-        Copiar
-    </button>
-  </div>
+    <!-- Container Limitado para o Input e o Botão ficarem compactos e centralizados -->
+    <div style="display: flex; justify-content: center; width: 100%;">
+        <div style="display: flex; gap: 8px; align-items: center; width: 100%; max-width: 600px;">
+            <input type="text" id="link-indicacao" readonly 
+                   style="flex-grow: 1; background: #111827; border: 1px solid #374151; color: #d1d5db; border-radius: 6px; padding: 8px 12px; outline: none; font-size: 14px;">
+            
+            <button id="btn-copiar" onclick="copiarLinkIndicacao()" 
+                    style="background-color: #ca8a04; color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; white-space: nowrap; font-size: 14px;">
+                Copiar
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Botão Novo Lead Manual logo abaixo -->
 <div style="margin-bottom: 25px;">
