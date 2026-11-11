@@ -162,23 +162,23 @@
     <button onclick="fazerLogout()" style="width: auto !important; max-width: 120px; padding: 6px 16px; background-color: #dc2626; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-block;">Sair</button>
   </div>
 
-    <!-- Bloco do Link de Indicação -->
+    <!-- Alerta de Link de Indicação -->
 <div class="bg-gray-800 border border-yellow-500 rounded-lg p-6 mb-8 mt-4 shadow-lg shadow-yellow-500/10">
     <h2 class="text-lg font-semibold mb-2">Seu Link de Indicação (Divulgue e Ganhe!)</h2>
     <p class="text-gray-400 text-sm mb-4">Envie este link para seus clientes. Qualquer assinatura feita através dele gerará comissão automática para você.</p>
     
-    <!-- QR Code Centralizado -->
-    <div class="flex justify-center w-full mb-5">
-        <img id="qrCodeImg" src="" alt="QR Code do Representante" class="hidden rounded-xl border-4 border-yellow-500 max-w-[200px]">
+    <!-- QR Code Centralizado (Usando DIV para a biblioteca de QR code injetar) -->
+    <div style="display: flex; justify-content: center; width: 100%;">
+        <div id="qrcode" style="margin-bottom: 20px; padding: 10px; background: white; border-radius: 12px; border: 4px solid #eab308; display: inline-block;"></div>
     </div>
 
-    <!-- Linha contendo o Input e o Botão lado a lado -->
-    <div class="flex flex-row items-center gap-2 w-full">
+    <!-- Linha com Input e Botão Copiar Compacto -->
+    <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
         <input type="text" id="link-indicacao" readonly 
-               class="flex-1 bg-gray-900 border border-gray-700 text-gray-300 rounded p-3 focus:outline-none focus:border-yellow-500">
+               style="flex-grow: 1; background: #111827; border: 1px solid #374151; color: #d1d5db; border-radius: 6px; padding: 12px; outline: none;">
         
         <button id="btn-copiar" onclick="copiarLinkIndicacao()" 
-                class="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-3 rounded font-bold transition whitespace-nowrap">
+                style="background-color: #ca8a04; color: white; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; white-space: nowrap;">
             Copiar
         </button>
     </div>
