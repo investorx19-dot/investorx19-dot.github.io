@@ -162,23 +162,22 @@
     <button onclick="fazerLogout()" style="width: auto !important; max-width: 120px; padding: 6px 16px; background-color: #dc2626; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-block;">Sair</button>
   </div>
 
-      <!-- Bloco do Link de Indicação e QR Code Exato -->
-<div style="background: rgba(25, 30, 45, 0.85); border: 1px solid #2a344d; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
-  <h3 style="color: #fff; font-size: 1.1rem; margin-bottom: 8px;">Seu Link de Indicação (Divulgue e Ganhe!)</h3>
-  <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;">Envie este link para seus clientes. Qualquer assinatura feita através dele gerará comissão automática para você.</p>
-  
-  <!-- Contentor do QR Code -->
-  <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-    <div id="qrcode" style="background: #fff; padding: 10px; border-radius: 8px; display: inline-block;"></div>
-  </div>
-
- <!-- Caixa do Link e Botão Copiar -->
-  <div style="display: flex; gap: 10px; align-items: center; background: #131722; border: 1px solid #2a344d; border-radius: 8px; padding: 12px 15px;">
-    <input type="text" id="input-link-indicacao" readonly style="background: transparent; border: none; color: #00d2ff; flex: 1; min-width: 0; font-size: 0.95rem; outline: none;" value="A carregar link...">
-    <button onclick="copiarLinkIndicacao()" style="background: #00d2ff; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; width: auto !important;">Copiar</button>
-  </div>
+    <!-- Alerta de Link de Indicação -->
+        <div class="bg-gray-800 border border-yellow-500 rounded-lg p-6 mb-8 mt-4 shadow-lg shadow-yellow-500/10">
+            <h2 class="text-lg font-semibold mb-2">Seu Link de Indicação (Divulgue e Ganhe!)</h2>
+            <p class="text-gray-400 text-sm mb-4">Envie este link para seus clientes. Qualquer assinatura feita através dele gerará comissão automática para você.</p>
+            <div style="display: flex; justify-content: center; width: 100%;">
+    <img id="qrCodeImg" src="" alt="QR Code do Representante" style="display: none; margin-bottom: 20px; border-radius: 12px; border: 4px solid #eab308; max-width: 200px;">
 </div>
-
+            <div class="flex gap-2">
+                <input type="text" id="link-indicacao" readonly 
+                       class="flex-grow bg-gray-900 border border-gray-700 text-gray-300 rounded p-3 focus:outline-none focus:border-yellow-500">
+                <button id="btn-copiar" class="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-3 rounded font-bold transition">
+                    Copiar
+                </button>
+            </div>
+        </div>
+        
 <!-- Botão Novo Lead Manual logo abaixo -->
 <div style="margin-bottom: 25px;">
   <button onclick="abrirModalNovoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">
