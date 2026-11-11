@@ -177,7 +177,7 @@
                 </button>
             </div>
         </div>
-        
+
 <!-- Botão Novo Lead Manual logo abaixo -->
 <div style="margin-bottom: 25px;">
   <button onclick="abrirModalNovoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">
@@ -676,69 +676,58 @@
     }
   };
 
-  // 10. Funções para o Link de Indicação e QR Code dinâmicos
+ // 10. Funções para o Link de Indicação e QR Code dinâmicos
   async function carregarLinkEQRCodeRepresentante(emailRep) {
-  try {
-    console.log("A procurar dados para o email:", emailRep);
-    
-    // Faz a consulta na coleção de utilizadores do Firestore usando o e-mail do representante
-    const q = query(collection(db, "usuarios"), where("email", "==", emailRep));
-    const querySnapshot = await getDocs(q);
+    try {
+      console.log("A procurar dados para o email:", emailRep);
+      
+      // Consulta usando a sintaxe Compat (mesma do resto do script)
+      const querySnapshot = await db.collection("usuarios")
+        .where("email", "==", emailRep)
+        .get();
 
-    let codigoRef = "";
+      let codigoRef = "";
 
-    if (!querySnapshot.empty) {
-      const userDoc = querySnapshot.docs[0];
-      // Pega exatamente o ID do documento do banco, igualzinho ao painel de afiliado!
-      codigoRef = userDoc.id;
-      console.log("ID encontrado na coleção usuarios:", codigoRef);
-    } else {
-      console.log("Nenhum documento encontrado pelo e-mail. Usando fallback.");
-      codigoRef = emailRep.split('@')[0];
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        // Pega exatamente o ID do documento do banco
+        codigoRef = userDoc.id;
+        console.log("ID encontrado na coleção usuarios:", codigoRef);
+      } else {
+        console.log("Nenhum documento encontrado pelo e-mail. Usando fallback.");
+        codigoRef = emailRep.split('@')[0];
+      }
+
+      const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
+      console.log("URL gerada:", urlCompleta);
+
+      // Atualiza o input do link (ajustado para o ID correto: "link-indicacao")
+      const inputLink = document.getElementById("link-indicacao");
+      if (inputLink) {
+        inputLink.value = urlCompleta;
+      }
+
+      // Atualiza a imagem do QR Code que está no seu HTML (id="qrCodeImg")
+      const qrCodeImg = document.getElementById("qrCodeImg");
+      if (qrCodeImg) {
+        // Usando API pública rápida para gerar a imagem do QR Code via link
+        qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlCompleta)}`;
+        qrCodeImg.style.display = 'block';
+      }
+
+    } catch (error) {
+      console.error("Erro ao gerar link de indicação no CRM:", error);
     }
-
-    const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
-    console.log("URL gerada no CRM:", urlCompleta);
-
-    const inputLink = document.getElementById("input-link-indicacao");
-    if (inputLink) {
-      inputLink.value = urlCompleta;
-    }
-
-    const containerQr = document.getElementById("qrcode");
-    if (containerQr) {
-      containerQr.innerHTML = "";
-      new QRCode(containerQr, {
-        text: urlCompleta,
-        width: 130,
-        height: 130,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
-
-  } catch (error) {
-    console.error("Erro ao gerar link de indicação no CRM:", error);
   }
-}
+
+  // Função para o botão de copiar ajustada para o ID correto
   window.copiarLinkIndicacao = function() {
-    const inputLink = document.getElementById("input-link-indicacao");
+    const inputLink = document.getElementById("link-indicacao");
     if (inputLink) {
       inputLink.select();
       inputLink.setSelectionRange(0, 99999);
       navigator.clipboard.writeText(inputLink.value);
       alert("Link copiado com sucesso!");
-    }
-  };
-
-  // 11. Função para o botão Sair (Logout)
-  window.fazerLogout = async function() {
-    try {
-      await auth.signOut();
-      window.location.reload();
-    } catch (error) {
-      console.error("Erro ao sair:", error);
     }
   };
 </script>
