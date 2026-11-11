@@ -684,30 +684,42 @@
     }
   };
 
-  // 10. Funções para o Link de Indicação e QR Code dinâmicos
+  // 10. Funções para o Link de Indicação e QR Code dinâmicos (Sincronizado com o Painel)
   async function carregarLinkEQRCodeRepresentante(emailRep) {
     try {
       console.log("A procurar dados para o email:", emailRep);
+      const user = firebase.auth().currentUser;
       
-      // Consulta usando a sintaxe Compat do Firebase
-      const querySnapshot = await db.collection("usuarios")
-        .where("email", "==", emailRep)
-        .get();
-
       let codigoRef = "";
 
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        // Pega exatamente o ID do documento do banco
-        codigoRef = userDoc.id;
-        console.log("ID encontrado na coleção usuarios:", codigoRef);
+      if (user) {
+        // Tenta buscar o documento pelo UID direto (que costuma ser o ID do documento na coleção de usuários/afiliados)
+        const userDocRef = await db.collection("usuarios").doc(user.uid).get();
+        
+        if (userDocRef.exists && userDocRef.data().ref) {
+          // Se houver um campo 'ref' explícito guardado no documento
+          codigoRef = userDocRef.data().ref;
+        } else if (userDocRef.exists) {
+          // Caso contrário, usa o próprio ID do documento do utilizador logado
+          codigoRef = userDocRef.id;
+        } else {
+          // Fallback caso procure por email na coleção de usuários
+          const querySnapshot = await db.collection("usuarios")
+            .where("email", "==", emailRep)
+            .get();
+          
+          if (!querySnapshot.empty) {
+            codigoRef = querySnapshot.docs[0].id;
+          } else {
+            codigoRef = user.uid; // Último fallback seguro
+          }
+        }
       } else {
-        console.log("Nenhum documento encontrado pelo e-mail. Usando fallback.");
         codigoRef = emailRep.split('@')[0];
       }
 
       const urlCompleta = `https://mark6.com.br/?ref=${codigoRef}`;
-      console.log("URL gerada:", urlCompleta);
+      console.log("URL sincronizada gerada:", urlCompleta);
 
       // 1. Atualiza o input do link
       const inputLink = document.getElementById("link-indicacao");
@@ -715,12 +727,11 @@
         inputLink.value = urlCompleta;
       }
 
-      // 2. Atualiza o QR Code (suporta tanto a DIV da biblioteca quanto a tag IMG)
+      // 2. Atualiza o QR Code (suporta a DIV da biblioteca ou tag IMG)
       const containerQr = document.getElementById("qrcode");
       const qrCodeImg = document.getElementById("qrCodeImg");
 
       if (containerQr) {
-        // Se estiver a usar a biblioteca QRCode.js numa div
         containerQr.innerHTML = "";
         new QRCode(containerQr, {
           text: urlCompleta,
@@ -731,27 +742,15 @@
           correctLevel: QRCode.CorrectLevel.H
         });
       } else if (qrCodeImg) {
-        // Se estiver a usar uma tag img padrão
         qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlCompleta)}`;
         qrCodeImg.style.display = 'block';
       }
 
     } catch (error) {
-      console.error("Erro ao gerar link de indicação no CRM:", error);
+      console.error("Erro ao sincronizar link de indicação:", error);
     }
   }
 
-  window.copiarLinkIndicacao = function() {
-    const inputLink = document.getElementById("link-indicacao");
-    if (inputLink) {
-      inputLink.select();
-      inputLink.setSelectionRange(0, 99999);
-      navigator.clipboard.writeText(inputLink.value);
-      alert("Link copiado com sucesso!");
-    }
-  };
-  
-  // Função para o botão de copiar ajustada para o ID correto
   window.copiarLinkIndicacao = function() {
     const inputLink = document.getElementById("link-indicacao");
     if (inputLink) {
