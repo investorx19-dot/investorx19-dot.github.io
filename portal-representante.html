@@ -243,7 +243,16 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-  console.log("1. Script do portal iniciou");
+  const loadingDiv = document.getElementById("loading");
+
+  function log(msg) {
+    console.log(msg);
+    if (loadingDiv) {
+      loadingDiv.innerHTML += "<br>" + msg;
+    }
+  }
+
+  log("1. Script do portal iniciou");
 
   const firebaseConfig = {
     apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
@@ -254,37 +263,32 @@
     appId: "1:924943702876:web:77929086c5addb13b37f99"
   };
 
-  console.log("2. Config carregada");
+  log("2. Config carregada");
 
   if (typeof firebase === "undefined") {
-    console.error("ERRO: Firebase não foi carregado!");
-    document.getElementById("loading").innerHTML = "Erro: Firebase não carregou.";
+    log("ERRO: Firebase não foi carregado!");
   } else {
-    console.log("3. Firebase encontrado");
+    log("3. Firebase encontrado");
     
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    console.log("4. Firebase inicializado");
+    log("4. Firebase inicializado");
 
     const auth = firebase.auth();
-    console.log("5. Auth criado. Usuário atual:", auth.currentUser);
+    log("5. Auth criado. Usuário atual: " + (auth.currentUser ? auth.currentUser.email : "nenhum"));
 
     auth.onAuthStateChanged((user) => {
-      console.log("6. onAuthStateChanged disparou:", user ? user.email : "nenhum usuário");
+      log("6. onAuthStateChanged disparou: " + (user ? user.email : "nenhum usuário"));
       
-      const loading = document.getElementById("loading");
       const dashboard = document.getElementById("dashboard-screen");
 
       if (user) {
-        if (loading) loading.style.display = "none";
+        if (loadingDiv) loadingDiv.style.display = "none";
         if (dashboard) dashboard.style.display = "block";
-        console.log("7. Dashboard liberado");
+        log("7. Dashboard liberado");
       } else {
-        console.log("8. Sem usuário, redirecionando em 2s...");
-        setTimeout(() => {
-          window.location.href = "https://mark6.com.br";
-        }, 2000);
+        log("8. Sem usuário. NÃO vou redirecionar agora (teste).");
       }
     });
   }
