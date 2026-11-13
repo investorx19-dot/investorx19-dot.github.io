@@ -243,275 +243,325 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-      authDomain: "painel-megasena.firebaseapp.com",
-      projectId: "painel-megasena",
-      storageBucket: "painel-megasena.firebasestorage.app",
-      messagingSenderId: "924943702876",
-      appId: "1:924943702876:web:77929086c5addb13b37f99"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+    authDomain: "painel-megasena.firebaseapp.com",
+    projectId: "painel-megasena",
+    storageBucket: "painel-megasena.firebasestorage.app",
+    messagingSenderId: "924943702876",
+    appId: "1:924943702876:web:77929086c5addb13b37f99"
+  };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
 
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    // Verifica se o usuário já está logado no sistema principal
-    auth.onAuthStateChanged(async (user) => {
-      const loading = document.getElementById("loading");
-      const dashboard = document.getElementById("dashboard-screen");
+  // Garante persistência da sessão
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-      if (user) {
-        console.log("Usuário autenticado:", user.email);
-        loading.style.display = "none";
-        dashboard.style.display = "block";
+  let authChecked = false;
 
-        // Carrega os dados
-        await carregarLeadsDoKanban(user.email);
-        await carregarComissoesRepresentante(user.email);
-      } else {
-        // Não está logado → redireciona para a página principal
-        console.log("Usuário não autenticado. Redirecionando...");
-        window.location.href = "https://mark6.com.br";
-      }
-    });
+  auth.onAuthStateChanged(async (user) => {
+    if (authChecked) return;
+    authChecked = true;
 
-    window.fazerLogout = async function() {
-      try {
-        await auth.signOut();
-        window.location.href = "https://mark6.com.br";
-      } catch (error) {
-        console.error("Erro ao fazer logout:", error);
-        alert("Erro ao sair da conta.");
-      }
-    };
+    const loading = document.getElementById("loading");
+    const dashboard = document.getElementById("dashboard-screen");
 
-    // ===== FUNÇÕES DO KANBAN E CRM (mantidas) =====
-    async function carregarComissoesRepresentante(email) {
-      try {
-        const querySnapshot = await db.collection("crm_oportunidades")
-          .where("representanteEmail", "==", email)
-          .get();
-        
-        const tabela = document.getElementById("tabela-comissoes");
-        if (!tabela) return;
-        
-        tabela.innerHTML = "";
-        if (querySnapshot.empty) {
-          tabela.innerHTML = `<tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>`;
-          return;
+    if (user) {
+      console.log("Usuário autenticado:", user.email);
+      if (loading) loading.style.display = "none";
+      if (dashboard) dashboard.style.display = "block";
+
+      await carregarLeadsDoKanban(user.email);
+      await carregarComissoesRepresentante(user.email);
+    } else {
+      // Espera um pouco antes de redirecionar
+      setTimeout(() => {
+        if (!auth.currentUser) {
+          console.log("Usuário não autenticado. Redirecionando...");
+          window.location.href = "https://mark6.com.br";
         }
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${data.clienteNome || "Cliente"}</td>
-            <td>${data.status || "Ativo"}</td>
-            <td>R$ ${data.comissao ? data.comissao.toFixed(2) : "0,00"}</td>
-          `;
-          tabela.appendChild(tr);
-        });
-      } catch (error) {
-        console.error("Erro ao buscar comissões:", error);
-      }
+      }, 1000);
     }
+  });
 
-    function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { ev.dataTransfer.setData("text/plain", ev.target.id); }
+  window.fazerLogout = async function() {
+    try {
+      await auth.signOut();
+      window.location.href = "https://mark6.com.br";
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+      alert("Erro ao sair da conta.");
+    }
+  };
 
-    async function drop(ev) {
-      ev.preventDefault();
-      const cardId = ev.dataTransfer.getData("text/plain");
-      const cardElement = document.getElementById(cardId);
-      const colunaDestino = ev.target.closest('.kanban-column');
-      if (!colunaDestino) return;
-      const targetCardsContainer = colunaDestino.querySelector('.kanban-cards');
+  async function carregarComissoesRepresentante(email) {
+    try {
+      const querySnapshot = await db.collection("crm_oportunidades")
+        .where("representanteEmail", "==", email)
+        .get();
       
-      if (targetCardsContainer && cardElement) {
-        targetCardsContainer.appendChild(cardElement);
-        const novoStatus = colunaDestino.id.replace('col-', '');
-        const leadId = cardId.replace('lead-', '');
-        
-        try {
-          await db.collection("crm_leads").doc(leadId).update({
-            statusEtapa: novoStatus,
-            ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          atualizarContadoresKanban();
-        } catch (error) {
-          console.error("Erro ao atualizar etapa:", error);
-        }
-      }
-    }
-
-    async function carregarLeadsDoKanban(emailRep) {
-      try {
-        ['novo', 'contato', 'teste', 'fechamento', 'ganho'].forEach(etapa => {
-          const container = document.getElementById(`cards-${etapa}`);
-          if (container) container.innerHTML = '';
-        });
-
-        const snapshot = await db.collection("crm_leads")
-          .where("representanteEmail", "==", emailRep)
-          .get();
-
-        if (snapshot.empty) {
-          atualizarContadoresKanban();
-          return;
-        }
-
-        snapshot.forEach((doc) => {
-          const lead = doc.data();
-          const leadId = doc.id;
-          const etapa = lead.statusEtapa || 'novo';
-
-          const card = document.createElement('div');
-          card.className = 'lead-card';
-          card.id = `lead-${leadId}`;
-          card.draggable = true;
-          card.addEventListener('dragstart', drag);
-          card.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'A') window.abrirDetalhesLead(leadId);
-          });
-
-          const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
-          const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
-
-          card.innerHTML = `
-            <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
-            <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
-            <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
-            ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
-          `;
-
-          const colunaContainer = document.getElementById(`cards-${etapa}`);
-          if (colunaContainer) colunaContainer.appendChild(card);
-        });
-
-        atualizarContadoresKanban();
-      } catch (error) {
-        console.error("Erro ao carregar leads:", error);
-      }
-    }
-
-    function atualizarContadoresKanban() {
-      ['novo', 'contato', 'teste', 'fechamento', 'ganho'].forEach(etapa => {
-        const container = document.getElementById(`cards-${etapa}`);
-        const badge = document.getElementById(`count-${etapa}`);
-        if (container && badge) badge.innerText = container.children.length;
-      });
-    }
-
-    let leadAtualId = null;
-
-    window.abrirDetalhesLead = async function(leadId) {
-      leadAtualId = leadId;
-      const modal = document.getElementById("modalLeadDetalhes");
-      const containerInfo = document.getElementById("modal-lead-info");
-      const containerAnotacoes = document.getElementById("lista-anotacoes");
+      const tabela = document.getElementById("tabela-comissoes");
+      if (!tabela) return;
       
-      containerInfo.innerHTML = "A carregar dados...";
-      containerAnotacoes.innerHTML = "";
-      document.getElementById("input-nova-anotacao").value = "";
-      modal.style.display = "flex";
-
-      try {
-        const docRef = await db.collection("crm_leads").doc(leadId).get();
-        if (!docRef.exists) {
-          containerInfo.innerHTML = "Lead não encontrado.";
-          return;
-        }
-        const lead = docRef.data();
-        containerInfo.innerHTML = `
-          <p><b>Nome:</b> ${lead.nome || 'Não informado'}</p>
-          <p><b>E-mail:</b> ${lead.email || 'Não informado'}</p>
-          <p><b>Telefone:</b> ${lead.telefone || 'Não informado'}</p>
-          <p><b>Origem:</b> ${lead.origem || 'Indefinida'}</p>
-          <p><b>Etapa Atual:</b> <span style="text-transform: uppercase; color: #00d2ff;">${lead.statusEtapa || 'novo'}</span></p>
-        `;
-        renderizarAnotacoes(lead.anotacoes || []);
-      } catch (error) {
-        containerInfo.innerHTML = "Erro ao carregar informações.";
-      }
-    };
-
-    window.fecharModalDetalhes = function() {
-      document.getElementById("modalLeadDetalhes").style.display = "none";
-      leadAtualId = null;
-    };
-
-    window.salvarAnotacaoLead = async function() {
-      const texto = document.getElementById("input-nova-anotacao").value.trim();
-      if (!texto || !leadAtualId) return;
-
-      try {
-        await db.collection("crm_leads").doc(leadAtualId).update({
-          anotacoes: firebase.firestore.FieldValue.arrayUnion({
-            texto: texto,
-            data: new Date().toISOString()
-          })
-        });
-        document.getElementById("input-nova-anotacao").value = "";
-        window.abrirDetalhesLead(leadAtualId);
-      } catch (error) {
-        alert("Erro ao guardar anotação.");
-      }
-    };
-
-    function renderizarAnotacoes(anotacoes) {
-      const container = document.getElementById("lista-anotacoes");
-      if (!anotacoes || anotacoes.length === 0) {
-        container.innerHTML = "<p style='color: #888;'>Sem anotações registadas.</p>";
+      tabela.innerHTML = "";
+      
+      if (querySnapshot.empty) {
+        tabela.innerHTML = `<tr><td colspan="3" style="text-align: center;">Nenhuma oportunidade encontrada.</td></tr>`;
         return;
       }
-      container.innerHTML = [...anotacoes].reverse().map(item => {
-        const data = new Date(item.data).toLocaleString('pt-BR');
-        return `
-          <div style="background: #131722; padding: 8px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid #00d2ff;">
-            <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 3px;">${data}</div>
-            <div>${item.texto}</div>
-          </div>
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.clienteNome || "Cliente"}</td>
+          <td>${data.status || "Ativo"}</td>
+          <td>R$ ${data.comissao ? data.comissao.toFixed(2) : "0,00"}</td>
         `;
-      }).join('');
+        tabela.appendChild(tr);
+      });
+    } catch (error) {
+      console.error("Erro ao buscar comissões:", error);
+    }
+  }
+
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function drag(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+  }
+
+  async function drop(ev) {
+    ev.preventDefault();
+    const cardId = ev.dataTransfer.getData("text/plain");
+    const cardElement = document.getElementById(cardId);
+    
+    const colunaDestino = ev.target.closest('.kanban-column');
+    if (!colunaDestino) return;
+    
+    const targetCardsContainer = colunaDestino.querySelector('.kanban-cards');
+    
+    if (targetCardsContainer && cardElement) {
+      targetCardsContainer.appendChild(cardElement);
+      
+      const novoStatus = colunaDestino.id.replace('col-', '');
+      const leadId = cardId.replace('lead-', '');
+      
+      try {
+        await db.collection("crm_leads").doc(leadId).update({
+          statusEtapa: novoStatus,
+          ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`Lead ${leadId} movido para ${novoStatus}`);
+        atualizarContadoresKanban();
+      } catch (error) {
+        console.error("Erro ao atualizar etapa do lead:", error);
+      }
+    }
+  }
+
+  async function carregarLeadsDoKanban(emailRep) {
+    try {
+      ['novo', 'contato', 'teste', 'fechamento', 'ganho'].forEach(etapa => {
+        const container = document.getElementById(`cards-${etapa}`);
+        if (container) container.innerHTML = '';
+      });
+
+      const snapshot = await db.collection("crm_leads")
+        .where("representanteEmail", "==", emailRep)
+        .get();
+
+      if (snapshot.empty) {
+        console.log("Nenhum lead encontrado.");
+        atualizarContadoresKanban();
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const lead = doc.data();
+        const leadId = doc.id;
+        const etapa = lead.statusEtapa || 'novo';
+
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        card.id = `lead-${leadId}`;
+        card.draggable = true;
+        
+        card.addEventListener('dragstart', drag);
+        card.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'A') {
+            window.abrirDetalhesLead(leadId);
+          }
+        });
+
+        const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
+        const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
+
+        card.innerHTML = `
+          <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
+          <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
+          <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
+          ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
+        `;
+
+        const colunaContainer = document.getElementById(`cards-${etapa}`);
+        if (colunaContainer) {
+          colunaContainer.appendChild(card);
+        }
+      });
+
+      atualizarContadoresKanban();
+    } catch (error) {
+      console.error("Erro ao carregar leads:", error);
+    }
+  }
+
+  function atualizarContadoresKanban() {
+    ['novo', 'contato', 'teste', 'fechamento', 'ganho'].forEach(etapa => {
+      const container = document.getElementById(`cards-${etapa}`);
+      const badge = document.getElementById(`count-${etapa}`);
+      if (container && badge) {
+        badge.innerText = container.children.length;
+      }
+    });
+  }
+
+  let leadAtualId = null;
+
+  window.abrirDetalhesLead = async function(leadId) {
+    leadAtualId = leadId;
+    const modal = document.getElementById("modalLeadDetalhes");
+    const containerInfo = document.getElementById("modal-lead-info");
+    const containerAnotacoes = document.getElementById("lista-anotacoes");
+    
+    if (!modal) return;
+
+    containerInfo.innerHTML = "A carregar dados...";
+    containerAnotacoes.innerHTML = "";
+    document.getElementById("input-nova-anotacao").value = "";
+    modal.style.display = "flex";
+
+    try {
+      const docRef = await db.collection("crm_leads").doc(leadId).get();
+      if (!docRef.exists) {
+        containerInfo.innerHTML = "Lead não encontrado.";
+        return;
+      }
+
+      const lead = docRef.data();
+      containerInfo.innerHTML = `
+        <p><b>Nome:</b> ${lead.nome || 'Não informado'}</p>
+        <p><b>E-mail:</b> ${lead.email || 'Não informado'}</p>
+        <p><b>Telefone:</b> ${lead.telefone || 'Não informado'}</p>
+        <p><b>Origem:</b> ${lead.origem || 'Indefinida'}</p>
+        <p><b>Etapa Atual:</b> <span style="text-transform: uppercase; color: #00d2ff;">${lead.statusEtapa || 'novo'}</span></p>
+      `;
+
+      renderizarAnotacoes(lead.anotacoes || []);
+    } catch (error) {
+      console.error("Erro ao carregar detalhes:", error);
+      containerInfo.innerHTML = "Erro ao carregar informações.";
+    }
+  };
+
+  window.fecharModalDetalhes = function() {
+    const modal = document.getElementById("modalLeadDetalhes");
+    if (modal) modal.style.display = "none";
+    leadAtualId = null;
+  };
+
+  window.salvarAnotacaoLead = async function() {
+    const textoAnotacao = document.getElementById("input-nova-anotacao").value.trim();
+    if (!textoAnotacao || !leadAtualId) return;
+
+    try {
+      await db.collection("crm_leads").doc(leadAtualId).update({
+        anotacoes: firebase.firestore.FieldValue.arrayUnion({
+          texto: textoAnotacao,
+          data: new Date().toISOString()
+        })
+      });
+
+      document.getElementById("input-nova-anotacao").value = "";
+      window.abrirDetalhesLead(leadAtualId);
+    } catch (error) {
+      console.error("Erro ao salvar anotação:", error);
+      alert("Erro ao guardar anotação.");
+    }
+  };
+
+  function renderizarAnotacoes(anotacoes) {
+    const container = document.getElementById("lista-anotacoes");
+    if (!container) return;
+
+    if (!anotacoes || anotacoes.length === 0) {
+      container.innerHTML = "<p style='color: #888;'>Sem anotações registadas.</p>";
+      return;
     }
 
-    window.abrirModalNovoLead = function() {
-      document.getElementById("formNovoLeadManual").reset();
-      document.getElementById("modalNovoLead").style.display = "flex";
-    };
+    container.innerHTML = [...anotacoes].reverse().map(item => {
+      const dataFormatada = new Date(item.data).toLocaleString('pt-BR');
+      return `
+        <div style="background: #131722; padding: 8px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid #00d2ff;">
+          <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 3px;">${dataFormatada}</div>
+          <div>${item.texto}</div>
+        </div>
+      `;
+    }).join('');
+  }
 
-    window.fecharModalNovoLead = function() {
-      document.getElementById("modalNovoLead").style.display = "none";
-    };
+  window.abrirModalNovoLead = function() {
+    const form = document.getElementById("formNovoLeadManual");
+    const modal = document.getElementById("modalNovoLead");
+    if (form) form.reset();
+    if (modal) modal.style.display = "flex";
+  };
 
-    window.salvarLeadManual = async function(event) {
-      event.preventDefault();
-      const user = firebase.auth().currentUser;
-      if (!user) return;
+  window.fecharModalNovoLead = function() {
+    const modal = document.getElementById("modalNovoLead");
+    if (modal) modal.style.display = "none";
+  };
 
-      const nome = document.getElementById("manual-nome").value.trim();
-      const telefone = document.getElementById("manual-telefone").value.trim();
-      const email = document.getElementById("manual-email").value.trim();
-      const origem = document.getElementById("manual-origem").value;
+  window.salvarLeadManual = async function(event) {
+    event.preventDefault();
 
-      try {
-        await db.collection("crm_leads").add({
-          nome, telefone, email, origem,
-          representanteEmail: user.email,
-          statusEtapa: "novo",
-          dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        fecharModalNovoLead();
-        alert("Lead registado com sucesso!");
-        carregarLeadsDoKanban(user.email);
-      } catch (error) {
-        alert("Erro ao guardar o lead.");
-      }
-    };
-  </script>
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      alert("Erro: Utilizador não autenticado.");
+      return;
+    }
+
+    const nome = document.getElementById("manual-nome").value.trim();
+    const telefone = document.getElementById("manual-telefone").value.trim();
+    const email = document.getElementById("manual-email").value.trim();
+    const origem = document.getElementById("manual-origem").value;
+
+    try {
+      await db.collection("crm_leads").add({
+        nome: nome,
+        telefone: telefone,
+        email: email,
+        origem: origem,
+        representanteEmail: user.email,
+        statusEtapa: "novo",
+        dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      fecharModalNovoLead();
+      alert("Lead registado com sucesso!");
+      carregarLeadsDoKanban(user.email);
+    } catch (error) {
+      console.error("Erro ao registar lead:", error);
+      alert("Erro ao guardar o lead.");
+    }
+  };
+</script>
 </body>
 </html>
