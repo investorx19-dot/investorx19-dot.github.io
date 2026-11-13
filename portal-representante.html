@@ -13,6 +13,7 @@
       --text-muted: #94a3b8;
       --border: #334155;
       --success: #10b981;
+      --warning: #f59e0b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
@@ -90,16 +91,18 @@
 
     .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
     
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 25px 0; }
-    .card { background: var(--card-bg); padding: 18px; border-radius: 10px; border: 1px solid var(--border); }
-    .card h3 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
-    .card .value { font-size: 1.7rem; font-weight: bold; color: var(--success); }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 20px 0; }
+    .card { background: var(--card-bg); padding: 16px; border-radius: 10px; border: 1px solid var(--border); }
+    .card h3 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+    .card .value { font-size: 1.5rem; font-weight: bold; color: var(--success); }
+    .card .value.warning { color: var(--warning); }
 
     table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin-top: 10px; }
-    th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     th { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
 
     #loading { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+    .section-title { margin: 30px 0 12px; font-size: 1.1rem; }
   </style>
 </head>
 <body>
@@ -123,7 +126,7 @@
         </button>
       </div>
 
-      <!-- Dashboard -->
+      <!-- Dashboard Principal -->
       <div class="metrics-grid">
         <div class="card">
           <h3>Total de Leads</h3>
@@ -140,6 +143,22 @@
         <div class="card">
           <h3>Taxa de Conversão</h3>
           <div class="value" id="stat-conversao">0%</div>
+        </div>
+        <div class="card">
+          <h3>Base Ativa</h3>
+          <div class="value" id="stat-base-ativa">0</div>
+        </div>
+        <div class="card">
+          <h3>Ticket Médio</h3>
+          <div class="value" id="stat-ticket">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <h3>Churn</h3>
+          <div class="value warning" id="stat-churn">0%</div>
+        </div>
+        <div class="card">
+          <h3>Meta x Realizado</h3>
+          <div class="value" id="stat-meta">0 / 10</div>
         </div>
       </div>
 
@@ -178,7 +197,10 @@
         </div>
       </div>
 
-      <h3 style="margin: 30px 0 15px;">Os seus Leads Registados</h3>
+      <h3 class="section-title">Performance por Origem</h3>
+      <div id="origem-stats" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;"></div>
+
+      <h3 class="section-title">Os seus Leads Registados</h3>
       <table>
         <thead>
           <tr>
@@ -186,12 +208,13 @@
             <th>Tipo</th>
             <th>Estágio Atual</th>
             <th>Valor</th>
+            <th>Origem</th>
             <th>Data</th>
           </tr>
         </thead>
         <tbody id="tabela-leads-corpo">
           <tr>
-            <td colspan="5" style="text-align: center; color: var(--text-muted);">A carregar os seus dados...</td>
+            <td colspan="6" style="text-align: center; color: var(--text-muted);">A carregar os seus dados...</td>
           </tr>
         </tbody>
       </table>
@@ -281,6 +304,7 @@
 
     const db = firebase.firestore();
     const etapas = ['recebido', 'qualificado', 'contato', 'apresentacao', 'proposta', 'fechamento', 'ganho', 'perdido'];
+    const META_VENDAS = 10; // Meta mensal simples
 
     function verificarAcesso() {
       const logado = localStorage.getItem('mark6_logado');
@@ -409,6 +433,7 @@
         atualizarContadoresKanban();
         atualizarDashboard(todosLeads);
         atualizarTabelaLeads(todosLeads);
+        atualizarPerformanceOrigem(todosLeads);
       } catch (error) {
         console.error("Erro ao carregar leads:", error);
       }
@@ -424,22 +449,51 @@
 
     function atualizarDashboard(leads) {
       const total = leads.length;
-      const vendas = leads.filter(l => l.statusEtapa === 'ganho').length;
-      const receita = leads
-        .filter(l => l.statusEtapa === 'ganho' && l.valorVenda)
-        .reduce((sum, l) => sum + (Number(l.valorVenda) || 0), 0);
-      const conversao = total > 0 ? ((vendas / total) * 100).toFixed(1) : 0;
+      const vendas = leads.filter(l => l.statusEtapa === 'ganho');
+      const perdidos = leads.filter(l => l.statusEtapa === 'perdido').length;
+      const receita = vendas.reduce((sum, l) => sum + (Number(l.valorVenda) || 0), 0);
+      const conversao = total > 0 ? ((vendas.length / total) * 100).toFixed(1) : 0;
+      const ticketMedio = vendas.length > 0 ? (receita / vendas.length) : 0;
+      const churn = total > 0 ? ((perdidos / total) * 100).toFixed(1) : 0;
 
       document.getElementById("stat-total-leads").textContent = total;
-      document.getElementById("stat-vendas").textContent = vendas;
+      document.getElementById("stat-vendas").textContent = vendas.length;
       document.getElementById("stat-receita").textContent = "R$ " + receita.toFixed(2).replace('.', ',');
       document.getElementById("stat-conversao").textContent = conversao + "%";
+      document.getElementById("stat-base-ativa").textContent = vendas.length;
+      document.getElementById("stat-ticket").textContent = "R$ " + ticketMedio.toFixed(2).replace('.', ',');
+      document.getElementById("stat-churn").textContent = churn + "%";
+      document.getElementById("stat-meta").textContent = vendas.length + " / " + META_VENDAS;
+    }
+
+    function atualizarPerformanceOrigem(leads) {
+      const container = document.getElementById("origem-stats");
+      if (!container) return;
+
+      const porOrigem = {};
+      leads.forEach(lead => {
+        const origem = lead.origem || "Não informado";
+        if (!porOrigem[origem]) porOrigem[origem] = { total: 0, vendas: 0 };
+        porOrigem[origem].total++;
+        if (lead.statusEtapa === "ganho") porOrigem[origem].vendas++;
+      });
+
+      container.innerHTML = Object.entries(porOrigem).map(([origem, data]) => {
+        const conv = data.total > 0 ? ((data.vendas / data.total) * 100).toFixed(0) : 0;
+        return `
+          <div style="background:#1e2538; border:1px solid #2a344d; border-radius:8px; padding:10px 14px; min-width:160px;">
+            <div style="font-size:0.8rem; color:#94a3b8;">${origem}</div>
+            <div style="font-weight:bold;">${data.vendas} vendas / ${data.total} leads</div>
+            <div style="font-size:0.75rem; color:#22c55e;">${conv}% conversão</div>
+          </div>
+        `;
+      }).join('') || '<span style="color:#94a3b8;">Sem dados de origem ainda.</span>';
     }
 
     function atualizarTabelaLeads(leads) {
       const tbody = document.getElementById("tabela-leads-corpo");
       if (!leads || leads.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Nenhum lead encontrado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Nenhum lead encontrado.</td></tr>`;
         return;
       }
 
@@ -449,6 +503,7 @@
           <td>${lead.segmento || '-'}</td>
           <td style="text-transform: capitalize;">${lead.statusEtapa || 'recebido'}</td>
           <td>${lead.valorVenda ? 'R$ ' + Number(lead.valorVenda).toFixed(2) : '-'}</td>
+          <td>${lead.origem || '-'}</td>
           <td>${lead.dataCriacao ? new Date(lead.dataCriacao.seconds * 1000).toLocaleDateString('pt-BR') : '-'}</td>
         </tr>
       `).join('');
