@@ -9,7 +9,6 @@
       --bg-color: #0f172a;
       --card-bg: #1e293b;
       --primary: #3b82f6;
-      --primary-hover: #2563eb;
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --border: #334155;
@@ -57,9 +56,7 @@
       font-weight: bold;
     }
 
-    .kanban-cards {
-      min-height: 250px;
-    }
+    .kanban-cards { min-height: 250px; }
 
     .lead-card {
       background-color: #0f1423;
@@ -76,16 +73,8 @@
       transform: translateY(-2px);
     }
 
-    .lead-name {
-      font-weight: bold;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-
-    .lead-info {
-      font-size: 0.8rem;
-      color: #94a3b8;
-    }
+    .lead-name { font-weight: bold; color: #fff; margin-bottom: 4px; }
+    .lead-info { font-size: 0.8rem; color: #94a3b8; }
 
     .btn-whatsapp {
       display: inline-block;
@@ -99,19 +88,17 @@
       font-weight: bold;
     }
 
-    .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
+    .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
     
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0; }
     .card { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border); }
     .card h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
     .card .value { font-size: 1.8rem; font-weight: bold; color: var(--success); }
 
-    table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin-top: 10px; }
     th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
-    tr:last-child td { border-bottom: none; }
-    
-    .hidden { display: none !important; }
+
     #loading { text-align: center; padding: 80px 20px; color: var(--text-muted); }
   </style>
 </head>
@@ -119,19 +106,17 @@
 
   <header>
     <h1>Mark6 - Portal do Parceiro</h1>
-    <button id="btn-logout" onclick="fazerLogout()" style="width: auto; padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Sair</button>
+    <button onclick="fazerLogout()" style="width: auto; padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Sair</button>
   </header>
 
   <div class="container">
     <div id="loading">Verificando acesso...</div>
 
-    <!-- PAINEL DO REPRESENTANTE -->
     <div id="dashboard-screen" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 id="welcome-msg" style="margin: 0;">Bem-vindo, Parceiro!</h2>
+        <h2 style="margin: 0;">Bem-vindo, Parceiro!</h2>
       </div>
 
-      <!-- Botão Novo Lead Manual -->
       <div style="margin-bottom: 25px;">
         <button onclick="abrirModalNovoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">
           + Novo Lead Manual
@@ -139,17 +124,25 @@
       </div>
 
       <div class="kanban-container">
-        <div class="kanban-column" id="col-novo" ondrop="drop(event)" ondragover="allowDrop(event)">
-          <h3>Leads Novos <span class="badge" id="count-novo">0</span></h3>
-          <div class="kanban-cards" id="cards-novo"></div>
+        <div class="kanban-column" id="col-recebido" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <h3>Lead Recebido <span class="badge" id="count-recebido">0</span></h3>
+          <div class="kanban-cards" id="cards-recebido"></div>
+        </div>
+        <div class="kanban-column" id="col-qualificado" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <h3>Lead Qualificado <span class="badge" id="count-qualificado">0</span></h3>
+          <div class="kanban-cards" id="cards-qualificado"></div>
         </div>
         <div class="kanban-column" id="col-contato" ondrop="drop(event)" ondragover="allowDrop(event)">
-          <h3>Contato Iniciado <span class="badge" id="count-contato">0</span></h3>
+          <h3>Contato Realizado <span class="badge" id="count-contato">0</span></h3>
           <div class="kanban-cards" id="cards-contato"></div>
         </div>
-        <div class="kanban-column" id="col-teste" ondrop="drop(event)" ondragover="allowDrop(event)">
-          <h3>Em Teste / Apresentação <span class="badge" id="count-teste">0</span></h3>
-          <div class="kanban-cards" id="cards-teste"></div>
+        <div class="kanban-column" id="col-apresentacao" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <h3>Demonstração <span class="badge" id="count-apresentacao">0</span></h3>
+          <div class="kanban-cards" id="cards-apresentacao"></div>
+        </div>
+        <div class="kanban-column" id="col-proposta" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <h3>Proposta / Negociação <span class="badge" id="count-proposta">0</span></h3>
+          <div class="kanban-cards" id="cards-proposta"></div>
         </div>
         <div class="kanban-column" id="col-fechamento" ondrop="drop(event)" ondragover="allowDrop(event)">
           <h3>Fechamento <span class="badge" id="count-fechamento">0</span></h3>
@@ -159,9 +152,12 @@
           <h3>Venda Realizada <span class="badge" id="count-ganho">0</span></h3>
           <div class="kanban-cards" id="cards-ganho"></div>
         </div>
+        <div class="kanban-column" id="col-perdido" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <h3>Perdido <span class="badge" id="count-perdido">0</span></h3>
+          <div class="kanban-cards" id="cards-perdido"></div>
+        </div>
       </div>
 
-      <!-- Métricas -->
       <div class="metrics-grid">
         <div class="card">
           <h3>Leads Capturados</h3>
@@ -178,7 +174,7 @@
         <thead>
           <tr>
             <th>Nome do Lead</th>
-            <th>Tipo (B2C/B2B)</th>
+            <th>Tipo</th>
             <th>Estágio Atual</th>
             <th>Data</th>
           </tr>
@@ -194,7 +190,7 @@
 
   <!-- Modal Detalhes do Lead -->
   <div id="modalLeadDetalhes" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: #1e2538; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; border: 1px solid #2a344d; color: #fff; position: relative;">
+    <div style="background: #1e2538; padding: 25px; border-radius: 10px; width: 90%; max-width: 520px; border: 1px solid #2a344d; color: #fff; position: relative; max-height: 90vh; overflow-y: auto;">
       <span onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 20px; font-size: 22px; cursor: pointer; color: #aaa;">&times;</span>
       <h3 style="margin-bottom: 15px; color: #00d2ff;">Detalhes do Lead</h3>
       <div id="modal-lead-info" style="margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;"></div>
@@ -202,38 +198,55 @@
       <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Histórico de Anotações</h4>
       <textarea id="input-nova-anotacao" placeholder="Escreva uma anotação..." style="width: 100%; height: 80px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 6px; padding: 10px; margin-bottom: 10px; resize: none;"></textarea>
       <button onclick="salvarAnotacaoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Adicionar Anotação</button>
-      <div id="lista-anotacoes" style="margin-top: 15px; max-height: 150px; overflow-y: auto; font-size: 0.85rem;"></div>
+      <div id="lista-anotacoes" style="margin-top: 15px; max-height: 180px; overflow-y: auto; font-size: 0.85rem;"></div>
     </div>
   </div>
 
   <!-- Modal Novo Lead -->
-  <div id="modalNovoLead" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: #1e2538; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; border: 1px solid #2a344d; color: #fff; position: relative;">
+  <div id="modalNovoLead" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto;">
+    <div style="background: #1e2538; padding: 25px; border-radius: 10px; width: 90%; max-width: 480px; border: 1px solid #2a344d; color: #fff; position: relative; margin: 20px;">
       <span onclick="fecharModalNovoLead()" style="position: absolute; top: 15px; right: 20px; font-size: 22px; cursor: pointer; color: #aaa;">&times;</span>
-      <h3 style="margin-bottom: 15px; color: #00d2ff;">Registar Novo Lead</h3>
+      <h3 style="margin-bottom: 15px; color: #00d2ff;">Novo Lead</h3>
       <form id="formNovoLeadManual" onsubmit="salvarLeadManual(event)">
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Nome do Lead *</label>
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Nome / Empresa *</label>
           <input type="text" id="manual-nome" required style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
         </div>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">WhatsApp / Telefone *</label>
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">CPF / CNPJ</label>
+          <input type="text" id="manual-documento" placeholder="000.000.000-00 ou 00.000.000/0000-00" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Telefone / WhatsApp *</label>
           <input type="text" id="manual-telefone" placeholder="(21) 99999-9999" required style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
         </div>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">E-mail (Opcional)</label>
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">E-mail</label>
           <input type="email" id="manual-email" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
         </div>
-        <div style="margin-bottom: 20px;">
-          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Origem do Contato</label>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Segmento</label>
+          <select id="manual-segmento" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+            <option value="B2C">B2C</option>
+            <option value="B2B">B2B</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Origem do Lead</label>
           <select id="manual-origem" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
             <option value="Indicação Direta">Indicação Direta</option>
-            <option value="WhatsApp / Rede Social">WhatsApp / Rede Social</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Instagram">Instagram</option>
             <option value="Prospecção Ativa">Prospecção Ativa</option>
+            <option value="Site">Site</option>
             <option value="Outro">Outro</option>
           </select>
         </div>
-        <button type="submit" style="background: #00d2ff; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Guardar Lead</button>
+        <div style="margin-bottom: 20px;">
+          <label style="font-size: 0.85rem; display: block; margin-bottom: 5px;">Responsável Comercial</label>
+          <input type="text" id="manual-responsavel" placeholder="Nome do responsável" style="width: 100%; padding: 8px; background: #131722; border: 1px solid #2a344d; color: #fff; border-radius: 5px;">
+        </div>
+        <button type="submit" style="background: #00d2ff; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Salvar Lead</button>
       </form>
     </div>
   </div>
@@ -243,44 +256,267 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-  const loadingDiv = document.getElementById("loading");
-  const dashboard = document.getElementById("dashboard-screen");
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
+      authDomain: "painel-megasena.firebaseapp.com",
+      projectId: "painel-megasena",
+      storageBucket: "painel-megasena.firebasestorage.app",
+      messagingSenderId: "924943702876",
+      appId: "1:924943702876:web:77929086c5addb13b37f99"
+    };
 
-  function verificarAcesso() {
-    const logado = localStorage.getItem('mark6_logado');
-    const email = localStorage.getItem('emailUsuario');
-
-    console.log("Verificando acesso - Logado:", logado, "Email:", email);
-
-    if (logado === 'true' && email) {
-      // Usuário está logado no site principal
-      if (loadingDiv) loadingDiv.style.display = "none";
-      if (dashboard) dashboard.style.display = "block";
-
-      // Carrega os dados do CRM usando o e-mail
-      carregarLeadsDoKanban(email);
-      carregarComissoesRepresentante(email);
-    } else {
-      // Não está logado → redireciona
-      if (loadingDiv) loadingDiv.innerHTML = "Você precisa estar logado. Redirecionando...";
-      setTimeout(() => {
-        window.location.href = "https://mark6.com.br";
-      }, 1500);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
-  }
 
-  // Executa a verificação assim que a página carregar
-  verificarAcesso();
+    const db = firebase.firestore();
+    const etapas = ['recebido', 'qualificado', 'contato', 'apresentacao', 'proposta', 'fechamento', 'ganho', 'perdido'];
 
-  window.fazerLogout = function() {
-    localStorage.removeItem('mark6_logado');
-    localStorage.removeItem('emailUsuario');
-    window.location.href = "https://mark6.com.br";
-  };
+    function verificarAcesso() {
+      const logado = localStorage.getItem('mark6_logado');
+      const email = localStorage.getItem('emailUsuario');
 
-  // ===== COLE ABAIXO TODAS AS OUTRAS FUNÇÕES DO CRM =====
-  // (carregarLeadsDoKanban, carregarComissoesRepresentante, allowDrop, drag, drop, etc.)
-  // Elas continuam iguais, só mudamos a forma de verificar o login.
-</script>
+      const loading = document.getElementById("loading");
+      const dashboard = document.getElementById("dashboard-screen");
+
+      if (logado === 'true' && email) {
+        if (loading) loading.style.display = "none";
+        if (dashboard) dashboard.style.display = "block";
+        carregarLeadsDoKanban(email);
+        carregarComissoesRepresentante(email);
+      } else {
+        if (loading) loading.innerHTML = "Você precisa estar logado. Redirecionando...";
+        setTimeout(() => window.location.href = "https://mark6.com.br", 1500);
+      }
+    }
+
+    verificarAcesso();
+
+    window.fazerLogout = function() {
+      localStorage.removeItem('mark6_logado');
+      localStorage.removeItem('emailUsuario');
+      window.location.href = "https://mark6.com.br";
+    };
+
+    async function carregarComissoesRepresentante(email) {
+      try {
+        const querySnapshot = await db.collection("crm_oportunidades")
+          .where("representanteEmail", "==", email).get();
+        // Mantido para compatibilidade futura
+      } catch (error) {
+        console.error("Erro ao buscar comissões:", error);
+      }
+    }
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text/plain", ev.target.id); }
+
+    async function drop(ev) {
+      ev.preventDefault();
+      const cardId = ev.dataTransfer.getData("text/plain");
+      const cardElement = document.getElementById(cardId);
+      const colunaDestino = ev.target.closest('.kanban-column');
+      if (!colunaDestino) return;
+
+      const targetCardsContainer = colunaDestino.querySelector('.kanban-cards');
+      if (targetCardsContainer && cardElement) {
+        targetCardsContainer.appendChild(cardElement);
+
+        const novoStatus = colunaDestino.id.replace('col-', '');
+        const leadId = cardId.replace('lead-', '');
+
+        let motivoPerda = "";
+        if (novoStatus === "perdido") {
+          motivoPerda = prompt("Qual o motivo da perda?") || "Não informado";
+        }
+
+        try {
+          await db.collection("crm_leads").doc(leadId).update({
+            statusEtapa: novoStatus,
+            motivoPerda: motivoPerda,
+            ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          atualizarContadoresKanban();
+        } catch (error) {
+          console.error("Erro ao atualizar etapa:", error);
+        }
+      }
+    }
+
+    async function carregarLeadsDoKanban(emailRep) {
+      try {
+        etapas.forEach(etapa => {
+          const container = document.getElementById(`cards-${etapa}`);
+          if (container) container.innerHTML = '';
+        });
+
+        const snapshot = await db.collection("crm_leads")
+          .where("representanteEmail", "==", emailRep).get();
+
+        if (snapshot.empty) {
+          atualizarContadoresKanban();
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          const lead = doc.data();
+          const leadId = doc.id;
+          const etapa = lead.statusEtapa || 'recebido';
+
+          const card = document.createElement('div');
+          card.className = 'lead-card';
+          card.id = `lead-${leadId}`;
+          card.draggable = true;
+          card.addEventListener('dragstart', drag);
+          card.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'A') window.abrirDetalhesLead(leadId);
+          });
+
+          const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
+          const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
+
+          card.innerHTML = `
+            <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
+            <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
+            <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
+            ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
+          `;
+
+          const colunaContainer = document.getElementById(`cards-${etapa}`);
+          if (colunaContainer) colunaContainer.appendChild(card);
+        });
+
+        atualizarContadoresKanban();
+      } catch (error) {
+        console.error("Erro ao carregar leads:", error);
+      }
+    }
+
+    function atualizarContadoresKanban() {
+      etapas.forEach(etapa => {
+        const container = document.getElementById(`cards-${etapa}`);
+        const badge = document.getElementById(`count-${etapa}`);
+        if (container && badge) badge.innerText = container.children.length;
+      });
+    }
+
+    let leadAtualId = null;
+
+    window.abrirDetalhesLead = async function(leadId) {
+      leadAtualId = leadId;
+      const modal = document.getElementById("modalLeadDetalhes");
+      const containerInfo = document.getElementById("modal-lead-info");
+      const containerAnotacoes = document.getElementById("lista-anotacoes");
+
+      containerInfo.innerHTML = "A carregar dados...";
+      containerAnotacoes.innerHTML = "";
+      document.getElementById("input-nova-anotacao").value = "";
+      modal.style.display = "flex";
+
+      try {
+        const docRef = await db.collection("crm_leads").doc(leadId).get();
+        if (!docRef.exists) {
+          containerInfo.innerHTML = "Lead não encontrado.";
+          return;
+        }
+        const lead = docRef.data();
+        containerInfo.innerHTML = `
+          <p><b>Nome:</b> ${lead.nome || 'Não informado'}</p>
+          <p><b>Documento:</b> ${lead.documento || 'Não informado'}</p>
+          <p><b>Telefone:</b> ${lead.telefone || 'Não informado'}</p>
+          <p><b>E-mail:</b> ${lead.email || 'Não informado'}</p>
+          <p><b>Segmento:</b> ${lead.segmento || 'Não informado'}</p>
+          <p><b>Origem:</b> ${lead.origem || 'Indefinida'}</p>
+          <p><b>Responsável:</b> ${lead.responsavel || 'Não informado'}</p>
+          <p><b>Etapa Atual:</b> <span style="text-transform: uppercase; color: #00d2ff;">${lead.statusEtapa || 'recebido'}</span></p>
+          ${lead.motivoPerda ? `<p><b>Motivo da Perda:</b> ${lead.motivoPerda}</p>` : ''}
+        `;
+        renderizarAnotacoes(lead.anotacoes || []);
+      } catch (error) {
+        containerInfo.innerHTML = "Erro ao carregar informações.";
+      }
+    };
+
+    window.fecharModalDetalhes = function() {
+      document.getElementById("modalLeadDetalhes").style.display = "none";
+      leadAtualId = null;
+    };
+
+    window.salvarAnotacaoLead = async function() {
+      const texto = document.getElementById("input-nova-anotacao").value.trim();
+      if (!texto || !leadAtualId) return;
+
+      try {
+        await db.collection("crm_leads").doc(leadAtualId).update({
+          anotacoes: firebase.firestore.FieldValue.arrayUnion({
+            texto: texto,
+            data: new Date().toISOString()
+          })
+        });
+        document.getElementById("input-nova-anotacao").value = "";
+        window.abrirDetalhesLead(leadAtualId);
+      } catch (error) {
+        alert("Erro ao guardar anotação.");
+      }
+    };
+
+    function renderizarAnotacoes(anotacoes) {
+      const container = document.getElementById("lista-anotacoes");
+      if (!anotacoes || anotacoes.length === 0) {
+        container.innerHTML = "<p style='color: #888;'>Sem anotações registadas.</p>";
+        return;
+      }
+      container.innerHTML = [...anotacoes].reverse().map(item => {
+        const data = new Date(item.data).toLocaleString('pt-BR');
+        return `
+          <div style="background: #131722; padding: 8px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid #00d2ff;">
+            <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 3px;">${data}</div>
+            <div>${item.texto}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.abrirModalNovoLead = function() {
+      document.getElementById("formNovoLeadManual").reset();
+      document.getElementById("modalNovoLead").style.display = "flex";
+    };
+
+    window.fecharModalNovoLead = function() {
+      document.getElementById("modalNovoLead").style.display = "none";
+    };
+
+    window.salvarLeadManual = async function(event) {
+      event.preventDefault();
+      const email = localStorage.getItem('emailUsuario');
+      if (!email) {
+        alert("Erro: Utilizador não autenticado.");
+        return;
+      }
+
+      try {
+        await db.collection("crm_leads").add({
+          nome: document.getElementById("manual-nome").value.trim(),
+          documento: document.getElementById("manual-documento").value.trim(),
+          telefone: document.getElementById("manual-telefone").value.trim(),
+          email: document.getElementById("manual-email").value.trim(),
+          segmento: document.getElementById("manual-segmento").value,
+          origem: document.getElementById("manual-origem").value,
+          responsavel: document.getElementById("manual-responsavel").value.trim(),
+          representanteEmail: email,
+          statusEtapa: "recebido",
+          dataCriacao: firebase.firestore.FieldValue.serverTimestamp(),
+          motivoPerda: ""
+        });
+
+        fecharModalNovoLead();
+        alert("Lead registado com sucesso!");
+        carregarLeadsDoKanban(email);
+      } catch (error) {
+        console.error("Erro ao guardar o lead:", error);
+        alert("Erro ao guardar o lead.");
+      }
+    };
+  </script>
 </body>
 </html>
