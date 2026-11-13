@@ -244,54 +244,43 @@
 
   <script>
   const loadingDiv = document.getElementById("loading");
+  const dashboard = document.getElementById("dashboard-screen");
 
-  function log(msg) {
-    console.log(msg);
-    if (loadingDiv) {
-      loadingDiv.innerHTML += "<br>" + msg;
+  function verificarAcesso() {
+    const logado = localStorage.getItem('mark6_logado');
+    const email = localStorage.getItem('emailUsuario');
+
+    console.log("Verificando acesso - Logado:", logado, "Email:", email);
+
+    if (logado === 'true' && email) {
+      // Usuário está logado no site principal
+      if (loadingDiv) loadingDiv.style.display = "none";
+      if (dashboard) dashboard.style.display = "block";
+
+      // Carrega os dados do CRM usando o e-mail
+      carregarLeadsDoKanban(email);
+      carregarComissoesRepresentante(email);
+    } else {
+      // Não está logado → redireciona
+      if (loadingDiv) loadingDiv.innerHTML = "Você precisa estar logado. Redirecionando...";
+      setTimeout(() => {
+        window.location.href = "https://mark6.com.br";
+      }, 1500);
     }
   }
 
-  log("1. Script do portal iniciou");
+  // Executa a verificação assim que a página carregar
+  verificarAcesso();
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9ccyTSDoWiqrwnq9K7nAEjeOHZahKIu0",
-    authDomain: "painel-megasena.firebaseapp.com",
-    projectId: "painel-megasena",
-    storageBucket: "painel-megasena.firebasestorage.app",
-    messagingSenderId: "924943702876",
-    appId: "1:924943702876:web:77929086c5addb13b37f99"
+  window.fazerLogout = function() {
+    localStorage.removeItem('mark6_logado');
+    localStorage.removeItem('emailUsuario');
+    window.location.href = "https://mark6.com.br";
   };
 
-  log("2. Config carregada");
-
-  if (typeof firebase === "undefined") {
-    log("ERRO: Firebase não foi carregado!");
-  } else {
-    log("3. Firebase encontrado");
-    
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    log("4. Firebase inicializado");
-
-    const auth = firebase.auth();
-    log("5. Auth criado. Usuário atual: " + (auth.currentUser ? auth.currentUser.email : "nenhum"));
-
-    auth.onAuthStateChanged((user) => {
-      log("6. onAuthStateChanged disparou: " + (user ? user.email : "nenhum usuário"));
-      
-      const dashboard = document.getElementById("dashboard-screen");
-
-      if (user) {
-        if (loadingDiv) loadingDiv.style.display = "none";
-        if (dashboard) dashboard.style.display = "block";
-        log("7. Dashboard liberado");
-      } else {
-        log("8. Sem usuário. NÃO vou redirecionar agora (teste).");
-      }
-    });
-  }
+  // ===== COLE ABAIXO TODAS AS OUTRAS FUNÇÕES DO CRM =====
+  // (carregarLeadsDoKanban, carregarComissoesRepresentante, allowDrop, drag, drop, etc.)
+  // Elas continuam iguais, só mudamos a forma de verificar o login.
 </script>
 </body>
 </html>
