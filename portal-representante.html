@@ -259,35 +259,63 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Garante persistência da sessão
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => {
+      console.log("Persistência configurada");
+      checkAuth();
+    })
+    .catch((err) => {
+      console.error("Erro na persistência:", err);
+      checkAuth();
+    });
 
-  let authChecked = false;
-
-  auth.onAuthStateChanged(async (user) => {
-    if (authChecked) return;
-    authChecked = true;
-
+  function checkAuth() {
     const loading = document.getElementById("loading");
     const dashboard = document.getElementById("dashboard-screen");
 
-    if (user) {
-      console.log("Usuário autenticado:", user.email);
-      if (loading) loading.style.display = "none";
-      if (dashboard) dashboard.style.display = "block";
+    // Verifica imediatamente
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      console.log("Usuário já está logado:", currentUser.email);
+      showDashboard(currentUser);
+      return;
+    }
 
+    // Escuta mudanças de autenticação
+    auth.onAuthStateChanged((user) => {
+      console.log("onAuthStateChanged disparou. Usuário:", user ? user.email : "null");
+      
+      if (user) {
+        showDashboard(user);
+      } else {
+        // Última tentativa após 1.5 segundos
+        setTimeout(() => {
+          if (auth.currentUser) {
+            showDashboard(auth.currentUser);
+          } else {
+            console.log("Nenhum usuário encontrado. Redirecionando...");
+            if (loading) loading.innerHTML = "Redirecionando para o login...";
+            window.location.href = "https://mark6.com.br";
+          }
+        }, 1500);
+      }
+    });
+  }
+
+  async function showDashboard(user) {
+    const loading = document.getElementById("loading");
+    const dashboard = document.getElementById("dashboard-screen");
+
+    if (loading) loading.style.display = "none";
+    if (dashboard) dashboard.style.display = "block";
+
+    try {
       await carregarLeadsDoKanban(user.email);
       await carregarComissoesRepresentante(user.email);
-    } else {
-      // Espera um pouco antes de redirecionar
-      setTimeout(() => {
-        if (!auth.currentUser) {
-          console.log("Usuário não autenticado. Redirecionando...");
-          window.location.href = "https://mark6.com.br";
-        }
-      }, 1000);
+    } catch (e) {
+      console.error("Erro ao carregar dados:", e);
     }
-  });
+  }
 
   window.fazerLogout = async function() {
     try {
