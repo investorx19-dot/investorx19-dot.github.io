@@ -307,6 +307,17 @@
       await window.fazerLogin(email, senha);
     };
 
+    window.fazerLogout = async function() {
+  try {
+    await auth.signOut();
+    alert("Sessão encerrada com sucesso!");
+    // O onAuthStateChanged já cuida de esconder o dashboard e mostrar o login
+  } catch (error) {
+    console.error("Erro ao fazer logout:", error);
+    alert("Erro ao sair da conta.");
+  }
+};
+
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         console.log("Usuário autenticado:", user.email);
