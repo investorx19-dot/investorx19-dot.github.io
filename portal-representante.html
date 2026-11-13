@@ -32,7 +32,7 @@
       background-color: #1e2538;
       border-radius: 8px;
       flex: 1;
-      min-width: 200px;
+      min-width: 210px;
       padding: 12px;
       border: 1px solid #2a344d;
     }
@@ -74,7 +74,7 @@
     }
 
     .lead-name { font-weight: bold; color: #fff; margin-bottom: 4px; }
-    .lead-info { font-size: 0.8rem; color: #94a3b8; }
+    .lead-info { font-size: 0.78rem; color: #94a3b8; line-height: 1.4; }
 
     .btn-whatsapp {
       display: inline-block;
@@ -90,13 +90,13 @@
 
     .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
     
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0; }
-    .card { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border); }
-    .card h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
-    .card .value { font-size: 1.8rem; font-weight: bold; color: var(--success); }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 25px 0; }
+    .card { background: var(--card-bg); padding: 18px; border-radius: 10px; border: 1px solid var(--border); }
+    .card h3 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+    .card .value { font-size: 1.7rem; font-weight: bold; color: var(--success); }
 
     table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin-top: 10px; }
-    th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
 
     #loading { text-align: center; padding: 80px 20px; color: var(--text-muted); }
@@ -117,10 +117,30 @@
         <h2 style="margin: 0;">Bem-vindo, Parceiro!</h2>
       </div>
 
-      <div style="margin-bottom: 25px;">
+      <div style="margin-bottom: 20px;">
         <button onclick="abrirModalNovoLead()" style="background: #00d2ff; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">
           + Novo Lead Manual
         </button>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="metrics-grid">
+        <div class="card">
+          <h3>Total de Leads</h3>
+          <div class="value" id="stat-total-leads">0</div>
+        </div>
+        <div class="card">
+          <h3>Vendas Realizadas</h3>
+          <div class="value" id="stat-vendas">0</div>
+        </div>
+        <div class="card">
+          <h3>Receita Gerada</h3>
+          <div class="value" id="stat-receita">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <h3>Taxa de Conversão</h3>
+          <div class="value" id="stat-conversao">0%</div>
+        </div>
       </div>
 
       <div class="kanban-container">
@@ -158,30 +178,20 @@
         </div>
       </div>
 
-      <div class="metrics-grid">
-        <div class="card">
-          <h3>Leads Capturados</h3>
-          <div class="value" id="stat-leads">0</div>
-        </div>
-        <div class="card">
-          <h3>Comissões Pendentes</h3>
-          <div class="value" id="stat-comissao-pendente">R$ 0,00</div>
-        </div>
-      </div>
-
-      <h3 style="margin-bottom: 15px;">Os seus Leads Registados</h3>
+      <h3 style="margin: 30px 0 15px;">Os seus Leads Registados</h3>
       <table>
         <thead>
           <tr>
             <th>Nome do Lead</th>
             <th>Tipo</th>
             <th>Estágio Atual</th>
+            <th>Valor</th>
             <th>Data</th>
           </tr>
         </thead>
         <tbody id="tabela-leads-corpo">
           <tr>
-            <td colspan="4" style="text-align: center; color: var(--text-muted);">A carregar os seus dados...</td>
+            <td colspan="5" style="text-align: center; color: var(--text-muted);">A carregar os seus dados...</td>
           </tr>
         </tbody>
       </table>
@@ -283,7 +293,6 @@
         if (loading) loading.style.display = "none";
         if (dashboard) dashboard.style.display = "block";
         carregarLeadsDoKanban(email);
-        carregarComissoesRepresentante(email);
       } else {
         if (loading) loading.innerHTML = "Você precisa estar logado. Redirecionando...";
         setTimeout(() => window.location.href = "https://mark6.com.br", 1500);
@@ -297,16 +306,6 @@
       localStorage.removeItem('emailUsuario');
       window.location.href = "https://mark6.com.br";
     };
-
-    async function carregarComissoesRepresentante(email) {
-      try {
-        const querySnapshot = await db.collection("crm_oportunidades")
-          .where("representanteEmail", "==", email).get();
-        // Mantido para compatibilidade futura
-      } catch (error) {
-        console.error("Erro ao buscar comissões:", error);
-      }
-    }
 
     function allowDrop(ev) { ev.preventDefault(); }
     function drag(ev) { ev.dataTransfer.setData("text/plain", ev.target.id); }
@@ -326,17 +325,36 @@
         const leadId = cardId.replace('lead-', '');
 
         let motivoPerda = "";
+        let valorVenda = null;
+        let planoVenda = "";
+
         if (novoStatus === "perdido") {
           motivoPerda = prompt("Qual o motivo da perda?") || "Não informado";
         }
 
+        if (novoStatus === "ganho") {
+          const valor = prompt("Qual o valor da venda? (ex: 79.90)");
+          valorVenda = valor ? parseFloat(valor.replace(',', '.')) : 0;
+          planoVenda = prompt("Qual o plano contratado? (Básico / Intermediário / Premium)") || "Não informado";
+        }
+
         try {
-          await db.collection("crm_leads").doc(leadId).update({
+          const updateData = {
             statusEtapa: novoStatus,
-            motivoPerda: motivoPerda,
             ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          atualizarContadoresKanban();
+          };
+
+          if (novoStatus === "perdido") updateData.motivoPerda = motivoPerda;
+          if (novoStatus === "ganho") {
+            updateData.valorVenda = valorVenda;
+            updateData.planoVenda = planoVenda;
+            updateData.dataVenda = firebase.firestore.FieldValue.serverTimestamp();
+          }
+
+          await db.collection("crm_leads").doc(leadId).update(updateData);
+          
+          const email = localStorage.getItem('emailUsuario');
+          if (email) carregarLeadsDoKanban(email);
         } catch (error) {
           console.error("Erro ao atualizar etapa:", error);
         }
@@ -353,40 +371,44 @@
         const snapshot = await db.collection("crm_leads")
           .where("representanteEmail", "==", emailRep).get();
 
-        if (snapshot.empty) {
-          atualizarContadoresKanban();
-          return;
+        const todosLeads = [];
+
+        if (!snapshot.empty) {
+          snapshot.forEach((doc) => {
+            const lead = doc.data();
+            todosLeads.push(lead);
+            const leadId = doc.id;
+            const etapa = lead.statusEtapa || 'recebido';
+
+            const card = document.createElement('div');
+            card.className = 'lead-card';
+            card.id = `lead-${leadId}`;
+            card.draggable = true;
+            card.addEventListener('dragstart', drag);
+            card.addEventListener('click', (e) => {
+              if (e.target.tagName !== 'A') window.abrirDetalhesLead(leadId);
+            });
+
+            const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
+            const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
+
+            card.innerHTML = `
+              <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
+              <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
+              <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
+              <div class="lead-info">Segmento: ${lead.segmento || '-'} | Resp: ${lead.responsavel || '-'}</div>
+              ${lead.valorVenda ? `<div class="lead-info" style="color:#22c55e; font-weight:bold;">R$ ${Number(lead.valorVenda).toFixed(2)}</div>` : ''}
+              ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
+            `;
+
+            const colunaContainer = document.getElementById(`cards-${etapa}`);
+            if (colunaContainer) colunaContainer.appendChild(card);
+          });
         }
 
-        snapshot.forEach((doc) => {
-          const lead = doc.data();
-          const leadId = doc.id;
-          const etapa = lead.statusEtapa || 'recebido';
-
-          const card = document.createElement('div');
-          card.className = 'lead-card';
-          card.id = `lead-${leadId}`;
-          card.draggable = true;
-          card.addEventListener('dragstart', drag);
-          card.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'A') window.abrirDetalhesLead(leadId);
-          });
-
-          const telefoneLimpo = lead.telefone ? lead.telefone.replace(/\D/g, '') : '';
-          const linkWhatsApp = telefoneLimpo ? `https://wa.me/55${telefoneLimpo}?text=Olá%20${encodeURIComponent(lead.nome || 'Cliente')},%20tudo%20bem?` : '#';
-
-          card.innerHTML = `
-            <div class="lead-name">${lead.nome || 'Lead sem nome'}</div>
-            <div class="lead-info">📱 ${lead.telefone || 'Sem telefone'}</div>
-            <div class="lead-info">Origem: ${lead.origem || 'Indefinida'}</div>
-            ${telefoneLimpo ? `<a href="${linkWhatsApp}" target="_blank" class="btn-whatsapp">WhatsApp</a>` : ''}
-          `;
-
-          const colunaContainer = document.getElementById(`cards-${etapa}`);
-          if (colunaContainer) colunaContainer.appendChild(card);
-        });
-
         atualizarContadoresKanban();
+        atualizarDashboard(todosLeads);
+        atualizarTabelaLeads(todosLeads);
       } catch (error) {
         console.error("Erro ao carregar leads:", error);
       }
@@ -398,6 +420,38 @@
         const badge = document.getElementById(`count-${etapa}`);
         if (container && badge) badge.innerText = container.children.length;
       });
+    }
+
+    function atualizarDashboard(leads) {
+      const total = leads.length;
+      const vendas = leads.filter(l => l.statusEtapa === 'ganho').length;
+      const receita = leads
+        .filter(l => l.statusEtapa === 'ganho' && l.valorVenda)
+        .reduce((sum, l) => sum + (Number(l.valorVenda) || 0), 0);
+      const conversao = total > 0 ? ((vendas / total) * 100).toFixed(1) : 0;
+
+      document.getElementById("stat-total-leads").textContent = total;
+      document.getElementById("stat-vendas").textContent = vendas;
+      document.getElementById("stat-receita").textContent = "R$ " + receita.toFixed(2).replace('.', ',');
+      document.getElementById("stat-conversao").textContent = conversao + "%";
+    }
+
+    function atualizarTabelaLeads(leads) {
+      const tbody = document.getElementById("tabela-leads-corpo");
+      if (!leads || leads.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Nenhum lead encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = leads.map(lead => `
+        <tr>
+          <td>${lead.nome || '-'}</td>
+          <td>${lead.segmento || '-'}</td>
+          <td style="text-transform: capitalize;">${lead.statusEtapa || 'recebido'}</td>
+          <td>${lead.valorVenda ? 'R$ ' + Number(lead.valorVenda).toFixed(2) : '-'}</td>
+          <td>${lead.dataCriacao ? new Date(lead.dataCriacao.seconds * 1000).toLocaleDateString('pt-BR') : '-'}</td>
+        </tr>
+      `).join('');
     }
 
     let leadAtualId = null;
@@ -429,6 +483,8 @@
           <p><b>Origem:</b> ${lead.origem || 'Indefinida'}</p>
           <p><b>Responsável:</b> ${lead.responsavel || 'Não informado'}</p>
           <p><b>Etapa Atual:</b> <span style="text-transform: uppercase; color: #00d2ff;">${lead.statusEtapa || 'recebido'}</span></p>
+          ${lead.valorVenda ? `<p><b>Valor da Venda:</b> R$ ${Number(lead.valorVenda).toFixed(2)}</p>` : ''}
+          ${lead.planoVenda ? `<p><b>Plano:</b> ${lead.planoVenda}</p>` : ''}
           ${lead.motivoPerda ? `<p><b>Motivo da Perda:</b> ${lead.motivoPerda}</p>` : ''}
         `;
         renderizarAnotacoes(lead.anotacoes || []);
@@ -506,7 +562,9 @@
           representanteEmail: email,
           statusEtapa: "recebido",
           dataCriacao: firebase.firestore.FieldValue.serverTimestamp(),
-          motivoPerda: ""
+          motivoPerda: "",
+          valorVenda: null,
+          planoVenda: ""
         });
 
         fecharModalNovoLead();
